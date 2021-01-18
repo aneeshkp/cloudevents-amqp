@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qpid-dispatcherr-deployment
+  labels:
+    app: qpid-dispatcher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qpid-dispatcher
+  template:
+    metadata:
+      labels:
+        app: qpid-dispatcher
+    spec:
+      containers:
+        - name: qpid-dispatcher
+          image: quay.io/interconnectedcloud/qdrouterd:1.8.0
