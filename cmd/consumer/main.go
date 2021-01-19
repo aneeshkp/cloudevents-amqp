@@ -15,6 +15,10 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
+var (
+	msgRecievedCount=0
+)
+
 // Parse AMQP_URL env variable. Return server URL, AMQP node (from path) and SASLPlain
 // option if user/pass are present.
 func amqpConfig() (server, node string, opts []amqp1.Option) {
@@ -59,9 +63,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
-	err = c.StartReceiver(context.Background(), func(e cloudevents.Event) {
+	err = c.StartReceiver(context.Background(), func( e cloudevents.Event) {
 		fmt.Printf("==== Got CloudEvent\n%+v\n----\n", e)
-
+		msgRecievedCount++
+		fmt.Printf("\nTotal message recived %d\n",msgRecievedCount)
 	})
 	if err != nil {
 		log.Printf("AMQP receiver error: %v", err)

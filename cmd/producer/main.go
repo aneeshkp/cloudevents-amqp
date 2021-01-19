@@ -113,20 +113,20 @@ func main() {
 		unSettledMsgs[i] = string(event.Data())
 		m.Unlock()
 
-		go func(c cloudevents.Client, e cloudevents.Event, wg *sync.WaitGroup) {
+		go func(c cloudevents.Client, e cloudevents.Event, wg *sync.WaitGroup, index int) {
 			if result := c.Send(context.Background(), event); cloudevents.IsUndelivered(result) {
 				log.Printf("Failed to send: %v", result)
 			} else if cloudevents.IsNACK(result) {
 				log.Printf("Event not accepted: %v", result)
 			} else {
-				log.Printf("%d MESSAGE SUCCESSFULLY DELIVERED %v", i, result)
 				m.Lock()
-				delete(unSettledMsgs, i)
+				delete(unSettledMsgs, index)
+				log.Printf("MESSAGE ID %d SUCCESSFULLY DELIVERED %v pending %d to settle", index, result, len(unSettledMsgs))
 				m.Unlock()
 			}
 			wg.Done()
-		}(c, event, &wg)
-		time.Sleep(100 * time.Millisecond)
+		}(c, event, &wg,i)
+		//time.Sleep(100 * time.Millisecond)
 	}
 	log.Printf("--------- Summary ----------\n")
 	log.Printf("All %d message was sent", count)
