@@ -1,7 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="5d81e9b6-63c3-4e30-8f41-9e0b0e469610" name="Default Changelist" comment="" />
+    <list default="true" id="5d81e9b6-63c3-4e30-8f41-9e0b0e469610" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/kube-dns/kube-dns-cm.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kube-dns/kube-dns-controller.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kube-dns/kube-dns-svc.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kube-dns/kustomization.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/consumer/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/consumer/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/producer/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/producer/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/manifests/01-consumer.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/manifests/01-consumer.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/manifests/02-producer.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/manifests/02-producer.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/manifests/kustomization.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/manifests/kustomization.yaml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -15,6 +29,9 @@
     </option>
   </component>
   <component name="GOROOT" url="file:///usr/local/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="GoLibraries">
     <option name="indexEntireGoPath" value="false" />
   </component>
@@ -23,6 +40,7 @@
     <option name="namespace" value="default" />
   </component>
   <component name="ProjectId" id="1nFUAzRvniLYu7oOoIPhsu3zdsS" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -41,8 +59,8 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager">
-    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Go Build.go build main.go">
+    <configuration name="go build main.go (1)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="cloudevents-amqp" />
       <working_directory value="$PROJECT_DIR$" />
       <kind value="FILE" />
@@ -51,9 +69,19 @@
       <directory value="$PROJECT_DIR$" />
       <method v="2" />
     </configuration>
+    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="cloudevents-amqp" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/cmd/consumer/main.go" />
+      <package value="github.com/aneeshkp/cloudevents-amqp" />
+      <directory value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Go Build.go build main.go" />
+        <item itemvalue="Go Build.go build main.go (1)" />
       </list>
     </recent_temporary>
   </component>
@@ -68,84 +96,14 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/cmd/producer/main.go</url>
-          <line>91</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/cmd/producer/main.go</url>
-          <line>51</line>
+          <url>file://$PROJECT_DIR$/cmd/consumer/main.go</url>
+          <line>62</line>
           <option name="timeStamp" value="3" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/cmd/producer/main.go</url>
-          <line>92</line>
+          <url>file://$PROJECT_DIR$/cmd/consumer/main.go</url>
+          <line>61</line>
           <option name="timeStamp" value="4" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/cmd/producer/main.go</url>
-          <line>99</line>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$USER_HOME$/gocode/pkg/mod/github.com/cloudevents/sdk-go/v2@v2.3.1/client/client.go</url>
-          <line>120</line>
-          <option name="timeStamp" value="6" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$USER_HOME$/gocode/pkg/mod/github.com/!azure/go-amqp@v0.12.7/client.go</url>
-          <line>367</line>
-          <option name="timeStamp" value="7" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$USER_HOME$/gocode/pkg/mod/github.com/!azure/go-amqp@v0.12.7/client.go</url>
-          <line>357</line>
-          <option name="timeStamp" value="8" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$USER_HOME$/gocode/pkg/mod/github.com/!azure/go-amqp@v0.12.7/client.go</url>
-          <line>368</line>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$USER_HOME$/gocode/pkg/mod/github.com/!azure/go-amqp@v0.12.7/client.go</url>
-          <line>366</line>
-          <option name="timeStamp" value="10" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$USER_HOME$/gocode/pkg/mod/github.com/!azure/go-amqp@v0.12.7/client.go</url>
-          <line>364</line>
-          <option name="timeStamp" value="11" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$USER_HOME$/gocode/pkg/mod/github.com/!azure/go-amqp@v0.12.7/client.go</url>
-          <line>362</line>
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$USER_HOME$/gocode/pkg/mod/github.com/!azure/go-amqp@v0.12.7/client.go</url>
-          <line>374</line>
-          <option name="timeStamp" value="13" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$USER_HOME$/gocode/pkg/mod/github.com/!azure/go-amqp@v0.12.7/client.go</url>
-          <line>373</line>
-          <option name="timeStamp" value="14" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/cmd/producer/main.go</url>
-          <line>94</line>
-          <option name="timeStamp" value="15" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/cmd/producer/main.go</url>
-          <line>96</line>
-          <option name="timeStamp" value="16" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$USER_HOME$/gocode/pkg/mod/github.com/!azure/go-amqp@v0.12.7/client.go</url>
-          <line>351</line>
-          <option name="timeStamp" value="17" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

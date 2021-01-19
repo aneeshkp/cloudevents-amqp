@@ -17,9 +17,27 @@ endif
 
 export COMMON_GO_ARGS=-race
 
+kustomize:
+ifeq (, $(shell which kustomize))
+	@{ \
+	set -e ;\
+	KUSTOMIZE_GEN_TMP_DIR=$$(mktemp -d) ;\
+	cd $$KUSTOMIZE_GEN_TMP_DIR ;\
+	go mod init tmp ;\
+	go get sigs.k8s.io/kustomize/kustomize/v3@v3.5.4 ;\
+	rm -rf $$KUSTOMIZE_GEN_TMP_DIR ;\
+	}
+KUSTOMIZE=$(GOBIN)/kustomize
+else
+KUSTOMIZE=$(shell which kustomize)
+endif
+
 build:
 	go fmt ./...
 	make lint
+	go build ./cmd/producer/main.go  -o sender
+	go build ./cmd/consumer/main.go  -o receiver
+
 
 docker-build:
 	docker build -f receiver-Dockerfile -t $(RECEIVER_IMG) .
@@ -28,4 +46,22 @@ docker-build:
 # Push the docker image
 docker-push:
 	docker push ${RECEIVER_IMG} && docker push ${SENDER_IMG}
+
+# Deploy all in the configured Kubernetes cluster in ~/.kube/config
+deploy: kustomize
+	cd ./manifests && $(KUSTOMIZE) edit set image consumer=${RECEIVER_IMG} && $(KUSTOMIZE) edit set image producer=${SENDER_IMG}
+	$(KUSTOMIZE) build ./manifests | kubectl apply -f -
+
+# Uninstall from a cluster
+uninstall: kustomize
+	$(KUSTOMIZE) build ./manifests | kubectl delete -f -
+
+#Install kube-dns addon
+kube-dns: kustomize
+	$(KUSTOMIZE) build ./kube-dns | kubectl apply -f -
+
+lint:
+	golint `go list ./... | grep -v vendor`
+	golangci-lint run
+
 

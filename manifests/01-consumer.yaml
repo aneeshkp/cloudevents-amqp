@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: cloudevents-consumer
-          image: quay.io/aneeshkp/cloudevents-receiver:latest
+          image: consumer
           env:
             - name: AMQP_URL
-              value: "amqp://10.106.103.120:5672/test2"
+              value: "amqp://amqp-dispatch-service:5672/test2"

@@ -1,17 +1,18 @@
 package main
+
 import (
-"context"
-"fmt"
-"log"
-"net/url"
-"os"
-"strings"
+	"context"
+	"fmt"
+	"log"
+	"net/url"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/Azure/go-amqp"
 
-amqp1 "github.com/cloudevents/sdk-go/protocol/amqp/v2"
-cloudevents "github.com/cloudevents/sdk-go/v2"
+	amqp1 "github.com/cloudevents/sdk-go/protocol/amqp/v2"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
 // Parse AMQP_URL env variable. Return server URL, AMQP node (from path) and SASLPlain
@@ -44,7 +45,7 @@ func main() {
 		if err != nil {
 			log.Printf("Failed to create amqp protocol (trying in 5 secs): %v", err)
 			time.Sleep(5 * time.Second)
-		}else{
+		} else {
 			log.Print("Connection established for consumer")
 			break
 		}
