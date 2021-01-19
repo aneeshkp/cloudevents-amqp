@@ -2,19 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5d81e9b6-63c3-4e30-8f41-9e0b0e469610" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/kube-dns/kube-dns-cm.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kube-dns/kube-dns-controller.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kube-dns/kube-dns-svc.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kube-dns/kustomization.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/consumer/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/consumer/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/producer/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/producer/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/manifests/01-consumer.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/manifests/01-consumer.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/manifests/02-producer.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/manifests/02-producer.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/manifests/kustomization.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/manifests/kustomization.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
