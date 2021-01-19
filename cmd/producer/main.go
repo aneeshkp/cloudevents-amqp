@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -17,12 +18,13 @@ import (
 )
 
 const (
-	count = 10
+	DEFAULT_MSG_COUNT = 10
 )
 
 var (
 	unSettledMsgs map[int]interface{}
 	m             sync.RWMutex
+	wg            sync.WaitGroup
 )
 
 // Parse AMQP_URL env variable. Return server URL, AMQP node (from path) and SASLPlain
@@ -75,8 +77,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
-	var wg sync.WaitGroup
+
+	count, err := strconv.Atoi(os.Getenv("MSG_COUNT"))
+	if err != nil {
+		count = DEFAULT_MSG_COUNT
+	}
+
 	wg.Add(count)
+	start := time.Now()
 	for i := 1; i <= count; i++ {
 
 		log.Printf("preparing data for %d", i)
@@ -95,12 +103,16 @@ func main() {
 			})
 
 		if err != nil {
-			log.Printf("Failed to set data: %v", err)
+			log.Printf("Failed to set data for message %d: %v", i, err)
+			continue
 		}
+
 		log.Printf("MESSAGE Sendng %d", i)
+
 		m.Lock()
 		unSettledMsgs[i] = string(event.Data())
 		m.Unlock()
+
 		go func(c cloudevents.Client, e cloudevents.Event, wg *sync.WaitGroup) {
 			if result := c.Send(context.Background(), event); cloudevents.IsUndelivered(result) {
 				log.Printf("Failed to send: %v", result)
@@ -123,15 +135,21 @@ func main() {
 		log.Printf("Unsettled messages\n")
 		log.Printf("--------------------\n")
 		for k := range unSettledMsgs {
-			log.Printf("Message id `%d` was not settled and waitng", k)
+			log.Printf("Message id `%d` was not settled and waiting", k)
 		}
 		log.Printf("--------------------\n")
 		log.Printf("Out of %d messages ,Only %d was settled", count, count-len(unSettledMsgs))
 	} else {
 		log.Printf("%d message was sent and %d was settled", count, count)
 	}
+	//measure
+	elapsed := time.Since(start)
+	log.Printf("ce-amqp Took %s to send %d messsages and settle %d messages", elapsed, count, count-len(unSettledMsgs))
 
 	wg.Wait()
+
+	elapsed = time.Since(start)
+	log.Printf("ce-amqp Took %s to send and settle all messages", elapsed)
 	log.Print("Done")
 
 }
