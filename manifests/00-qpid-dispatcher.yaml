@@ -16,4 +16,4 @@ spec:
     spec:
       containers:
         - name: qpid-dispatcher
-          image: quay.io/interconnectedcloud/qdrouterd:1.8.0
+          image: quay.io/interconnectedcloud/qdrouterd:1.14.0

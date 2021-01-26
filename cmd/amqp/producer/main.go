@@ -2,6 +2,10 @@ package main
 
 import (
 	"context"
+	"github.com/Azure/go-amqp"
+	amqp1 "github.com/cloudevents/sdk-go/protocol/amqp/v2"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/google/uuid"
 	"log"
 	"net/url"
 	"os"
@@ -9,16 +13,10 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/Azure/go-amqp"
-	"github.com/google/uuid"
-
-	amqp1 "github.com/cloudevents/sdk-go/protocol/amqp/v2"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
 const (
-	DEFAULT_MSG_COUNT = 10
+	DEFAULT_MSG_COUNT = 1000
 )
 
 var (
@@ -43,6 +41,11 @@ func amqpConfig() (server, node string, opts []amqp1.Option) {
 		pass, _ := u.User.Password()
 		opts = append(opts, amqp1.WithConnOpt(amqp.ConnSASLPlain(user, pass)))
 	}
+
+	//opts = append(opts, amqp1.WithSenderLinkOption(amqp.LinkSenderSettle(amqp.ModeSettled)))
+	//opts = append(opts, amqp1.WithReceiverLinkOption(amqp.LinkReceiverSettle(amqp.ModeFirst)))
+
+
 	return env, strings.TrimPrefix(u.Path, "/"), opts
 }
 
@@ -57,9 +60,12 @@ func main() {
 	var p *amqp1.Protocol
 	var err error
 	log.Printf("Connecting to host %s", host)
+
+	//ctx := context.Background()
+
 	unSettledMsgs = make(map[int]interface{})
 	for {
-		p, err = amqp1.NewProtocol(host, node, []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
+		p, err = amqp1.NewProtocol2(host, node,"", []amqp.ConnOption{}, []amqp.SessionOption{},  opts...)
 		if err != nil {
 			log.Printf("Failed to create amqp protocol (trying in 5 secs): %v", err)
 			time.Sleep(5 * time.Second)
@@ -69,10 +75,16 @@ func main() {
 		}
 	}
 
+
+
 	// Close the connection when finished
-	defer p.Close(context.Background())
+	// Create a new context.
+	parent, cancelParent := context.WithCancel(context.Background())
+
+	defer p.Close(parent)
 
 	// Create a new client from the given protocol
+
 	c, err := cloudevents.NewClient(p)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
@@ -114,7 +126,9 @@ func main() {
 		m.Unlock()
 
 		go func(c cloudevents.Client, e cloudevents.Event, wg *sync.WaitGroup, index int) {
-			if result := c.Send(context.Background(), event); cloudevents.IsUndelivered(result) {
+		//index:=i
+      		ctx, _ := context.WithTimeout(parent, 5*time.Second)
+			if result := c.Send(ctx, event); cloudevents.IsUndelivered(result) {
 				log.Printf("Failed to send: %v", result)
 			} else if cloudevents.IsNACK(result) {
 				log.Printf("Event not accepted: %v", result)
@@ -125,7 +139,7 @@ func main() {
 				m.Unlock()
 			}
 			wg.Done()
-		}(c, event, &wg,i)
+		}(c, event, &wg, i)
 		//time.Sleep(100 * time.Millisecond)
 	}
 	log.Printf("--------- Summary ----------\n")
@@ -151,5 +165,6 @@ func main() {
 	elapsed = time.Since(start)
 	log.Printf("ce-amqp Took %s to send and settle all messages", elapsed)
 	log.Print("Done")
+	cancelParent()
 
 }

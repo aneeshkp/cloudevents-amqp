@@ -35,8 +35,8 @@ endif
 build:
 	go fmt ./...
 	make lint
-	go build ./cmd/producer/main.go  -o sender
-	go build ./cmd/consumer/main.go  -o receiver
+	go build ./cmd/amqp/producer/main.go  -o sender
+	go build ./cmd/amqp/consumer/main.go  -o receiver
 
 
 docker-build:

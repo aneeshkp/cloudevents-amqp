@@ -19,7 +19,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go app
-RUN go build ./cmd/producer/main.go
+RUN go build ./cmd/amqp/producer/main.go
 
 # Expose port 8080 to the outside world
 #EXPOSE 8080
