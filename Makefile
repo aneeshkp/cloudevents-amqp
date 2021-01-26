@@ -35,13 +35,17 @@ endif
 build:
 	go fmt ./...
 	make lint
-	go build -o amqpSender ./cmd/amqp/producer/main.go
-	go build -o amqpReceiver ./cmd/amqp/consumer/main.go
-	go build -o httpSender ./cmd/http/send/main.go
-	go build -o httpReceiver ./cmd/http/receive/main.go
+	go build -o ./bin/amqpSender ./cmd/amqp/producer/main.go
+	go build -o ./bin/amqpReceiver ./cmd/amqp/consumer/main.go
+	go build -o ./bin/httpSender ./cmd/http/send/main.go
+	go build -o ./bin/httpReceiver ./cmd/http/receive/main.go
 
 
-
+clean:
+	rm ./bin/amqpReceiver
+	rm ./bin/amqpSender
+	rm ./bin/httpReceiver
+	rm ./bin/httpSender
 
 docker-build:
 	docker build -f receiver-Dockerfile -t $(RECEIVER_IMG) .
