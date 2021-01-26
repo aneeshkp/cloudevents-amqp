@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	DEFAULT_MSG_COUNT = 1000
+	defaultMsgCount = 1000
 )
 
 var (
@@ -45,7 +45,6 @@ func amqpConfig() (server, node string, opts []amqp1.Option) {
 	//opts = append(opts, amqp1.WithSenderLinkOption(amqp.LinkSenderSettle(amqp.ModeSettled)))
 	//opts = append(opts, amqp1.WithReceiverLinkOption(amqp.LinkReceiverSettle(amqp.ModeFirst)))
 
-
 	return env, strings.TrimPrefix(u.Path, "/"), opts
 }
 
@@ -65,7 +64,7 @@ func main() {
 
 	unSettledMsgs = make(map[int]interface{})
 	for {
-		p, err = amqp1.NewProtocol2(host, node,"", []amqp.ConnOption{}, []amqp.SessionOption{},  opts...)
+		p, err = amqp1.NewProtocol2(host, node, "", []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
 		if err != nil {
 			log.Printf("Failed to create amqp protocol (trying in 5 secs): %v", err)
 			time.Sleep(5 * time.Second)
@@ -74,8 +73,6 @@ func main() {
 			break
 		}
 	}
-
-
 
 	// Close the connection when finished
 	// Create a new context.
@@ -92,7 +89,7 @@ func main() {
 
 	count, err := strconv.Atoi(os.Getenv("MSG_COUNT"))
 	if err != nil {
-		count = DEFAULT_MSG_COUNT
+		count = defaultMsgCount
 	}
 
 	wg.Add(count)
@@ -126,8 +123,9 @@ func main() {
 		m.Unlock()
 
 		go func(c cloudevents.Client, e cloudevents.Event, wg *sync.WaitGroup, index int) {
-		//index:=i
-      		ctx, _ := context.WithTimeout(parent, 5*time.Second)
+			//index:=i
+			ctx, cancel := context.WithTimeout(parent, 5*time.Second)
+			defer cancel()
 			if result := c.Send(ctx, event); cloudevents.IsUndelivered(result) {
 				log.Printf("Failed to send: %v", result)
 			} else if cloudevents.IsNACK(result) {

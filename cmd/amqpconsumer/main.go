@@ -1,4 +1,5 @@
 package main
+
 import (
 	"context"
 	"fmt"
@@ -9,8 +10,9 @@ import (
 
 	"github.com/Azure/go-amqp"
 )
+
 var (
-	msgRecievedCount=0
+	msgRecievedCount = 0
 )
 
 // Message is a basic data struct.
@@ -18,6 +20,7 @@ type Message struct {
 	Sequence int    `json:"id"`
 	Message  string `json:"message"`
 }
+
 func main() {
 	// Create client
 	client, err := amqp.Dial("amqp://localhost:5672")
@@ -35,7 +38,7 @@ func main() {
 	ctx := context.Background()
 
 	// Send a message
-	go func(){
+	go func() {
 		//{
 		// Create a sender
 		for i := 1; i <= 10; i++ {
@@ -52,7 +55,9 @@ func main() {
 					Sequence: i,
 					Message:  "Hello world!",
 				})
-
+			if err != nil {
+				log.Fatal("Error setting event data:", err)
+			}
 
 			sender, err := session.NewSender(
 				amqp.LinkTargetAddress("/queue-name"),
@@ -65,14 +70,13 @@ func main() {
 			ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 
 			// Send message
-			err = sender.Send(ctx, amqp.NewMessage([]byte(fmt.Sprintf("Hello! Message id=%d",i))))
+			err = sender.Send(ctx, amqp.NewMessage([]byte(fmt.Sprintf("Hello! Message id=%d", i))))
 			if err != nil {
 				log.Fatal("Sending message:", err)
 			}
 			sender.Close(ctx)
 			cancel()
 		}
-
 
 	}()
 
@@ -91,7 +95,6 @@ func main() {
 		if err != nil {
 			log.Fatal("Creating AMQP session:", err)
 		}
-
 
 		// Create a receiver
 		receiver, err := session2.NewReceiver(
@@ -112,15 +115,18 @@ func main() {
 			// Receive next message
 			msg, err := receiver.Receive(ctx2)
 			if err != nil {
-				log.Fatal("Reading message from AMQP:", err)
+				log.Printf("Reading message from AMQP: %v", err)
 			}
 
 			// Accept message
-			msg.Accept()
+			err = msg.Accept()
+			if err != nil {
+				log.Printf("Reading message from AMQP: %v", err)
+			}
 
 			fmt.Printf("Message received: %s\n", msg.GetData())
 			msgRecievedCount++
-			fmt.Printf("Total message recieved %d\n",msgRecievedCount)
+			fmt.Printf("Total message recieved %d\n", msgRecievedCount)
 		}
 
 	}

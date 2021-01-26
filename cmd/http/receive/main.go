@@ -1,22 +1,23 @@
 package main
 
 import (
-"context"
-"fmt"
-"log"
+	"context"
+	"fmt"
+	"log"
 	"sync/atomic"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
+
 const (
-	DEFAULT_MSG_COUNT = 1000
+	defaultMsgCount = 1000
 )
 
 var (
 	msgReceivedCount uint64
-	maxDiff int64=0
-	)
+	maxDiff          int64 = 0
+)
 
 func main() {
 	ctx := context.Background()
@@ -41,7 +42,7 @@ func receive(ctx context.Context, event cloudevents.Event) {
 		maxDiff = diff
 	}
 	atomic.AddUint64(&msgReceivedCount, 1)
-	if (msgReceivedCount % DEFAULT_MSG_COUNT) == 0 {
+	if (msgReceivedCount % defaultMsgCount) == 0 {
 		fmt.Printf("\nCE-HTTP: Total message recived %d, maxDiff = %d\n", msgReceivedCount, maxDiff)
 	}
 	//fmt.Printf("\nTotal message recived %d\n", msgReceivedCount)

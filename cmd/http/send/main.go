@@ -11,11 +11,11 @@ import (
 )
 
 const (
-	DEFAULT_MSG_COUNT = 1000
+	defaultMsgCount = 1000
 )
-var (
-	wg            sync.WaitGroup
 
+var (
+	wg sync.WaitGroup
 )
 
 func main() {
@@ -31,32 +31,32 @@ func main() {
 		log.Fatalf("failed to create client, %v", err)
 	}
 	start := time.Now()
-	for i := 1; i <= DEFAULT_MSG_COUNT; i++ {
+	for i := 1; i <= defaultMsgCount; i++ {
 		wg.Add(1)
-		go func(i int,start time.Time){
-		e := cloudevents.NewEvent()
-		e.SetType("com.cloudevents.sample.sent")
-		e.SetSource("https://github.com/cloudevents/sdk-go/v2/samples/httpb/sender")
-		_ = e.SetData(cloudevents.ApplicationJSON, map[string]interface{}{
-			"id":      i,
-			"message": "Hello, World!",
-		})
+		go func(i int, start time.Time) {
+			e := cloudevents.NewEvent()
+			e.SetType("com.cloudevents.sample.sent")
+			e.SetSource("https://github.com/cloudevents/sdk-go/v2/samples/httpb/sender")
+			_ = e.SetData(cloudevents.ApplicationJSON, map[string]interface{}{
+				"id":      i,
+				"message": "Hello, World!",
+			})
 
-		res := c.Send(ctx, e)
-		if cloudevents.IsUndelivered(res) {
-			log.Printf("Failed to send: %v", res)
-		} else {
-			var httpResult *cehttp.Result
-			cloudevents.ResultAs(res, &httpResult)
-			log.Printf("Sent %d with status code %d", i, httpResult.StatusCode)
-		}
+			res := c.Send(ctx, e)
+			if cloudevents.IsUndelivered(res) {
+				log.Printf("Failed to send: %v", res)
+			} else {
+				var httpResult *cehttp.Result
+				cloudevents.ResultAs(res, &httpResult)
+				log.Printf("Sent %d with status code %d", i, httpResult.StatusCode)
+			}
 			wg.Done()
 			elapsed := time.Since(start)
-			log.Printf("ce-http Took %s to send message number %d", elapsed,i)
-		}(i,start)
+			log.Printf("ce-http Took %s to send message number %d", elapsed, i)
+		}(i, start)
 	}
 	wg.Wait()
 	elapsed := time.Since(start)
-	log.Printf("ce-http Took %s to send all %d messages ", elapsed,DEFAULT_MSG_COUNT)
+	log.Printf("ce-http Took %s to send all %d messages ", elapsed, defaultMsgCount)
 
 }
