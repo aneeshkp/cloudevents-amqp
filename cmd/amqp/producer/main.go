@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/Azure/go-amqp"
+	"github.com/aneeshkp/cloudevents-amqp/types"
 	amqp1 "github.com/cloudevents/sdk-go/protocol/amqp/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -46,12 +47,6 @@ func amqpConfig() (server, node string, opts []amqp1.Option) {
 	//opts = append(opts, amqp1.WithReceiverLinkOption(amqp.LinkReceiverSettle(amqp.ModeFirst)))
 
 	return env, strings.TrimPrefix(u.Path, "/"), opts
-}
-
-// Message is a basic data struct.
-type Message struct {
-	Sequence int    `json:"id"`
-	Message  string `json:"message"`
 }
 
 func main() {
@@ -105,11 +100,8 @@ func main() {
 		event.SetType("com.cloudevents.poc.event.sent")
 
 		log.Printf("Setting Data for %d", i)
-		err := event.SetData(cloudevents.ApplicationJSON,
-			&Message{
-				Sequence: i,
-				Message:  "Hello world!",
-			})
+		msg := types.Message{ID: i, Msg: "Hello world"}
+		err := event.SetData(cloudevents.ApplicationJSON, msg)
 
 		if err != nil {
 			log.Printf("Failed to set data for message %d: %v", i, err)
@@ -124,19 +116,20 @@ func main() {
 
 		go func(c cloudevents.Client, e cloudevents.Event, wg *sync.WaitGroup, index int) {
 			//index:=i
+			defer wg.Done()
 			ctx, cancel := context.WithTimeout(parent, 5*time.Second)
 			defer cancel()
+
 			if result := c.Send(ctx, event); cloudevents.IsUndelivered(result) {
 				log.Printf("Failed to send: %v", result)
 			} else if cloudevents.IsNACK(result) {
 				log.Printf("Event not accepted: %v", result)
 			} else {
 				m.Lock()
+				defer m.Unlock()
 				delete(unSettledMsgs, index)
 				log.Printf("MESSAGE ID %d SUCCESSFULLY DELIVERED %v pending %d to settle", index, result, len(unSettledMsgs))
-				m.Unlock()
 			}
-			wg.Done()
 		}(c, event, &wg, i)
 		//time.Sleep(100 * time.Millisecond)
 	}

@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/Azure/go-amqp"
+	"github.com/aneeshkp/cloudevents-amqp/types"
 	"log"
 	"net/url"
 	"os"
@@ -20,8 +22,10 @@ const (
 )
 
 var (
-	msgReceivedCount uint64 = 0
-	maxDiff          int64  = 0
+	msgReceivedCount     uint64 = 0
+	msgCurrentBatchCount uint64 = 0
+	maxDiff              int64  = 0
+	currentBatchMaxDiff  int64  = 0
 )
 
 // Parse AMQP_URL env variable. Return server URL, AMQP node (from path) and SASLPlain
@@ -73,13 +77,30 @@ func main() {
 	}
 
 	err = c.StartReceiver(context.Background(), func(e cloudevents.Event) {
+		data := types.Message{}
+		err := json.Unmarshal(e.Data(), &data)
+		if err != nil {
+			fmt.Printf("Error marshalling event data %v", err)
+		}
+		if data.ID == 1 {
+			currentBatchMaxDiff = 0
+			msgCurrentBatchCount = 0
+		}
+
 		diff := time.Since(e.Context.GetTime()).Microseconds()
 		if diff > maxDiff {
 			maxDiff = diff
 		}
+		if diff > currentBatchMaxDiff {
+			currentBatchMaxDiff = diff
+		}
+
 		atomic.AddUint64(&msgReceivedCount, 1)
+		atomic.AddUint64(&msgCurrentBatchCount, 1)
+
 		if (msgReceivedCount % defaultMsgCount) == 0 {
 			fmt.Printf("\n CE-AMQP: Total message recived %d, maxDiff = %d\n", msgReceivedCount, maxDiff)
+			fmt.Printf("\nCE-HTTP: Total current batch message recived %d, maxDiff = %d\n", msgCurrentBatchCount, currentBatchMaxDiff)
 		}
 	})
 	if err != nil {

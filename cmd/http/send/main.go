@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"github.com/aneeshkp/cloudevents-amqp/types"
 	"log"
 	"sync"
 	"time"
@@ -11,7 +13,8 @@ import (
 )
 
 const (
-	defaultMsgCount = 1000
+	defaultMsgCount     = 1000
+	httpPort        int = 9093
 )
 
 var (
@@ -19,12 +22,15 @@ var (
 )
 
 func main() {
-	ctx := cloudevents.ContextWithTarget(context.Background(), "http://localhost:8080/")
+	//	portPtr := flag.String("port", "8080", "a string")
+
+	ctx := cloudevents.ContextWithTarget(context.Background(), fmt.Sprintf("http://localhost:%d/", httpPort))
 
 	p, err := cloudevents.NewHTTP()
 	if err != nil {
 		log.Fatalf("failed to create protocol: %s", err.Error())
 	}
+	p.Port = httpPort
 
 	c, err := cloudevents.NewClient(p, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
 	if err != nil {
@@ -37,10 +43,8 @@ func main() {
 			e := cloudevents.NewEvent()
 			e.SetType("com.cloudevents.sample.sent")
 			e.SetSource("https://github.com/cloudevents/sdk-go/v2/samples/httpb/sender")
-			_ = e.SetData(cloudevents.ApplicationJSON, map[string]interface{}{
-				"id":      i,
-				"message": "Hello, World!",
-			})
+			msg := types.Message{ID: i, Msg: "Hello world"}
+			_ = e.SetData(cloudevents.ApplicationJSON, msg)
 
 			res := c.Send(ctx, e)
 			if cloudevents.IsUndelivered(res) {
