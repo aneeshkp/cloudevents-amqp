@@ -10,7 +10,7 @@ require (
 )
 
 replace (
-	github.com/cloudevents/sdk-go/protocol/amqp/v2 => /home/aputtur/gocode/src/github.com/cloudevents/sdk-go/protocol/amqp/v2
-	github.com/cloudevents/sdk-go/v2 => /home/aputtur/gocode/src/github.com/cloudevents/sdk-go/v2
+	github.com/cloudevents/sdk-go/protocol/amqp/v2 => /home/aputtur/gocode/src/github.com/aneeshkp/sdk-go/protocol/amqp/v2
+	github.com/cloudevents/sdk-go/v2 => /home/aputtur/gocode/src/github.com/aneeshkp/sdk-go/v2
 
 )
