@@ -1,0 +1,23 @@
+---
+listener: # this creates 5*count listeners listening to the following endpoints
+  queues:
+    - name: "event"
+      count: "1"
+    - name: "event/node1"
+      count: "1"
+    - name: "event/node1/ptp"
+      count: "1"
+    - name : "event/*/ptp"
+      count: "1"
+    - name: "event/ptp"
+      count: "1"
+sender: # this will send messages to the following endpoints
+  queues: #
+    - name: "event"
+      count: 2
+    - name: "event/node1"
+      count: 2
+    - name: "event/ptp"
+      count: 4
+    - name: "event/node1/ptp"
+      count: 4

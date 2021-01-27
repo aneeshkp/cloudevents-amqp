@@ -7,6 +7,8 @@ require (
 	github.com/cloudevents/sdk-go/protocol/amqp/v2 v2.3.1
 	github.com/cloudevents/sdk-go/v2 v2.3.1
 	github.com/google/uuid v1.1.1
+	github.com/stretchr/testify v1.5.1
+	gopkg.in/yaml.v2 v2.3.0
 )
 
 replace (
