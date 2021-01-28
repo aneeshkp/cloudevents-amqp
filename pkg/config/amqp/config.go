@@ -11,31 +11,38 @@ import (
 
 const (
 	configCLIKey = "config"
-	configName = "config.yml"
-	filePerm      = 0644
+	configName   = "config.yml"
+	filePerm     = 0644
 )
 
 var (
-	configPath         = flag.String(configCLIKey, configName, "path to config file")
+	configPath = flag.String(configCLIKey, configName, "path to config file")
 )
 
+// Config main configuration for amqp
 type Config struct {
+	HostName string   `yaml:"hostname" json:"hostname"`
+	Port     int      `yaml:"port" json:"port"`
 	Listener Listener `yaml:"listener" json:"listener"`
-	Sender Sender `yaml:"sender" json:"sender"`
+	Sender   Sender   `yaml:"sender" json:"sender"`
 }
 
+// Listener config
 type Listener struct {
-	Count int  `yaml:"count" json:"count"`
+	Count int     `yaml:"count" json:"count"`
 	Queue []Queue `yaml:"queues" json:"queues"`
 }
 
+// Sender config
 type Sender struct {
-	Count int  `yaml:"count" json:"count"`
-	Queue []Queue  `yaml:"queues" json:"queues"`
+	Count int     `yaml:"count" json:"count"`
+	Queue []Queue `yaml:"queues" json:"queues"`
 }
+
+// Queue config
 type Queue struct {
-	Name string `yaml:"name" json:"name"`
-	Count int  `yaml:"count" json:"count"`
+	Name  string `yaml:"name" json:"name"`
+	Count int    `yaml:"count" json:"count"`
 }
 
 // NewConfig  returns a new decoded AMQPConfig struct

@@ -11,12 +11,9 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	"log"
-	"net/url"
-	"os"
+
 	"sync/atomic"
 
-	//"strconv"
-	"strings"
 	"sync"
 	"time"
 )
@@ -26,66 +23,42 @@ const (
 )
 
 var (
-	unSettledMsgs map[int]interface{}
-	m             sync.RWMutex
-	cfg           *amqp_config.Config
-	wg            sync.WaitGroup
-	senders       []*sender_type.AMQPProtocol
+	cfg     *amqp_config.Config
+	wg      sync.WaitGroup
+	senders []*sender_type.AMQPProtocol
 )
 
-// Parse AMQP_URL env variable. Return server URL, AMQP node (from path) and SASLPlain
-// option if user/pass are present.
-func amqpConfig() (server, node string, opts []amqp1.Option) {
-	env := os.Getenv("AMQP_URL")
-	if env == "" {
-		env = "/test"
-	}
-	u, err := url.Parse(env)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if u.User != nil {
-		user := u.User.Username()
-		pass, _ := u.User.Password()
-		opts = append(opts, amqp1.WithConnOpt(amqp.ConnSASLPlain(user, pass)))
-	}
-
-	//opts = append(opts, amqp1.WithSenderLinkOption(amqp.LinkSenderSettle(amqp.ModeSettled)))
-	//opts = append(opts, amqp1.WithReceiverLinkOption(amqp.LinkReceiverSettle(amqp.ModeFirst)))
-
-	return env, strings.TrimPrefix(u.Path, "/"), opts
-}
-
 func main() {
-	host, _, opts := amqpConfig()
+
 	var p *amqp1.Protocol
 	var err error
-	log.Printf("Connecting to host %s", host)
-	//unSettledMsgs = make(map[int]interface{})
+	var opts []amqp1.Option
 
-	cfg, err := amqp_config.GetConfig()
+	cfg, err = amqp_config.GetConfig()
 	if err != nil {
 		log.Print("Could not load configuration file --config, loading default queue\n")
 		cfg = &amqp_config.Config{
+			HostName: "amqp://localhost",
+			Port:     5672,
 			Sender: amqp_config.Sender{
 				Count: defaultMsgCount,
 				Queue: []amqp_config.Queue{
 					{
-						Name:  "test",
+						Name:  "test/node1",
 						Count: 1,
 					},
 				},
 			},
 		}
 	}
-
+	log.Printf("Connecting to host %s:%d", cfg.HostName, cfg.Port)
 	for _, q := range cfg.Sender.Queue {
 		for i := 1; i <= q.Count; i++ {
 			s := sender_type.AMQPProtocol{}
 			s.Queue = q.Name
 			s.ID = fmt.Sprintf("%s-#%d", s.Queue, i)
 			for {
-				p, err = amqp1.NewProtocol2(host, s.Queue, "", []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
+				p, err = amqp1.NewProtocol2(fmt.Sprintf("%s:%d", cfg.HostName, cfg.Port), s.Queue, "", []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
 				if err != nil {
 					log.Printf("Failed to create amqp protocol (trying in 5 secs): %v", err)
 					time.Sleep(5 * time.Second)
@@ -133,6 +106,7 @@ func main() {
 
 }
 
+// SendMessage sends message to the queue
 func SendMessage(wg *sync.WaitGroup, s *sender_type.AMQPProtocol) {
 	for i := 1; i <= defaultMsgCount; i++ {
 		event := cloudevents.NewEvent()

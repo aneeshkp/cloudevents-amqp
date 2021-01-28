@@ -39,7 +39,13 @@ build:
 	go build -o ./bin/amqpReceiver ./cmd/amqp/consumer/main.go
 	go build -o ./bin/httpSender ./cmd/http/send/main.go
 	go build -o ./bin/httpReceiver ./cmd/http/receive/main.go
+	cp ./config/amqp/config.yml ./bin/config.yml
 
+run-amqp-consumer:
+	go run ./cmd/amqp/consumer/main.go --config ./config/amqp/config.yml
+
+run-amqp-sender:
+	go run ./cmd/amqp/producer/main.go --config ./config/amqp/config.yml
 
 clean:
 	rm ./bin/amqpReceiver

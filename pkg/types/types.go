@@ -6,15 +6,16 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
+// AMQPProtocol loads clients
 type AMQPProtocol struct {
-	ID string
-	MsgCount int
-	Protocol      *amqp1.Protocol
-	Ctx           context.Context
-	ParentContext context.Context
-	CancelFn context.CancelFunc
-	Client        cloudevents.Client
-	Queue         string
-	MaxDiff int64
+	ID               string
+	MsgCount         int
+	Protocol         *amqp1.Protocol
+	Ctx              context.Context
+	ParentContext    context.Context
+	CancelFn         context.CancelFunc
+	Client           cloudevents.Client
+	Queue            string
+	MaxDiff          int64
 	MsgReceivedCount uint64
 }

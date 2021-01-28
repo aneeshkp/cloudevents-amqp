@@ -59,3 +59,11 @@ kubectl logs -f cloud-events-producer-deployment-7cd567bfd-ptmt6
 make uninstall
 
 ```
+
+
+##Run AMQP Clinet sender and recevier
+```
+make run-amqp-consumer
+make run-amqp-sender
+
+```

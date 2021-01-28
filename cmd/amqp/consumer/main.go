@@ -7,9 +7,6 @@ import (
 	"github.com/Azure/go-amqp"
 	"github.com/aneeshkp/cloudevents-amqp/types"
 	"log"
-	"net/url"
-	"os"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -25,70 +22,49 @@ const (
 )
 
 var (
-	msgReceivedCount     uint64 = 0
-	msgCurrentBatchCount uint64 = 0
-	maxDiff              int64  = 0
-	currentBatchMaxDiff  int64  = 0
-	cfg                  *amqp_config.Config
-	wg                   sync.WaitGroup
-   listeners []*listener_type.AMQPProtocol
+	cfg       *amqp_config.Config
+	wg        sync.WaitGroup
+	listeners []*listener_type.AMQPProtocol
 )
 
-// Parse AMQP_URL env variable. Return server URL, AMQP node (from path) and SASLPlain
-// option if user/pass are present.
-func amqpConfig() (server, node string, opts []amqp1.Option) {
-	env := os.Getenv("AMQP_URL")
-	if env == "" {
-		env = "/test"
-	}
-	u, err := url.Parse(env)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if u.User != nil {
-		user := u.User.Username()
-		pass, _ := u.User.Password()
-		opts = append(opts, amqp1.WithConnOpt(amqp.ConnSASLPlain(user, pass)))
-	}
-	opts = append(opts, amqp1.WithReceiverLinkOption(amqp.LinkCredit(50)))
-	//opts = append(opts, amqp1.WithReceiverLinkOption(amqp.LinkReceiverSettle(amqp.ModeFirst)))
-	//opts = append(opts, amqp1.WithSenderLinkOption(amqp.LinkSenderSettle(amqp.ModeSettled)))
-	return env, strings.TrimPrefix(u.Path, "/"), opts
-}
-
 func main() {
-	host, _, opts := amqpConfig()
+
 	var p *amqp1.Protocol
 	var err error
-	log.Printf("Connecting to host %s", host)
+	var opts []amqp1.Option
 
-	cfg, err := amqp_config.GetConfig()
+	opts = append(opts, amqp1.WithReceiverLinkOption(amqp.LinkCredit(50)))
+
+	cfg, err = amqp_config.GetConfig()
 	if err != nil {
-		log.Print("Could not load configuration file --config, loading default queue\n")
+		log.Printf("Could not load configuration file --config, loading default queue%v\n", err)
 		cfg = &amqp_config.Config{
+			HostName: "amqp://localhost",
+			Port:     5672,
 			Listener: amqp_config.Listener{
 				Count: defaultMsgCount,
 				Queue: []amqp_config.Queue{
 					{
-						Name:  "test",
+						Name:  "test/node1",
 						Count: 2,
 					},
 				},
 			},
 		}
 	}
+	log.Printf("Connecting to host %s:%d", cfg.HostName, cfg.Port)
 	for _, q := range cfg.Listener.Queue {
-		for i:=1; i<=q.Count; i++ {
+		for i := 1; i <= q.Count; i++ {
 			l := listener_type.AMQPProtocol{}
 			l.Queue = q.Name
-			l.ID=fmt.Sprintf("%s-#%d",l.Queue,i)
+			l.ID = fmt.Sprintf("%s-#%d", l.Queue, i)
 			for {
-				p, err = amqp1.NewProtocol2(host, "", l.Queue, []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
+				p, err = amqp1.NewProtocol2(fmt.Sprintf("%s:%d", cfg.HostName, cfg.Port), "", l.Queue, []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
 				if err != nil {
 					log.Printf("Failed to create amqp protocol (trying in 5 secs): %v", err)
 					time.Sleep(5 * time.Second)
 				} else {
-					log.Printf("Connection established for consumer %s\n",l.ID)
+					log.Printf("Connection established for consumer %s\n", l.ID)
 					break
 				}
 			}
@@ -108,7 +84,7 @@ func main() {
 	for _, l := range listeners {
 		wg.Add(1)
 		go func(l *listener_type.AMQPProtocol) {
-			fmt.Printf("listenining to queue %s by %s\n",l.Queue,l.ID)
+			fmt.Printf("listenining to queue %s by %s\n", l.Queue, l.ID)
 			defer wg.Done()
 			err = l.Client.StartReceiver(context.Background(), func(e cloudevents.Event) {
 				data := types.Message{}
@@ -131,8 +107,8 @@ func main() {
 
 				atomic.AddUint64(&l.MsgReceivedCount, 1)
 				//atomic.AddUint64(&msgCurrentBatchCount, 1)
-				if (int(l.MsgReceivedCount) % cfg.Listener.Count)== 0 {
-					fmt.Printf("\n CE-AMQP: Total message recived for queue %s = %d, maxDiff = %d\n", l.ID,l.MsgReceivedCount,  l.MaxDiff)
+				if (int(l.MsgReceivedCount) % cfg.Listener.Count) == 0 {
+					fmt.Printf("\n CE-AMQP: Total message recived for queue %s = %d, maxDiff = %d\n", l.ID, l.MsgReceivedCount, l.MaxDiff)
 					//fmt.Printf("CE-AMQP: Total current batch message recived for queue %s = %d, maxDiff = %d\n", msgCurrentBatchCount, l.Queue, currentBatchMaxDiff)
 				}
 
@@ -146,9 +122,6 @@ func main() {
 	}
 
 	wg.Wait()
-
-
-
 
 	log.Print("End Consumer")
 }

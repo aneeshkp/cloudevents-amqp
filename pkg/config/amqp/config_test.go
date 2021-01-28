@@ -14,17 +14,15 @@ import (
 
 var (
 	file       *os.File
-	jsonFile   *os.File
 	err        error
 	test       amqpConfig.Config
 	configPath *string
 )
 
 const (
-	amqpConfigName = "config.yml"
-	queueName1     = "test"
-	queueName2     = "test"
-	queueCount     = 10
+	queueName1 = "test"
+	queueName2 = "test"
+	queueCount = 10
 )
 
 func loadConfig() {
@@ -56,6 +54,8 @@ func loadConfig() {
 			},
 		},
 	}
+	test.HostName = "amqps://localhost"
+	test.Port = 5672
 }
 
 func setup() {
