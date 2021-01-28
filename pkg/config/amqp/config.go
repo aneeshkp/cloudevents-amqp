@@ -21,8 +21,9 @@ var (
 
 // Config main configuration for amqp
 type Config struct {
-	MsgCount int `yaml:"msgcount" json:"msgcount"`
+	MsgCount int      `yaml:"msgcount" json:"msgcount"`
 	HostName string   `yaml:"hostname" json:"hostname"`
+	TimeOut  int `yaml:"timeout" json:"timeout"`
 	Port     int      `yaml:"port" json:"port"`
 	Listener Listener `yaml:"listener" json:"listener"`
 	Sender   Sender   `yaml:"sender" json:"sender"`

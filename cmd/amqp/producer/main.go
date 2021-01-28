@@ -125,7 +125,7 @@ func SendMessage(wg *sync.WaitGroup, s *sender_type.AMQPProtocol) {
 		wg.Add(1)
 		go func(s *sender_type.AMQPProtocol, e cloudevents.Event, wg *sync.WaitGroup, index int) {
 			defer wg.Done()
-			ctx, cancel := context.WithTimeout(s.ParentContext, 5*time.Second)
+			ctx, cancel := context.WithTimeout(s.ParentContext, time.Duration(cfg.TimeOut)*time.Second)
 			defer cancel()
 
 			if result := s.Client.Send(ctx, event); cloudevents.IsUndelivered(result) {
