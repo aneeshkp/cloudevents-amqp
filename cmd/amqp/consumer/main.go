@@ -39,10 +39,10 @@ func main() {
 	if err != nil {
 		log.Printf("Could not load configuration file --config, loading default queue%v\n", err)
 		cfg = &amqp_config.Config{
+			MsgCount: defaultMsgCount,
 			HostName: "amqp://localhost",
 			Port:     5672,
 			Listener: amqp_config.Listener{
-				Count: defaultMsgCount,
 				Queue: []amqp_config.Queue{
 					{
 						Name:  "test/node1",
@@ -107,9 +107,9 @@ func main() {
 
 				atomic.AddUint64(&l.MsgReceivedCount, 1)
 				//atomic.AddUint64(&msgCurrentBatchCount, 1)
-				if (int(l.MsgReceivedCount) % cfg.Listener.Count) == 0 {
+				if (int(l.MsgReceivedCount) % cfg.MsgCount) == 0 {
 					fmt.Printf("\n CE-AMQP: Total message recived for queue %s = %d, maxDiff = %d\n", l.ID, l.MsgReceivedCount, l.MaxDiff)
-					//fmt.Printf("CE-AMQP: Total current batch message recived for queue %s = %d, maxDiff = %d\n", msgCurrentBatchCount, l.Queue, currentBatchMaxDiff)
+					//fmt.Printf("CE-AMQP: Total current batch message received for queue %s = %d, maxDiff = %d\n", msgCurrentBatchCount, l.Queue, currentBatchMaxDiff)
 				}
 
 			})

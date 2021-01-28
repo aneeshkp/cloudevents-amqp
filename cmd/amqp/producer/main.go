@@ -38,10 +38,10 @@ func main() {
 	if err != nil {
 		log.Print("Could not load configuration file --config, loading default queue\n")
 		cfg = &amqp_config.Config{
+			MsgCount: defaultMsgCount,
 			HostName: "amqp://localhost",
 			Port:     5672,
 			Sender: amqp_config.Sender{
-				Count: defaultMsgCount,
 				Queue: []amqp_config.Queue{
 					{
 						Name:  "test/node1",
@@ -108,7 +108,7 @@ func main() {
 
 // SendMessage sends message to the queue
 func SendMessage(wg *sync.WaitGroup, s *sender_type.AMQPProtocol) {
-	for i := 1; i <= defaultMsgCount; i++ {
+	for i := 1; i <= cfg.MsgCount; i++ {
 		event := cloudevents.NewEvent()
 		event.SetID(uuid.New().String())
 		event.SetSource("https://github.com/aneeshkp/cloud-events/producer")
