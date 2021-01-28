@@ -31,6 +31,7 @@ var (
 	currentBatchMaxDiff  int64  = 0
 	cfg                  *amqp_config.Config
 	wg                   sync.WaitGroup
+   listeners []*listener_type.AMQPProtocol
 )
 
 // Parse AMQP_URL env variable. Return server URL, AMQP node (from path) and SASLPlain
@@ -57,8 +58,6 @@ func amqpConfig() (server, node string, opts []amqp1.Option) {
 
 func main() {
 	host, _, opts := amqpConfig()
-	var listeners []listener_type.AMQPProtocol
-
 	var p *amqp1.Protocol
 	var err error
 	log.Printf("Connecting to host %s", host)
@@ -102,12 +101,11 @@ func main() {
 			}
 
 			l.Client = c
-			listeners = append(listeners, l)
+			listeners = append(listeners, &l)
 		}
 	}
 
 	for _, l := range listeners {
-
 		wg.Add(1)
 		go func(l *listener_type.AMQPProtocol) {
 			fmt.Printf("listenining to queue %s by %s\n",l.Queue,l.ID)
@@ -143,7 +141,7 @@ func main() {
 				log.Printf("AMQP receiver error: %v", err)
 			}
 
-		}(&l)
+		}(l)
 
 	}
 

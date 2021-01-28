@@ -30,6 +30,7 @@ var (
 	m             sync.RWMutex
 	cfg           *amqp_config.Config
 	wg            sync.WaitGroup
+	senders       []*sender_type.AMQPProtocol
 )
 
 // Parse AMQP_URL env variable. Return server URL, AMQP node (from path) and SASLPlain
@@ -60,11 +61,7 @@ func main() {
 	var p *amqp1.Protocol
 	var err error
 	log.Printf("Connecting to host %s", host)
-	var senders []sender_type.AMQPProtocol
-
-	//ctx := context.Background()
-
-	unSettledMsgs = make(map[int]interface{})
+	//unSettledMsgs = make(map[int]interface{})
 
 	cfg, err := amqp_config.GetConfig()
 	if err != nil {
@@ -86,7 +83,7 @@ func main() {
 		for i := 1; i <= q.Count; i++ {
 			s := sender_type.AMQPProtocol{}
 			s.Queue = q.Name
-			s.ID=fmt.Sprintf("%s-#%d",s.Queue,i)
+			s.ID = fmt.Sprintf("%s-#%d", s.Queue, i)
 			for {
 				p, err = amqp1.NewProtocol2(host, s.Queue, "", []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
 				if err != nil {
@@ -108,7 +105,7 @@ func main() {
 				log.Fatalf("Failed to create client: %v", err)
 			}
 			s.Client = c
-			senders = append(senders, s)
+			senders = append(senders, &s)
 		}
 	}
 
@@ -118,50 +115,25 @@ func main() {
 	for _, s := range senders { //i have now lined up  all senders
 		log.Printf("preparing data for sender %s", s.ID)
 		wg.Add(1)
-		go func(wg *sync.WaitGroup,s *sender_type.AMQPProtocol){
-			SendMessage(wg,s)
-		}(&wg,&s)
+		go func(wg *sync.WaitGroup, s *sender_type.AMQPProtocol) {
+			defer wg.Done()
+			SendMessage(wg, s)
+		}(&wg, s)
 	}
 
-	log.Printf("--------- WG Wait has issues  ----------\n")
-	//log.Printf("All %d message was sent", count)
-	/*if len(unSettledMsgs) > 0 {
-		log.Printf("Total %d messages were unsettled\n", len(unSettledMsgs))
-		log.Printf("Unsettled messages\n")
-		log.Printf("--------------------\n")
-		for k := range unSettledMsgs {
-			log.Printf("Message id `%d` was not settled and waiting", k)
-		}
-		log.Printf("--------------------\n")
-		log.Printf("Out of %d messages ,Only %d was settled", count, count-len(unSettledMsgs))
-	} else {
-		log.Printf("%d message was sent and %d was settled", count, count)
-	}*/
-	//measure
-	/*elapsed := time.Since(start)
-	log.Printf("ce-amqp Took %s to send %d messsages and settle %d messages", elapsed, count, count-len(unSettledMsgs))
-	*/
+	log.Printf("--------- wait  ----------\n")
 
 	wg.Wait()
 
-
-
-	//log.Printf("All %d message was sent", count)
-	//elapsed = time.Since(start)
-	//log.Printf("ce-amqp Took %s to send and settle all messages", elapsed)
 	log.Print("Done")
 	for _, s := range senders {
 		log.Printf("ce-amqp Sender %s - Sent %d to queue %s", s.ID, s.MsgReceivedCount, s.Queue)
-	}
-	for _, s := range senders {
-
 		s.CancelFn()
-
 	}
+
 }
 
-
-func SendMessage(wg *sync.WaitGroup,s *sender_type.AMQPProtocol) {
+func SendMessage(wg *sync.WaitGroup, s *sender_type.AMQPProtocol) {
 	for i := 1; i <= defaultMsgCount; i++ {
 		event := cloudevents.NewEvent()
 		event.SetID(uuid.New().String())
@@ -187,7 +159,6 @@ func SendMessage(wg *sync.WaitGroup,s *sender_type.AMQPProtocol) {
 			} else if cloudevents.IsNACK(result) {
 				log.Printf("Event not accepted: %v", result)
 			} else {
-				//TODO: This is by value use channel to return the count
 				atomic.AddUint64(&s.MsgReceivedCount, 1)
 			} /*else {
 				m.Lock()
