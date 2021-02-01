@@ -2,6 +2,21 @@
 Running on Minikube
  Required to have kube-dns configured 
 ```
+
+Dependency :
+
+This project depends on cloudsevents-sdk and current version of cloudevents has an issue , so you need to checkout 
+project from this repo. (go mod of clouevents-amqp is modified to use local checkout)
+``` 
+git clone https://github.com/aneeshkp/sdk-go.git
+cd sdk-go
+git remote add upstream https://github.com/cloudevents/sdk-go.git
+git fetch upstream
+git reset --hard upstream/master
+git checkout  656-make-separate-receiver-sender-protocol
+```
+
+
 ### Description 
 This deploys cloud events producer and consumer with AMQP1 protocol binding.
 By default, it is set to send 1000 messages which can be overridden in before deploying.

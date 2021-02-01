@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/aneeshkp/cloudevents-amqp/types"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	"log"
 	"sync/atomic"
 	"time"

@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yolo-cnf-deployment
+  labels:
+    app: yolo-cnf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yolo-cnf
+  template:
+    metadata:
+      labels:
+        app: yolo-cnf
+    spec:
+      containers:
+        - name: yolo-cnf
+          image: cnf
+          env:
+            - name: PORT
+              value: "10001"
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        - name: yolo-sidecar
+          image: sidecar
+          command: [ "./sidecar-yolo" ]
+          args: [ "-config", "/opt/config.yml" ]
+          volumeMounts:
+            - name: config-volume
+              mountPath: /opt/
+          env:
+            - name: PORT
+              value: "10001"
+      volumes:
+        - name: config-volume
+          configMap:
+            name: amqp-consumer-producer-config
+            items:
+              - key: config.yml
+                path: config.yml
+
+
+

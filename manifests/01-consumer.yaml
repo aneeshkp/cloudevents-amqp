@@ -17,6 +17,15 @@ spec:
       containers:
         - name: cloudevents-consumer
           image: consumer
-          env:
-            - name: AMQP_URL
-              value: "amqp://amqp-dispatch-service:5672/test2"
+          command: [ "./amqpReceiver" ]
+          args: [ "-config", "/opt/config.yml"]
+          volumeMounts:
+            - name: config-volume
+              mountPath: /opt/
+      volumes:
+        - name: config-volume
+          configMap:
+            name: amqp-consumer-producer-config
+            items:
+              - key: config.yml
+                path: config.yml

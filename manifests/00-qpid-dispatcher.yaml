@@ -17,3 +17,13 @@ spec:
       containers:
         - name: qpid-dispatcher
           image: quay.io/interconnectedcloud/qdrouterd:1.14.0
+          volumeMounts:
+            - name: qpidrouter-config
+              mountPath: /etc/qpid-dispatch/
+      volumes:
+          - name: qpidrouter-config
+            configMap:
+              name: qpidrouter-config
+              items:
+                - key: qdrouterd.conf
+                  path: qdrouterd.conf

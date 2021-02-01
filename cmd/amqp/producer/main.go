@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/Azure/go-amqp"
-	amqp_config "github.com/aneeshkp/cloudevents-amqp/pkg/config/amqp"
-	sender_type "github.com/aneeshkp/cloudevents-amqp/pkg/types"
-	"github.com/aneeshkp/cloudevents-amqp/types"
+	amqpconfig "github.com/aneeshkp/cloudevents-amqp/pkg/config/amqp"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	amqp1 "github.com/cloudevents/sdk-go/protocol/amqp/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -23,9 +22,9 @@ const (
 )
 
 var (
-	cfg     *amqp_config.Config
+	cfg     *amqpconfig.Config
 	wg      sync.WaitGroup
-	senders []*sender_type.AMQPProtocol
+	senders []*types.AMQPProtocol
 )
 
 func main() {
@@ -34,15 +33,15 @@ func main() {
 	var err error
 	var opts []amqp1.Option
 
-	cfg, err = amqp_config.GetConfig()
+	cfg, err = amqpconfig.GetConfig()
 	if err != nil {
 		log.Print("Could not load configuration file --config, loading default queue\n")
-		cfg = &amqp_config.Config{
+		cfg = &amqpconfig.Config{
 			MsgCount: defaultMsgCount,
 			HostName: "amqp://localhost",
 			Port:     5672,
-			Sender: amqp_config.Sender{
-				Queue: []amqp_config.Queue{
+			Sender: amqpconfig.Sender{
+				Queue: []amqpconfig.Queue{
 					{
 						Name:  "test/node1",
 						Count: 1,
@@ -54,7 +53,7 @@ func main() {
 	log.Printf("Connecting to host %s:%d", cfg.HostName, cfg.Port)
 	for _, q := range cfg.Sender.Queue {
 		for i := 1; i <= q.Count; i++ {
-			s := sender_type.AMQPProtocol{}
+			s := types.AMQPProtocol{}
 			s.Queue = q.Name
 			s.ID = fmt.Sprintf("%s-#%d", s.Queue, i)
 			for {
@@ -88,7 +87,7 @@ func main() {
 	for _, s := range senders { //i have now lined up  all senders
 		log.Printf("preparing data for sender %s", s.ID)
 		wg.Add(1)
-		go func(wg *sync.WaitGroup, s *sender_type.AMQPProtocol) {
+		go func(wg *sync.WaitGroup, s *types.AMQPProtocol) {
 			defer wg.Done()
 			SendMessage(wg, s)
 		}(&wg, s)
@@ -107,7 +106,7 @@ func main() {
 }
 
 // SendMessage sends message to the queue
-func SendMessage(wg *sync.WaitGroup, s *sender_type.AMQPProtocol) {
+func SendMessage(wg *sync.WaitGroup, s *types.AMQPProtocol) {
 	for i := 1; i <= cfg.MsgCount; i++ {
 		event := cloudevents.NewEvent()
 		event.SetID(uuid.New().String())
@@ -123,7 +122,7 @@ func SendMessage(wg *sync.WaitGroup, s *sender_type.AMQPProtocol) {
 		}
 
 		wg.Add(1)
-		go func(s *sender_type.AMQPProtocol, e cloudevents.Event, wg *sync.WaitGroup, index int) {
+		go func(s *types.AMQPProtocol, e cloudevents.Event, wg *sync.WaitGroup, index int) {
 			defer wg.Done()
 			ctx, cancel := context.WithTimeout(s.ParentContext, time.Duration(cfg.TimeOut)*time.Second)
 			defer cancel()

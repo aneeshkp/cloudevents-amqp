@@ -19,3 +19,12 @@ type AMQPProtocol struct {
 	MaxDiff          int64
 	MsgReceivedCount uint64
 }
+
+// Message defines the Data of CloudEvent
+type Message struct {
+	// Msg holds the message from the event
+	ID       int    `json:"id,omitempty,string"`
+	Source   string `json:"source,omitempty,string"`
+	Msg      string `json:"msg,omitempty,string"`
+	TimeInMs int64  `json:"time,omitempty,string"`
+}
