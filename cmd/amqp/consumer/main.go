@@ -32,12 +32,13 @@ var (
 
 // Func to init pool
 func initResultPool() {
-	pool = &sync.Pool{
-		New: func() interface{} {
+	pool = &sync.Pool {
+		New: func()interface{} {
 			return new(types.Result)
 		},
 	}
 }
+
 
 func main() {
 
@@ -112,8 +113,11 @@ func main() {
 				}
 				atomic.AddUint64(&l.MsgReceivedCount, 1)
 				// time stamped at the cnf
-				atSourceDiff := time.Since(data.GetTime()).Microseconds()
-
+				atSourceDiff:=time.Since(data.GetTime()).Microseconds()
+				// current max
+				if atSourceDiff>l.CurrentMax{
+					l.CurrentMax=atSourceDiff
+				}
 				// max diff
 				if atSourceDiff > l.MaxDiff {
 					l.MaxDiff = atSourceDiff
@@ -130,6 +134,14 @@ func main() {
 				if atSideCarDiff < l.MinDiff2 {
 					l.MinDiff2 = atSideCarDiff
 				}
+				// current max
+				if atSideCarDiff>l.CurrentMax2{
+					l.CurrentMax2=atSourceDiff
+				}
+				if (l.MsgReceivedCount % defaultMsgCount) == 0 {
+					l.CurrentMax=0
+					l.CurrentMax2=0
+				}
 
 			})
 			if err != nil {
@@ -142,20 +154,27 @@ func main() {
 	wg.Add(1)
 	go func(l []*types.AMQPProtocol) {
 		defer wg.Done()
+
+		var donotprintcount=0
 		uptimeTicker := time.NewTicker(2 * time.Second)
 		for { //nolint:gosimple
 			select {
 			case <-uptimeTicker.C:
-				for _, l := range listeners {
-					result := pool.Get().(*types.Result)
-					result.Write(*l)
-					log.Printf("ID\t\t\tMsg Received\t\tMax source\t\tMax sidecar\t\tMin source\t\tMin sidecar\n")
-					log.Printf("---------------------------------------------------------------------------------------------------------------------------------\n")
-					log.Printf("%s\t\t%d\t\t%d\t\t\t%d\t\t\t%d\t\t\t%d\n",
-						result.ID, result.MsgReceivedCount, result.FromSourceMaxDiff,
-						result.FromSideCarMaxDiff, result.FromSourceMinDiff,
-						result.FromSideCarMinDiff)
-					pool.Put(result)
+				donotprintcount++
+				if donotprintcount>5 {
+					for _, l := range listeners {
+
+						result := pool.Get().(*types.Result)
+						result.Write(*l)
+						log.Printf("ID\t\t\tMsg Received\t\tMax source\t\tMax sidecar\t\tMin source\t\tMin sidecar\n\t\tCurent Max\t\t sidecar current max")
+						log.Printf("---------------------------------------------------------------------------------------------------------------------------------\n")
+						log.Printf("%s\t\t%d\t\t%d\t\t\t%d\t\t\t%d\t\t\t%d\t\t%d\t\t%d\n",
+							result.ID, result.MsgReceivedCount, result.FromSourceMaxDiff,
+							result.FromSideCarMaxDiff, result.FromSourceMinDiff,
+							result.FromSideCarMinDiff, result.FromSourceCurrentMax, result.FromSideCarCurrentMax)
+						pool.Put(result)
+
+					}
 				}
 			}
 		}
