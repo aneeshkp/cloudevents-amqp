@@ -59,10 +59,8 @@ func Event() error {
 				os.Getenv("MY_POD_IP"),
 			),
 			Msg: fmt.Sprintf("Event Occurred %s", events[rand.Intn(len(events))]),
-			TimeInMs: func() int64 {
-				return time.Now().UnixNano() / int64(time.Millisecond)
-			}(),
 		}
+		msg.SetTime(time.Now())
 		b, err := json.Marshal(msg)
 		if err != nil {
 			fmt.Printf("Error: %s", err)

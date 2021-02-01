@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/Azure/go-amqp"
 	amqpconfig "github.com/aneeshkp/cloudevents-amqp/pkg/config/amqp"
@@ -103,6 +102,7 @@ func main() {
 						log.Printf("Event not accepted: %v", result)
 					} else {
 						atomic.AddUint64(&s.MsgReceivedCount, 1)
+
 					}
 				}(s, event, &wg)
 			}
@@ -118,9 +118,7 @@ func main() {
 }
 func handleUDPConnection(conn *net.UDPConn) {
 	buffer := make([]byte, 1024)
-	n, addr, err := conn.ReadFromUDP(buffer)
-	fmt.Println("UDP client : ", addr)
-	fmt.Println("Received from UDP client :  ", string(buffer[:n]))
+	n, _, err := conn.ReadFromUDP(buffer)
 	if err != nil {
 		log.Print(err)
 		return
@@ -130,24 +128,25 @@ func handleUDPConnection(conn *net.UDPConn) {
 		TimeInMs: 0,
 	}
 	eventBus.data <- d
-
+	//fmt.Println("UDP client : ", addr)
+	//fmt.Println("Received from UDP client :  ", string(buffer[:n]))
 }
 
 // WriteMessage ...
 func (e *EventBus) WriteMessage(s string) (event.Event, error) {
-	data := types.Message{}
+	//data := types.Message{}
 	event := cloudevents.NewEvent()
-	err := json.Unmarshal([]byte(s), &data)
+	//err := json.Unmarshal([]byte(s), &data)
 
-	if err != nil {
-		return event, err
-	}
+	//if err != nil {
+	//	return event, err
+	//}
 
 	event.SetID(uuid.New().String())
 	event.SetSource("https://github.com/aneeshkp/cloud-events/producer")
 	event.SetTime(time.Now())
 	event.SetType("com.cloudevents.poc.event.sent")
-	err = event.SetData(cloudevents.ApplicationJSON, data)
+	err := event.SetData(cloudevents.ApplicationJSON, []byte(s))
 	return event, err
 
 }
@@ -159,7 +158,7 @@ func (e *EventBus) prepareAMQP() {
 
 	cfg, err = amqpconfig.GetConfig()
 	if err != nil {
-		log.Fatal("Could not load configuration file --config, loading default queue\n")
+		log.Printf("Could not load configuration file --config, loading default queue\n")
 		cfg = &amqpconfig.Config{
 			TimeOut:  5,
 			MsgCount: 0,

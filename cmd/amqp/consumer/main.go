@@ -18,19 +18,33 @@ import (
 
 const (
 	defaultMsgCount = 10
+	maxDiffDefault  = 0
+	minDiffDefault  = 99999999999999
 )
 
 var (
 	cfg       *amqpconfig.Config
 	wg        sync.WaitGroup
 	listeners []*types.AMQPProtocol
+	// Pool for  struct Result
+	pool *sync.Pool
 )
+
+// Func to init pool
+func initResultPool() {
+	pool = &sync.Pool{
+		New: func() interface{} {
+			return new(types.Result)
+		},
+	}
+}
 
 func main() {
 
 	var p *amqp1.Protocol
 	var err error
 	var opts []amqp1.Option
+	initResultPool()
 
 	opts = append(opts, amqp1.WithReceiverLinkOption(amqp.LinkCredit(50)))
 
@@ -57,6 +71,10 @@ func main() {
 		for i := 1; i <= q.Count; i++ {
 			l := types.AMQPProtocol{}
 			l.Queue = q.Name
+			l.MaxDiff = maxDiffDefault
+			l.MinDiff = minDiffDefault
+			l.MaxDiff2 = maxDiffDefault
+			l.MinDiff2 = minDiffDefault
 			l.ID = fmt.Sprintf("%s-#%d", l.Queue, i)
 			for {
 				p, err = amqp1.NewProtocol2(fmt.Sprintf("%s:%d", cfg.HostName, cfg.Port), "", l.Queue, []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
@@ -90,26 +108,27 @@ func main() {
 				data := types.Message{}
 				err := json.Unmarshal(e.Data(), &data)
 				if err != nil {
-					fmt.Printf("Error marshalling event data %v", err)
+					log.Printf("Error marshalling event data %v", err)
 				}
-				/*if data.ID == 1 {
-					currentBatchMaxDiff = 0
-					msgCurrentBatchCount = 0
-				}*/
-
-				diff := time.Since(e.Context.GetTime()).Microseconds()
-				if diff > l.MaxDiff {
-					l.MaxDiff = diff
-				}
-				/*if diff > currentBatchMaxDiff {
-					currentBatchMaxDiff = diff
-				}*/
-
 				atomic.AddUint64(&l.MsgReceivedCount, 1)
-				//atomic.AddUint64(&msgCurrentBatchCount, 1)
-				if (int(l.MsgReceivedCount) % cfg.MsgCount) == 0 {
-					fmt.Printf("\n CE-AMQP: Total message recived for queue %s = %d, maxDiff = %d\n", l.ID, l.MsgReceivedCount, l.MaxDiff)
-					//fmt.Printf("CE-AMQP: Total current batch message received for queue %s = %d, maxDiff = %d\n", msgCurrentBatchCount, l.Queue, currentBatchMaxDiff)
+				// time stamped at the cnf
+				atSourceDiff := time.Since(data.GetTime()).Microseconds()
+
+				// max diff
+				if atSourceDiff > l.MaxDiff {
+					l.MaxDiff = atSourceDiff
+				}
+				// min diff
+				if atSourceDiff < l.MinDiff {
+					l.MinDiff = atSourceDiff
+				}
+				// time stamped at the side car
+				atSideCarDiff := time.Since(e.Context.GetTime()).Microseconds()
+				if atSideCarDiff > l.MaxDiff2 {
+					l.MaxDiff2 = atSideCarDiff
+				}
+				if atSideCarDiff < l.MinDiff2 {
+					l.MinDiff2 = atSideCarDiff
 				}
 
 			})
@@ -120,6 +139,27 @@ func main() {
 		}(l)
 
 	}
+	wg.Add(1)
+	go func(l []*types.AMQPProtocol) {
+		defer wg.Done()
+		uptimeTicker := time.NewTicker(2 * time.Second)
+		for { //nolint:gosimple
+			select {
+			case <-uptimeTicker.C:
+				for _, l := range listeners {
+					result := pool.Get().(*types.Result)
+					result.Write(*l)
+					log.Printf("ID\t\t\tMsg Received\t\tMax source\t\tMax sidecar\t\tMin source\t\tMin sidecar\n")
+					log.Printf("---------------------------------------------------------------------------------------------------------------------------------\n")
+					log.Printf("%s\t\t%d\t\t%d\t\t\t%d\t\t\t%d\t\t\t%d\n",
+						result.ID, result.MsgReceivedCount, result.FromSourceMaxDiff,
+						result.FromSideCarMaxDiff, result.FromSourceMinDiff,
+						result.FromSideCarMinDiff)
+					pool.Put(result)
+				}
+			}
+		}
+	}(listeners)
 
 	wg.Wait()
 

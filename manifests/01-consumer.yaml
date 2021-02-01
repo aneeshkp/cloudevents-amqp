@@ -28,6 +28,20 @@ spec:
           image: consumer
           command: [ "./amqpReceiver" ]
           args: [ "-config", "/opt/config.yml"]
+          env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MY_POD_IP
           volumeMounts:
             - name: config-volume
               mountPath: /opt/
