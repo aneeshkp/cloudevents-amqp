@@ -1,5 +1,13 @@
 
 NOTE: Use Multicast branch .
+
+Install Kustomize
+``` 
+curl -s "https://raw.githubusercontent.com/\
+kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+
+```
+
 ```
 Running on Minikube
  Required to have kube-dns configured 
