@@ -35,11 +35,13 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 func main() {
-	if os.Getenv("MESSAGE_COUNT") != "" {
-		messageToSend, _ = strconv.Atoi(os.Getenv("MESSAGE_COUNT"))
+	envMsgCount:=os.Getenv("MESSAGE_COUNT")
+	if  envMsgCount != "" {
+		messageToSend, _ = strconv.Atoi(envMsgCount)
 	}
-	if os.Getenv("MESSAGE_INTERVAL") != "" {
-		messageIntervalInMS, _ = strconv.Atoi(os.Getenv("MESSAGE_INTERVAL"))
+	envMsgInterval:=os.Getenv("MESSAGE_INTERVAL")
+	if envMsgInterval != "" {
+		messageIntervalInMS, _ = strconv.Atoi(envMsgInterval)
 	}
 	fmt.Printf("Sleeping %d sec...\n", 10)
 	time.Sleep(time.Duration(10) * time.Second)
