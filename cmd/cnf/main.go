@@ -36,7 +36,7 @@ func init() {
 }
 func main() {
 	if os.Getenv("MESSAGE_COUNT") != "" {
-		messageToSend, _ = strconv.Atoi(os.Getenv("MESSAGECOUNT"))
+		messageToSend, _ = strconv.Atoi(os.Getenv("MESSAGE_COUNT"))
 	}
 	if os.Getenv("MESSAGE_INTERVAL") != "" {
 		messageIntervalInMS, _ = strconv.Atoi(os.Getenv("MESSAGE_INTERVAL"))
