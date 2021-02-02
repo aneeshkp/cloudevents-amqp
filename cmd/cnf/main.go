@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
+	"log"
 	"math/rand"
 	"net"
 	"os"
@@ -35,13 +36,21 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 func main() {
-	envMsgCount:=os.Getenv("MESSAGE_COUNT")
-	if  envMsgCount != "" {
-		messageToSend, _ = strconv.Atoi(envMsgCount)
+	var err error
+	envMsgCount := os.Getenv("MESSAGE_COUNT")
+	if envMsgCount != "" {
+		messageToSend, err = strconv.Atoi(envMsgCount)
+		if err != nil {
+			log.Fatalf("failed to read `MESSAGE_COUNT` from env %v", err)
+		}
 	}
-	envMsgInterval:=os.Getenv("MESSAGE_INTERVAL")
+
+	envMsgInterval := os.Getenv("MESSAGE_INTERVAL")
 	if envMsgInterval != "" {
-		messageIntervalInMS, _ = strconv.Atoi(envMsgInterval)
+		messageIntervalInMS, err = strconv.Atoi(envMsgInterval)
+		if err != nil {
+			log.Fatalf("failed to read `MESSAGE_INTERVAL` from env %v", err)
+		}
 	}
 	fmt.Printf("Sleeping %d sec...\n", 10)
 	time.Sleep(time.Duration(10) * time.Second)
@@ -71,7 +80,6 @@ func getSupportedEvents() []string {
 
 //Event will generate random events
 func Event() error {
-
 	Conn, _ := net.DialUDP("udp", nil, &net.UDPAddr{IP: []byte{127, 0, 0, 1}, Port: udpPort, Zone: ""})
 	defer Conn.Close()
 	events := getSupportedEvents()

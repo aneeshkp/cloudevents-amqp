@@ -56,11 +56,17 @@ func main() {
 	//. Create by new
 	envBinSize := os.Getenv("BIN_SIZE")
 	if envBinSize != "" {
-		binSize, _ = strconv.Atoi(envBinSize)
+		binSize, err = strconv.Atoi(envBinSize)
+		if err != nil {
+			log.Fatalf("failed to read env `BIN_SIZE` %v", err)
+		}
 	}
 	envBufferSize := os.Getenv("BUFFER_SIZE")
 	if envBufferSize != "" {
-		channelBufferSize, _ = strconv.Atoi(envBufferSize)
+		channelBufferSize, err = strconv.Atoi(envBufferSize)
+		if err != nil {
+			log.Fatalf("failed to read env `BUFFER_SIZE` %v", err)
+		}
 	}
 
 	latencyChan = make(chan MsgLatency, channelBufferSize)
