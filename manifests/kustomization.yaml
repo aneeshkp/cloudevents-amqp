@@ -13,7 +13,7 @@ resources:
 #  newTag: latest
 replicas:
   - name: cloud-events-consumer-deployment
-    count: 16
+    count: 1
 images:
 - name: cnf
   newName: quay.io/aneeshkp/cnf-yolo

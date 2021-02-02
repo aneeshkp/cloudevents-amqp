@@ -29,6 +29,10 @@ spec:
           command: [ "./amqpReceiver" ]
           args: [ "-config", "/opt/config.yml"]
           env:
+            - name: BUFFER_SIZE
+              value: "100"
+            - name: BIN_SIZE
+              value: "1000"
             - name: MY_NODE_NAME
               valueFrom:
                 fieldRef:

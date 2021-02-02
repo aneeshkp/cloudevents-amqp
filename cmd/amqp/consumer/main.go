@@ -7,6 +7,8 @@ import (
 	"github.com/Azure/go-amqp"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	"log"
+	"os"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -17,15 +19,26 @@ import (
 )
 
 const (
-	defaultMsgCount = 10
-	binSize         = 21
-	maxBin          = 20
+	defaultMsgCount         = 10
+	maxBinSize              = 1002
+	connectionRetryDuration = 5
+	bufferSize              = 100
+)
+
+var (
+	cfg               *amqpconfig.Config
+	wg                sync.WaitGroup
+	listeners         []*types.AMQPProtocol
+	latencyChan       chan MsgLatency
+	latencyResult     map[string]*latency
+	channelBufferSize = bufferSize
+	binSize           = maxBinSize
 )
 
 type latency struct {
 	ID       string
 	MsgCount int64
-	Latency  [binSize]int64
+	Latency  [maxBinSize]int64
 }
 
 //MsgLatency ... This for channel type to pass messages
@@ -35,22 +48,22 @@ type MsgLatency struct {
 	Latency  int64
 }
 
-var (
-	cfg           *amqpconfig.Config
-	wg            sync.WaitGroup
-	listeners     []*types.AMQPProtocol
-	latencyChan   chan MsgLatency
-	latencyResult map[string]*latency
-)
-
 func main() {
 
 	var p *amqp1.Protocol
 	var err error
 	var opts []amqp1.Option
 	//. Create by new
+	envBinSize := os.Getenv("BIN_SIZE")
+	if envBinSize != "" {
+		binSize, _ = strconv.Atoi(envBinSize)
+	}
+	envBufferSize := os.Getenv("BUFFER_SIZE")
+	if envBufferSize != "" {
+		channelBufferSize, _ = strconv.Atoi(envBufferSize)
+	}
 
-	latencyChan = make(chan MsgLatency, 10)
+	latencyChan = make(chan MsgLatency, channelBufferSize)
 
 	opts = append(opts, amqp1.WithReceiverLinkOption(amqp.LinkCredit(50)))
 
@@ -90,7 +103,7 @@ func main() {
 			p, err = amqp1.NewProtocol2(fmt.Sprintf("%s:%d", cfg.HostName, cfg.Port), "", l.Queue, []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
 			if err != nil {
 				log.Printf("Failed to create amqp protocol (trying in 5 secs): %v", err)
-				time.Sleep(5 * time.Second)
+				time.Sleep(connectionRetryDuration * time.Second)
 			} else {
 				log.Printf("Connection established for consumer %s\n", l.ID)
 				break
@@ -122,7 +135,10 @@ func main() {
 				atomic.AddUint64(&l.MsgReceivedCount, 1)
 				// time stamped at the cnf
 				atSourceDiff := time.Since(data.GetTime()).Milliseconds()
-
+				//anything above 100ms is considered 100 ms
+				if atSourceDiff > int64(binSize) {
+					atSourceDiff = int64(binSize)
+				}
 				r := MsgLatency{
 					ID:       l.ID,
 					MsgCount: int64(l.MsgReceivedCount),
@@ -152,23 +168,26 @@ func main() {
 
 	wg.Add(1)
 	//go func(l []*types.AMQPProtocol,wg *sync.WaitGroup,) {
-	fmt.Printf("\t%s\t%s\t%s\t%s         ", "ID", "Msg Count", "Latency(ms)", "Histogram")
-	fmt.Println()
+
 	go func(latencyResult map[string]*latency, wg *sync.WaitGroup) {
 		defer wg.Done()
 		uptimeTicker := time.NewTicker(5 * time.Second)
 		for { //nolint:gosimple
 			select {
 			case <-uptimeTicker.C:
+				fmt.Printf("%s\t%s\t%s\t%s         ", "ID", "Msg Count", "Latency(ms)", "Histogram(%)")
+				fmt.Println()
 				for k, v := range latencyResult {
-					var i, j int64
-					for i = 0; i <= maxBin; i++ {
+					var j int64
+					for i := 0; i < binSize; i++ {
 						if v.Latency[i] > 0 {
-							fmt.Printf("%7s%7d%7d%7d         ", k, v.MsgCount, i, v.Latency[i])
+							fmt.Printf("%7s\t\t%7d\t\t%d\t\t%d         ", k, v.MsgCount, i, v.Latency[i])
 							//calculate percentage
-							percent := (100 * v.Latency[i]) / v.MsgCount
-							fmt.Printf("%d%c", percent, '%')
-							for j = 1; j <= percent; j++ {
+							lf := float64(v.Latency[i])
+							li := float64(v.MsgCount)
+							percent := (100 * lf) / li
+							fmt.Printf("%2.2f%c", percent, '%')
+							for j = 1; j <= int64(percent); j++ {
 								fmt.Printf("%c", '∎')
 							}
 							fmt.Println()
