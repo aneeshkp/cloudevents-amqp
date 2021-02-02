@@ -5,7 +5,6 @@ import (
 	amqp1 "github.com/cloudevents/sdk-go/protocol/amqp/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/types"
-	"sync/atomic"
 	"time"
 )
 
@@ -37,19 +36,8 @@ type Result struct {
 	FromSideCarMinDiff    int64
 	FromSideCarMaxDiff    int64
 	FromSideCarCurrentMax int64
-	MsgReceivedCount      uint64
-}
-
-func (r *Result) Write(l AMQPProtocol) {
-	atomic.AddUint64(&r.MsgReceivedCount, 1)
-	r.ID = l.ID
-	r.FromSourceMaxDiff = l.MaxDiff
-	r.FromSourceMinDiff = l.MinDiff
-	r.FromSideCarMaxDiff = l.MaxDiff2
-	r.FromSideCarMinDiff = l.MinDiff
-	r.MsgReceivedCount = l.MsgReceivedCount
-	r.FromSideCarCurrentMax = l.CurrentMax2
-	r.FromSourceCurrentMax = l.CurrentMax
+	MsgReceivedCount      int64
+	LatencyBin            map[int64]int64
 }
 
 // Message defines the Data of CloudEvent
