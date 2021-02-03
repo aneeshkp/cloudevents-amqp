@@ -156,7 +156,7 @@ func main() {
 					atSourceDiff := time.Since(data.GetTime()).Milliseconds()
 					//anything above 100ms is considered 100 ms
 					if atSourceDiff >= int64(binSize) {
-						atSourceDiff = int64(binSize)
+						atSourceDiff = int64(binSize-1)
 					}
 					/*r := MsgLatency{
 						ID:       l.ID,
