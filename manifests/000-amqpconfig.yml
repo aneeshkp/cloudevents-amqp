@@ -92,16 +92,12 @@ data:
     hostname: amqp://amqp-dispatch-service
     port: 5672
     listener: # this creates count listeners listening to the following endpoints
-      count: 16
+      count: 1
       queues:
         - name: "test"
-          count: 1
-        - name: "test/ptp"
           count: 1
     sender: # this will send messages to the following endpoints
       count: 1
       queues: #
         - name: "test"
-          count: 1
-        - name: "test/ptp"
           count: 1
