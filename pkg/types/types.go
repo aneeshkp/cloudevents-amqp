@@ -43,10 +43,12 @@ type Result struct {
 // Message defines the Data of CloudEvent
 type Message struct {
 	// Msg holds the message from the event
-	ID     int              `json:"id,omitempty,string"`
-	Source string           `json:"source,omitempty,string"`
-	Msg    string           `json:"msg,omitempty,string"`
-	Time   *types.Timestamp `json:"time,omitempty"`
+	ID          int              `json:"id,omitempty,string"`
+	Source      string           `json:"source,omitempty,string"`
+	Msg         string           `json:"msg,omitempty,string"`
+	Time        *types.Timestamp `json:"time,omitempty"`
+	Probability int              `json:"probability,omitempty"`
+	StateID     int              `json:"stateid,omitempty"`
 }
 
 //GetTime ...

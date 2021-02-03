@@ -11,6 +11,7 @@ require (
 	//github.com/aneeshkp/sdk-go/v2 v2.3.1
 
 	github.com/google/uuid v1.1.1
+	github.com/jmcvetta/randutil v0.0.0-20150817122601-2bb1b664bcff
 	github.com/stretchr/testify v1.5.1
 	gopkg.in/yaml.v2 v2.3.0
 )

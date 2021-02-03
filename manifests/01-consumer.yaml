@@ -31,6 +31,8 @@ spec:
           env:
             - name: BUFFER_SIZE
               value: "100"
+            - name: USE_SDK
+              value: "true"
             - name: BIN_SIZE
               value: "1000"
             - name: MY_NODE_NAME

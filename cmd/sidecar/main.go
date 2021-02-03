@@ -15,7 +15,6 @@ import (
 	"os"
 	"strconv"
 	"sync"
-	"sync/atomic"
 	"time"
 )
 
@@ -100,9 +99,6 @@ func main() {
 						log.Printf("Failed to send: %v", result)
 					} else if cloudevents.IsNACK(result) {
 						log.Printf("Event not accepted: %v", result)
-					} else {
-						atomic.AddUint64(&s.MsgReceivedCount, 1)
-
 					}
 				}(s, event, &wg)
 			}

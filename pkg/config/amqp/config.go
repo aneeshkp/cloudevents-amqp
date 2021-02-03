@@ -27,6 +27,7 @@ type Config struct {
 	Port     int      `yaml:"port" json:"port"`
 	Listener Listener `yaml:"listener" json:"listener"`
 	Sender   Sender   `yaml:"sender" json:"sender"`
+	UseSdk   bool     `yaml:"usesdk" json:"usesdk"`
 }
 
 // Listener config

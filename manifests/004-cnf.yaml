@@ -27,12 +27,6 @@ spec:
         - name: yolo-cnf
           image: cnf
           env:
-            - name: MESSAGE_COUNT
-              value: "1000"
-            - name: MESSAGE_INTERVAL
-              value: "5000"
-            - name: PORT
-              value: "10001"
             - name: MY_NODE_NAME
               valueFrom:
                 fieldRef:
