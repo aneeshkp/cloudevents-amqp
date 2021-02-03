@@ -194,7 +194,7 @@ func main() {
 	wg.Add(1)
 	//go func(l []*types.AMQPProtocol,wg *sync.WaitGroup,) {
 
-	go func(latencyResult map[string]*latency, wg *sync.WaitGroup,q string) {
+	go func(latencyResult map[string]*latency, wg *sync.WaitGroup, q string) {
 		defer wg.Done()
 		uptimeTicker := time.NewTicker(5 * time.Second)
 
@@ -236,7 +236,7 @@ func main() {
 
 			}*/
 		}
-	}(latencyResult, &wg,cfg.Listener.Queue[0].Name)
+	}(latencyResult, &wg, cfg.Listener.Queue[0].Name)
 	//}(&latencyBin, &wg)
 
 	wg.Wait()

@@ -6,11 +6,11 @@ listener: # this creates count listeners listening to the following endpoints
   queues:
     - name: "test"
       count: 1
-    - name: "test/ptp"
-      count: 1
+    #- name: "test/ptp"
+    #  count: 1
 sender: # this will send messages to the following endpoints
   queues: #
     - name: "test"
       count: 1
-    - name: "test/ptp"
-      count: 1
+    #- name: "test/ptp"
+    #  count: 1
