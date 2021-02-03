@@ -194,19 +194,20 @@ func main() {
 	wg.Add(1)
 	//go func(l []*types.AMQPProtocol,wg *sync.WaitGroup,) {
 
-	go func(latencyResult map[string]*latency, wg *sync.WaitGroup) {
+	go func(latencyResult map[string]*latency, wg *sync.WaitGroup,q string) {
 		defer wg.Done()
 		uptimeTicker := time.NewTicker(5 * time.Second)
+
 		for { //nolint:gosimple
 			select {
 			case <-uptimeTicker.C:
-				fmt.Printf("%10s%10s%10s%s         ", "ID", "Msg Count", "Latency(ms)", "Histogram(%)")
+				fmt.Printf("|%-15s|%15s|%15s|%15s|", "ID", "Msg Count", "Latency(ms)", "Histogram(%)")
 				fmt.Println()
 
 				var j int64
 				for i := 0; i < binSize; i++ {
 					if latencyResults[i] > 0 {
-						fmt.Printf("%10s\t\t%10d\t\t%10d\t\t%10d         ", "queue", globalMsgReceivedCount, i, latencyResults[i])
+						fmt.Printf("%-15s%15d%15d%15d", q, globalMsgReceivedCount, i, latencyResults[i])
 						//calculate percentage
 						lf := float64(latencyResults[i])
 						li := float64(globalMsgReceivedCount)
@@ -235,7 +236,7 @@ func main() {
 
 			}*/
 		}
-	}(latencyResult, &wg)
+	}(latencyResult, &wg,cfg.Listener.Queue[0].Name)
 	//}(&latencyBin, &wg)
 
 	wg.Wait()
