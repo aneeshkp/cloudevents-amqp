@@ -1,5 +1,2 @@
 .idea/*.xml
-./bin/amqpReceiver
-./bin/amqpSender
-./bin/httpReceiver
-./bin/httpSender
+./bin/*
