@@ -178,21 +178,8 @@ func main() {
 
 		}
 	} //else
-	// Update latencyResult map by incrementing bin
-	/*wg.Add(1)
-	go func(latencyResult map[string]*latency, latencyBin chan MsgLatency, wg *sync.WaitGroup) {
-		defer wg.Done()
-		for l := range latencyBin {
-			ll := latencyResult[l.ID]
-			ll.Latency[l.Latency]++
-			ll.MsgCount = l.MsgCount
-		}
-	}(latencyResult, latencyChan, &wg)*/
-
-	// print result
 
 	wg.Add(1)
-	//go func(l []*types.AMQPProtocol,wg *sync.WaitGroup,) {
 
 	go func(latencyResult map[string]*latency, wg *sync.WaitGroup, q string) {
 		defer wg.Done()
@@ -201,18 +188,24 @@ func main() {
 		for { //nolint:gosimple
 			select {
 			case <-uptimeTicker.C:
-				fmt.Printf("|%-15s|%15s|%15s|%15s|", "ID", "Msg Count", "Latency(ms)", "Histogram(%)")
+				fmt.Printf("|%-15s|%15s|%15s|%15s|%15s|", "ID", "Total Msg", "Latency(ms)", "Msg", "Histogram(%)")
 				fmt.Println()
 
 				var j int64
 				for i := 0; i < binSize; i++ {
-					if latencyResults[i] > 0 {
-						fmt.Printf("%-15s%15d%15d%15d", q, globalMsgReceivedCount, i, latencyResults[i])
+					latency := latencyResults[i]
+					li := float64(globalMsgReceivedCount)
+					if latency > 0 {
+						fmt.Printf("%-15s%15d%15d%15d", q, globalMsgReceivedCount, i, latency)
 						//calculate percentage
-						lf := float64(latencyResults[i])
-						li := float64(globalMsgReceivedCount)
+						var lf float64
+						if latency == 0 {
+							lf = 0.9
+						} else {
+							lf = float64(latency)
+						}
 						percent := (100 * lf) / li
-						fmt.Printf("%2.2f%c", percent, '%')
+						fmt.Printf("%10s%.2f%c|", "", percent, '%')
 						for j = 1; j <= int64(percent); j++ {
 							fmt.Printf("%c", '∎')
 						}
@@ -223,21 +216,8 @@ func main() {
 
 			}
 
-			/*for _, l := range listeners {
-				result := pool.Get().(*types.Result)
-				result.Write(*l)
-				log.Printf("ID\t\t\tMsg Received\t\tMax source\t\tMax sidecar\t\tMin source\t\tMin sidecar\n")
-				log.Printf("---------------------------------------------------------------------------------------------------------------------------------\n")
-				log.Printf("%s\t\t%d\t\t%d\t\t\t%d\t\t\t%d\t\t\t%d\n",
-					result.ID, result.MsgReceivedCount, result.FromSourceMaxDiff,
-					result.FromSideCarMaxDiff, result.FromSourceMinDiff,
-					result.FromSideCarMinDiff)
-				pool.Put(result)
-
-			}*/
 		}
 	}(latencyResult, &wg, cfg.Listener.Queue[0].Name)
-	//}(&latencyBin, &wg)
 
 	wg.Wait()
 
