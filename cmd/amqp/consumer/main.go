@@ -156,7 +156,7 @@ func main() {
 					atSourceDiff := time.Since(data.GetTime()).Milliseconds()
 					//anything above 100ms is considered 100 ms
 					if atSourceDiff >= int64(binSize) {
-						atSourceDiff = int64(binSize-1)
+						atSourceDiff = int64(binSize - 1)
 					}
 					/*r := MsgLatency{
 						ID:       l.ID,
@@ -196,7 +196,7 @@ func main() {
 					latency := latencyResults[i]
 					li := float64(globalMsgReceivedCount)
 					if latency > 0 {
-						fmt.Printf("%-15s%15d%15d%15d", q, globalMsgReceivedCount, i, latency)
+						fmt.Printf("|%-15s|%15d|%15d|%15d|", q, globalMsgReceivedCount, i, latency)
 						//calculate percentage
 						var lf float64
 						if latency == 0 {
@@ -277,7 +277,7 @@ func nakedAmqp(host string, queue string) {
 			atSourceDiff := time.Since(data.GetTime()).Milliseconds()
 			//anything above 100ms is considered 100 ms
 			if atSourceDiff >= int64(binSize) {
-				atSourceDiff = int64(binSize)
+				atSourceDiff = int64(binSize - 1)
 			}
 			/*r := MsgLatency{
 				ID:       l.ID,
