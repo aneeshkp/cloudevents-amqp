@@ -34,8 +34,6 @@ else
 KUSTOMIZE=$(shell which kustomize)
 endif
 
-
-
 run-amqp-consumer:
 	go run ./cmd/amqp/consumer/main.go --config ./config/amqp/config.yml
 
