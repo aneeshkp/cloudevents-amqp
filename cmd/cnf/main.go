@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/chain"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
-	"log"
+
 	"math/rand"
 	"net"
 	"os"
@@ -25,7 +25,8 @@ var (
 	udpPort                   = 10001
 	totalMsgCount       int64 = 0
 	totalPerSecMsgCount       = 0
-	rollInMs                  = 1
+	rollInMsMin               = 1
+	rollInMsMax               = 5
 )
 
 // init sets initial values for variables used in the function.
@@ -35,13 +36,13 @@ func init() {
 func main() {
 	//var err error
 	states := intiState()
-	var err error
-	envRollInMs := os.Getenv("ROLL_DICE")
-	if envRollInMs != "" {
-		rollInMs, err = strconv.Atoi(envRollInMs)
-		if err != nil {
-			log.Fatal("error reading Roll Time")
-		}
+	envRollInMsMin := os.Getenv("ROLL_DICE_MIN")
+	if envRollInMsMin != "" {
+		rollInMsMin, _ = strconv.Atoi(envRollInMsMin)
+	}
+	envRollInMsMax := os.Getenv("ROLL_DICE_MAX")
+	if envRollInMsMax != "" {
+		rollInMsMin, _ = strconv.Atoi(envRollInMsMax)
 	}
 
 	transition := [][]float32{
@@ -64,9 +65,8 @@ func main() {
 
 	//fmt.Printf("Sleeping %d sec...\n", 10)
 	//time.Sleep(time.Duration(10) * time.Second)
-	diceTicker := time.NewTicker(time.Duration(1) * time.Millisecond)
+	diceTicker := time.NewTicker(time.Duration(rollInMsMin) * time.Millisecond)
 	avgPerSecTicker := time.NewTicker(time.Duration(5) * time.Second)
-
 
 	// initialize current state
 	currentStateID := 1
@@ -74,8 +74,8 @@ func main() {
 	currentStateChoice := c.GetStateChoice(currentStateID)
 	currentStateID = currentStateChoice.Item.(int)
 	//rand.Seed(time.Now().UnixNano())
-	min := 1
-	max := 4
+	min := rollInMsMin
+	max := rollInMsMax
 
 	for { //nolint:gosimple
 		select {
@@ -91,22 +91,12 @@ func main() {
 				totalPerSecMsgCount++
 				//}
 			}
-			//diceTicker.Stop()
-			//newTime:=rand.Intn(max - min + 1) + min
-			//diceTicker = time.NewTicker(time.Duration(newTime) * time.Millisecond)
-			/*r := rand.Intn(100)
-			if currentState.Payload.Probability >= r {
-				_ = Event(currentState.Payload)
-				totalMsgCount++
-				totalPerSecMsgCount++
-			}*/
 		case <-avgPerSecTicker.C:
 			fmt.Printf("Total message sent mps: %2.2f\n", float64(totalPerSecMsgCount)/1)
 			totalPerSecMsgCount = 0
 			diceTicker.Stop()
-			newTime:=rand.Intn(max - min + 1) + min
+			newTime := rand.Intn(max-min+1) + min
 			diceTicker = time.NewTicker(time.Duration(newTime) * time.Millisecond)
-
 		}
 	}
 

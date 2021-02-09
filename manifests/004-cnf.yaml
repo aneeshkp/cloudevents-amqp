@@ -27,8 +27,10 @@ spec:
         - name: yolo-cnf
           image: cnf
           env:
-            - name: ROLL_DICE
+            - name: ROLL_DICE_MIN
               value: "1"  #in ms
+            - name: ROLL_DICE_MAX
+              value: "5"  #in ms
             - name: MY_NODE_NAME
               valueFrom:
                 fieldRef:
