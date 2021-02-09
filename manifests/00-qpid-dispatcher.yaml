@@ -28,9 +28,9 @@ spec:
           image: quay.io/interconnectedcloud/qdrouterd:1.14.0
           resources:
             requests:
-              cpu: "50m"
+              cpu: "1"
             limits:
-              cpu: "50m"
+              cpu: "1"
           volumeMounts:
             - name: qpidrouter-config
               mountPath: /etc/qpid-dispatch/

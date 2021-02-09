@@ -27,6 +27,8 @@ spec:
         - name: yolo-cnf
           image: cnf
           env:
+            - name: ROLL_DICE
+              value: "1"  #in ms
             - name: MY_NODE_NAME
               valueFrom:
                 fieldRef:
