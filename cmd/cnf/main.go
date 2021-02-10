@@ -3,10 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/aneeshkp/cloudevents-amqp/pkg/chain"
-	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	"sync"
 	"sync/atomic"
+
+	"github.com/aneeshkp/cloudevents-amqp/pkg/chain"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 
 	"math/rand"
 	"net"
@@ -27,7 +28,7 @@ var (
 	udpPort                    = 10001
 	totalMsgCount       int64  = 0
 	totalPerSecMsgCount uint64 = 0
-	avgMessagesPerSec          = 100
+	avgMessagesPerSec          = 500
 	//rollInMsMax                = 5
 	wg sync.WaitGroup
 )
@@ -83,11 +84,10 @@ func main() {
 	// sleep 110ms
 	// send message
 
-	avgMsgPerMs := 1000 / avgMessagesPerSec //100
-	percent := 0.2
-	sleepTimeVariation := int(float32(avgMsgPerMs) * float32(percent)) //2  in micro sec
-	fmt.Println(sleepTimeVariation)
-	midPoint := sleepTimeVariation / 2 //1
+	avgMsgPeriodMs := 1000 / avgMessagesPerSec //100
+	fmt.Printf("avgMsgPerMs: %d\n", avgMsgPeriodMs)
+	midpoint := avgMsgPeriodMs / 2
+	fmt.Printf("midpoint: %d\n", midpoint)
 
 	wg.Add(1)
 	go func() {
@@ -99,31 +99,18 @@ func main() {
 			//totalPerSecMsgCount=0
 		}
 	}()
-	for {
-		for i := 0; i < avgMsgPerMs; i++ {
-			currentStateChoice := c.GetStateChoice(currentStateID)
-			currentStateID = currentStateChoice.Item.(int)
-			currentState := c.GetState(currentStateID)
-			if currentState.Payload.Probability > 0 {
-				_ = Event(currentState.Payload)
-				totalMsgCount++
-				atomic.AddUint64(&totalPerSecMsgCount, 1)
-			}
 
-			//r:=randFloats(0, sleepTimeVariation)
-			var r int
-			var k float32
-			if sleepTimeVariation-1+1 < 1 {
-				r = rand.Intn(1) + 1
-				k = float32(r - midPoint) //2-1
-			} else {
-				r = rand.Intn(sleepTimeVariation-1+1) + 1
-				k = float32(r - midPoint) //2-1
-
-			}
-			time.Sleep(time.Duration(k) * time.Millisecond)
-
+	tck := time.NewTicker(time.Duration(1000) * time.Microsecond)
+	maxCount := avgMsgPeriodMs
+	counter := 0
+	for _ = range tck.C {
+		if counter >= maxCount {
+			totalMsgCount++
+			atomic.AddUint64(&totalPerSecMsgCount, 1)
+			maxCount = rand.Intn(avgMsgPeriodMs+1) + midpoint
+			counter = 0
 		}
+		counter++
 	}
 
 	//wg.Wait()
