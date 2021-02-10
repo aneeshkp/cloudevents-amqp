@@ -10,6 +10,7 @@ CNF_IMG ?= quay.io/aneeshkp/cnf-yolo:$(VERSION)
 
 # Export GO111MODULE=on to enable project to be built from within GOPATH/src
 export GO111MODULE=on
+export CGO_ENABLED=0
 
 ifeq (,$(shell go env GOBIN))
   GOBIN=$(shell go env GOPATH)/bin
@@ -77,12 +78,12 @@ docker-push:
 build:
 	go fmt ./...
 	make lint
-	go build -o ./bin/amqpSender ./cmd/amqp/producer/main.go
-	go build -o ./bin/amqpReceiver ./cmd/amqp/consumer/main.go
-	go build -o ./bin/httpSender ./cmd/http/send/main.go
-	go build -o ./bin/httpReceiver ./cmd/http/receive/main.go
-	go build -o ./bin/cnf-yolo ./cmd/cnf/main.go
-	go build -o ./bin/sidecar-yolo ./cmd/sidecar/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/amqpSender ./cmd/amqp/producer/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/amqpReceiver ./cmd/amqp/consumer/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/httpSender ./cmd/http/send/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/httpReceiver ./cmd/http/receive/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/cnf-yolo ./cmd/cnf/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/sidecar-yolo ./cmd/sidecar/main.go
 	cp ./config/amqp/config.yml ./bin/config.yml
 
 # Deploy all in the configured Kubernetes cluster in ~/.kube/config

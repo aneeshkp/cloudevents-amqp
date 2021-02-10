@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/chain"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
+	"sync"
+	"sync/atomic"
 
 	"math/rand"
 	"net"
@@ -22,11 +24,12 @@ and send events between 1 to 100K
 */
 
 var (
-	udpPort                   = 10001
-	totalMsgCount       int64 = 0
-	totalPerSecMsgCount       = 0
-	rollInMsMin               = 1
-	rollInMsMax               = 5
+	udpPort                    = 10001
+	totalMsgCount       int64  = 0
+	totalPerSecMsgCount uint64 = 0
+	avgMessagesPerSec          = 100
+	//rollInMsMax                = 5
+	wg sync.WaitGroup
 )
 
 // init sets initial values for variables used in the function.
@@ -36,13 +39,9 @@ func init() {
 func main() {
 	//var err error
 	states := intiState()
-	envRollInMsMin := os.Getenv("ROLL_DICE_MIN")
-	if envRollInMsMin != "" {
-		rollInMsMin, _ = strconv.Atoi(envRollInMsMin)
-	}
-	envRollInMsMax := os.Getenv("ROLL_DICE_MAX")
-	if envRollInMsMax != "" {
-		rollInMsMin, _ = strconv.Atoi(envRollInMsMax)
+	envMsgPerSec := os.Getenv("MSG_PER_SEC")
+	if envMsgPerSec != "" {
+		avgMessagesPerSec, _ = strconv.Atoi(envMsgPerSec)
 	}
 
 	transition := [][]float32{
@@ -65,8 +64,8 @@ func main() {
 
 	//fmt.Printf("Sleeping %d sec...\n", 10)
 	//time.Sleep(time.Duration(10) * time.Second)
-	diceTicker := time.NewTicker(time.Duration(rollInMsMin) * time.Millisecond)
-	avgPerSecTicker := time.NewTicker(time.Duration(5) * time.Second)
+	//diceTicker := time.NewTicker(time.Duration(rollInMsMin) * time.Millisecond)
+	//avgPerSecTicker := time.NewTicker(time.Duration(1) * time.Second)
 
 	// initialize current state
 	currentStateID := 1
@@ -74,32 +73,90 @@ func main() {
 	currentStateChoice := c.GetStateChoice(currentStateID)
 	currentStateID = currentStateChoice.Item.(int)
 	//rand.Seed(time.Now().UnixNano())
-	min := rollInMsMin
-	max := rollInMsMax
+	/*min := -20 // rollInMsMin
+	max := 20 //rollInMsMax
+	*/
+	// start
+	//send message
+	// 100 ms as constant
+	// rand(-20 and 20)
+	// sleep 110ms
+	// send message
 
-	for { //nolint:gosimple
-		select {
-		case <-diceTicker.C:
+	avgMsgPerMs := 1000 / avgMessagesPerSec //100
+	percent := 0.2
+	sleepTimeVariation := int(float32(avgMsgPerMs) * float32(percent)) //2  in micro sec
+	fmt.Println(sleepTimeVariation)
+	midPoint := sleepTimeVariation / 2 //1
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for now := range time.Tick(time.Second) {
+			fmt.Println(now)
+			fmt.Printf("Total message sent mps: %2.2f\n", float64(totalPerSecMsgCount))
+			atomic.CompareAndSwapUint64(&totalPerSecMsgCount, totalPerSecMsgCount, 0)
+			//totalPerSecMsgCount=0
+		}
+	}()
+	for {
+		for i := 0; i < avgMsgPerMs; i++ {
 			currentStateChoice := c.GetStateChoice(currentStateID)
 			currentStateID = currentStateChoice.Item.(int)
 			currentState := c.GetState(currentStateID)
-			//	r := rand.Intn(50)
 			if currentState.Payload.Probability > 0 {
-				//for i := 1; i <= currentState.Payload.ID; i++ {
 				_ = Event(currentState.Payload)
 				totalMsgCount++
-				totalPerSecMsgCount++
-				//}
+				atomic.AddUint64(&totalPerSecMsgCount, 1)
 			}
-		case <-avgPerSecTicker.C:
-			fmt.Printf("Total message sent mps: %2.2f\n", float64(totalPerSecMsgCount)/1)
-			totalPerSecMsgCount = 0
-			diceTicker.Stop()
-			newTime := rand.Intn(max-min+1) + min
-			diceTicker = time.NewTicker(time.Duration(newTime) * time.Millisecond)
+
+			//r:=randFloats(0, sleepTimeVariation)
+			var r int
+			var k float32
+			if sleepTimeVariation-1+1 < 1 {
+				r = rand.Intn(1) + 1
+				k = float32(r - midPoint) //2-1
+			} else {
+				r = rand.Intn(sleepTimeVariation-1+1) + 1
+				k = float32(r - midPoint) //2-1
+
+			}
+			time.Sleep(time.Duration(k) * time.Millisecond)
+
 		}
 	}
 
+	//wg.Wait()
+	/*
+		for { //nolint:gosimple
+			select {
+			case <-diceTicker.C:
+				currentStateChoice := c.GetStateChoice(currentStateID)
+				currentStateID = currentStateChoice.Item.(int)
+				currentState := c.GetState(currentStateID)
+				//	r := rand.Intn(50)
+				if currentState.Payload.Probability > 0 {
+					//for i := 1; i <= currentState.Payload.ID; i++ {
+					_ = Event(currentState.Payload)
+					totalMsgCount++
+					totalPerSecMsgCount++
+					//}
+				}
+				diceTicker.Stop()
+				newTime := rand.Intn(max-min+1) + min
+				diceTicker = time.NewTicker(time.Duration(newTime) * time.Millisecond)
+
+
+
+			case <-avgPerSecTicker.C:
+				fmt.Printf("Total message sent mps: %2.2f\n", float64(totalPerSecMsgCount)/1)
+				totalPerSecMsgCount = 0
+				diceTicker.Stop()
+				newTime := rand.Intn(max-min+1) + min
+				diceTicker = time.NewTicker(time.Duration(newTime) * time.Millisecond)
+			}
+		}
+	*/
 }
 
 /*func getSupportedEvents() []string {
