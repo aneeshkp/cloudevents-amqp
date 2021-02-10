@@ -92,9 +92,16 @@ deploy: kustomize
 	cd ./manifests && $(KUSTOMIZE) edit set image cnf=${CNF_IMG} && $(KUSTOMIZE) edit set image sidecar=${SIDECAR_IMG}
 	$(KUSTOMIZE) build ./manifests | kubectl apply -f -
 
+deploy-qdr: kustomize
+	$(KUSTOMIZE) build ./manifests/qpid-router | kubectl apply -f -
+
 # Uninstall from a cluster
 uninstall: kustomize
 	$(KUSTOMIZE) build ./manifests | kubectl delete -f -
+
+# Uninstall from a cluster
+uninstall-qdr: kustomize
+	$(KUSTOMIZE) build ./manifests/qpid-router | kubectl delete -f -
 
 #Install kube-dns addon
 kube-dns: kustomize
