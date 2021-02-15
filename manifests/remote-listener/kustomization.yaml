@@ -6,7 +6,7 @@ resources:
 - 00-qpid-dispatcher.yaml
 - 003-service.yaml
 replicas:
-  - name: cloud-events-consumer-deployment
+  - name: cloud-events-consumer-remote-deployment
     count: 1
 images:
 - name: consumer
