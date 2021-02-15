@@ -2,9 +2,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - 000-config.yml
-- 01-consumer.yaml
 - 00-qpid-dispatcher.yaml
 - 003-service.yaml
+- 01-consumer.yaml
 replicas:
   - name: cloud-events-consumer-remote-deployment
     count: 1

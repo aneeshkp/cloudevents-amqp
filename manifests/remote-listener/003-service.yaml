@@ -22,8 +22,8 @@ spec:
   type: NodePort
   ports:
     - protocol: TCP
-        port: 20001
-        targetPort: 20001
-        nodePort: 30036
+      port: 20001
+      targetPort: 20001
+      nodePort: 30036
   selector:
     app: qpid-dispatcher-remote
