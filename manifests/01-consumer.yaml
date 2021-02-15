@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cloud-events-consumer-deployment
+  name: cloud-events-consumer-near-deployment
   labels:
     app: cloudevents-consumer
 spec:
@@ -24,7 +24,7 @@ spec:
                     values:
                       - yolo
       containers:
-        - name: cloudevents-consumer
+        - name: cloudevents-near-consumer
           image: consumer
           command: [ "./amqpReceiver" ]
           args: [ "-config", "/opt/config.yml"]
@@ -54,7 +54,68 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: amqp-consumer-config
+            name: amqp-near-config
+            items:
+              - key: config.yml
+                path: config.yml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-events-consumer-far-deployment
+  labels:
+    app: cloudevents-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudevents-consumer
+  template:
+    metadata:
+      labels:
+        app: cloudevents-consumer
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: yolo
+                    operator: In
+                    values:
+                      - yolo
+      containers:
+        - name: cloudevents-far-consumer
+          image: consumer
+          command: [ "./amqpReceiver" ]
+          args: [ "-config", "/opt/config.yml"]
+          env:
+            - name: BUFFER_SIZE
+              value: "100"
+            - name: USE_SDK
+              value: "true"
+            - name: BIN_SIZE
+              value: "1000"
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MY_POD_IP
+          volumeMounts:
+            - name: config-volume
+              mountPath: /opt/
+      volumes:
+        - name: config-volume
+          configMap:
+            name: amqp-far-config
             items:
               - key: config.yml
                 path: config.yml

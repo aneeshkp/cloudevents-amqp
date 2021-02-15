@@ -31,6 +31,7 @@ data:
     #router {
     #    mode: standalone
     #}
+
     router {
         mode: interior
         id: QPD.A
@@ -130,6 +131,7 @@ data:
     #router {
     #    mode: standalone
     #}
+
     router {
         mode: interior
         id: QPD.B
@@ -229,10 +231,11 @@ data:
     #router {
     #    mode: standalone
     #}
-   router {
+
+    router {
        mode: interior
        id: QPD.C
-   }
+    }
 
     listener {
         host: 0.0.0.0

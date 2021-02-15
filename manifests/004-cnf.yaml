@@ -58,7 +58,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: amqp-cnf-config
+            name: amqp-near-config
             items:
               - key: config.yml
                 path: config.yml

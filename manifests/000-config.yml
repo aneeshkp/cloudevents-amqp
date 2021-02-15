@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: amqp-consumer-config
+  name: amqp-far-config
   namespace: default
 data:
   config.yml: |-
@@ -23,7 +23,7 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: amqp-cnf-config
+  name: amqp-near-config
   namespace: default
 data:
   config.yml: |-
