@@ -61,7 +61,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// setup listener for incoming UDP connection
+	// setup remote-listener for incoming UDP connection
 	ln, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
 		log.Fatal(err)
@@ -69,7 +69,7 @@ func main() {
 	fmt.Printf("UDP server up and listening on port %d\n", udpPort)
 	defer ln.Close()
 
-	// loop udp listener
+	// loop udp remote-listener
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -79,7 +79,7 @@ func main() {
 		}
 	}()
 
-	// loop amqp listener
+	// loop amqp remote-listener
 	for { //nolint:gosimple
 		select {
 		case d := <-eventBus.data:

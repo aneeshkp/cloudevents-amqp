@@ -95,12 +95,25 @@ deploy: kustomize
 deploy-qdr: kustomize
 	$(KUSTOMIZE) build ./manifests/qpid-router | kubectl apply -f -
 
+deploy-remote: kustomize
+	$(KUSTOMIZE) build ./manifests/remote-listener | kubectl apply -f -
+
 # Uninstall from a cluster
 uninstall: kustomize
 	$(KUSTOMIZE) build ./manifests | kubectl delete -f -
 
 # Uninstall from a cluster
 uninstall-qdr: kustomize
+	$(KUSTOMIZE) build ./manifests/qpid-router | kubectl delete -f -
+
+# Uninstall from a cluster
+uninstall-remote: kustomize
+	$(KUSTOMIZE) build ./manifests/remote-listener | kubectl delete -f -
+
+# Uninstall from a cluster
+uninstall-all: kustomize
+	$(KUSTOMIZE) build ./manifests | kubectl delete -f -
+	$(KUSTOMIZE) build ./manifests/remote-listener | kubectl delete -f -
 	$(KUSTOMIZE) build ./manifests/qpid-router | kubectl delete -f -
 
 #Install kube-dns addon

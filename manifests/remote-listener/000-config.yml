@@ -2,7 +2,28 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: qpidrouter-config
+  name: amqp-consumer-remote-config
+  namespace: default
+data:
+  config.yml: |-
+    timeout : 30
+    hostname: amqp://amqp-dispatch-remote-service
+    port: 5672
+    listener: # this creates count listeners listening to the following endpoints
+      count: 1
+      queues:
+        - name: "test"
+          count: 1
+    sender: # this will send messages to the following endpoints
+      count: 1
+      queues: #
+        - name: "test"
+          count: 1
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qpidrouter-remote-config
   namespace: default
 data:
   qdrouterd.conf: |-
@@ -44,13 +65,6 @@ data:
         port: 8672
         authenticatePeer: no
         http: yes
-    }
-
-    connector {
-        role: inter-router
-        host: dhcp16-231-212.ptp.lab.eng.bos.redhat.com
-        port: 30036
-        saslMechanisms: ANONYMOUS
     }
 
     address {

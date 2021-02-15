@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: amqp-dispatch-remote-service
+  labels:
+    app: qpid-dispatcher-remote
+spec:
+  ports:
+    - port: 5672
+      name: amqp
+  selector:
+    app: qpid-dispatcher-remote
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: amqp-dispatch-remote-router-service
+  labels:
+    app: qpid-dispatcher-remote
+spec:
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 2000
+      targetPort: 2000
+    - protocol: TCP
+        port: 2000
+        targetPort: 2000
+        nodePort: 30036
+  selector:
+    app: qpid-dispatcher-remote

@@ -25,7 +25,7 @@ type Config struct {
 	HostName string   `yaml:"hostname" json:"hostname"`
 	TimeOut  int      `yaml:"timeout" json:"timeout"`
 	Port     int      `yaml:"port" json:"port"`
-	Listener Listener `yaml:"listener" json:"listener"`
+	Listener Listener `yaml:"remote-listener" json:"remote-listener"`
 	Sender   Sender   `yaml:"sender" json:"sender"`
 	UseSdk   bool     `yaml:"usesdk" json:"usesdk"`
 }
