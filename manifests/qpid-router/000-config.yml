@@ -28,8 +28,12 @@ data:
     # See the qdrouterd.conf (5) manual page for information about this
     # file's format and options.
 
+    #router {
+    #    mode: standalone
+    #}
     router {
-        mode: standalone
+        mode: interior
+        id: QPD.A
     }
 
     listener {
@@ -123,8 +127,12 @@ data:
     # See the qdrouterd.conf (5) manual page for information about this
     # file's format and options.
 
+    #router {
+    #    mode: standalone
+    #}
     router {
-        mode: standalone
+        mode: interior
+        id: QPD.B
     }
 
     listener {
@@ -218,9 +226,13 @@ data:
     # See the qdrouterd.conf (5) manual page for information about this
     # file's format and options.
 
-    router {
-        mode: standalone
-    }
+    #router {
+    #    mode: standalone
+    #}
+   router {
+       mode: interior
+       id: QPD.C
+   }
 
     listener {
         host: 0.0.0.0
