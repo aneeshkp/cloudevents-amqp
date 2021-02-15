@@ -1,12 +1,47 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: amqp-dispatch-service
+  name: amqp-dispatch-service-A
   labels:
-    app: qpid-dispatcher
+    app: qpid-dispatcher-A
 spec:
   ports:
     - port: 5672
       name: amqp
+    - port: 20001
+      targetPort: 20001
+      nodePort: 30036
   selector:
-    app: qpid-dispatcher
+    app: qpid-dispatcher-A
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: amqp-dispatch-service-B
+  labels:
+    app: qpid-dispatcher-B
+spec:
+  ports:
+    - port: 5672
+      name: amqp
+    - port: 20001
+      targetPort: 20001
+      nodePort: 30037
+  selector:
+    app: qpid-dispatcher-B
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: amqp-dispatch-service-C
+  labels:
+    app: qpid-dispatcher-C
+spec:
+  ports:
+    - port: 5672
+      name: amqp
+    - port: 20001
+      targetPort: 20001
+      nodePort: 30038
+  selector:
+    app: qpid-dispatcher-C

@@ -2,12 +2,33 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: amqp-consumer-producer-config
+  name: amqp-consumer-config
   namespace: default
 data:
   config.yml: |-
     timeout : 30
-    hostname: amqp://amqp-dispatch-service
+    hostname: amqp://amqp-dispatch-service-B
+    port: 5672
+    listener: # this creates count listeners listening to the following endpoints
+      count: 1
+      queues:
+        - name: "test"
+          count: 1
+    sender: # this will send messages to the following endpoints
+      count: 1
+      queues: #
+        - name: "test"
+          count: 1
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: amqp-cnf-config
+  namespace: default
+data:
+  config.yml: |-
+    timeout : 30
+    hostname: amqp://amqp-dispatch-service-A
     port: 5672
     listener: # this creates count listeners listening to the following endpoints
       count: 1

@@ -54,7 +54,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: amqp-consumer-producer-config
+            name: amqp-consumer-config
             items:
               - key: config.yml
                 path: config.yml

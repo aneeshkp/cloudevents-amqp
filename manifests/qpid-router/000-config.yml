@@ -2,7 +2,197 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: qpidrouter-config
+  name: qpidrouter-config-A
+  namespace: default
+data:
+  qdrouterd.conf: |-
+    ##
+    ## Licensed to the Apache Software Foundation (ASF) under one
+    ## or more contributor license agreements.  See the NOTICE file
+    ## distributed with this work for additional information
+    ## regarding copyright ownership.  The ASF licenses this file
+    ## to you under the Apache License, Version 2.0 (the
+    ## "License"); you may not use this file except in compliance
+    ## with the License.  You may obtain a copy of the License at
+    ##
+    ##   http://www.apache.org/licenses/LICENSE-2.0
+    ##
+    ## Unless required by applicable law or agreed to in writing,
+    ## software distributed under the License is distributed on an
+    ## "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    ## KIND, either express or implied.  See the License for the
+    ## specific language governing permissions and limitations
+    ## under the License
+    ##
+
+    # See the qdrouterd.conf (5) manual page for information about this
+    # file's format and options.
+
+    router {
+        mode: standalone
+    }
+
+    listener {
+        host: 0.0.0.0
+        port: amqp
+        authenticatePeer: no
+        saslMechanisms: ANONYMOUS
+    }
+
+    listener {
+        host: 0.0.0.0
+        port: 8672
+        authenticatePeer: no
+        http: yes
+    }
+    listener {
+         role: inter-router
+         host: 0.0.0.0
+         port: 20001
+         authenticatePeer: no
+         saslMechanisms: ANONYMOUS
+    }
+
+    # Connect to C
+    connector {
+        role: inter-router
+        host: cnfde7.ptp.lab.eng.bos.redhat.com
+        port: 30038
+        saslMechanisms: ANONYMOUS
+    }
+
+    address {
+        prefix: closest
+        distribution: closest
+    }
+
+    address {
+        prefix: multicast
+        distribution: multicast
+    }
+
+    address {
+        prefix: unicast
+        distribution: closest
+    }
+
+    address {
+        prefix: exclusive
+        distribution: closest
+    }
+
+    address {
+        prefix: broadcast
+        distribution: multicast
+    }
+    address {
+        prefix: test
+        distribution: multicast
+    }
+    address {
+        prefix: event
+        distribution: multicast
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qpidrouter-config-B
+  namespace: default
+data:
+  qdrouterd.conf: |-
+    ##
+    ## Licensed to the Apache Software Foundation (ASF) under one
+    ## or more contributor license agreements.  See the NOTICE file
+    ## distributed with this work for additional information
+    ## regarding copyright ownership.  The ASF licenses this file
+    ## to you under the Apache License, Version 2.0 (the
+    ## "License"); you may not use this file except in compliance
+    ## with the License.  You may obtain a copy of the License at
+    ##
+    ##   http://www.apache.org/licenses/LICENSE-2.0
+    ##
+    ## Unless required by applicable law or agreed to in writing,
+    ## software distributed under the License is distributed on an
+    ## "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    ## KIND, either express or implied.  See the License for the
+    ## specific language governing permissions and limitations
+    ## under the License
+    ##
+
+    # See the qdrouterd.conf (5) manual page for information about this
+    # file's format and options.
+
+    router {
+        mode: standalone
+    }
+
+    listener {
+        host: 0.0.0.0
+        port: amqp
+        authenticatePeer: no
+        saslMechanisms: ANONYMOUS
+    }
+
+    listener {
+        host: 0.0.0.0
+        port: 8672
+        authenticatePeer: no
+        http: yes
+    }
+    listener {
+         role: inter-router
+         host: 0.0.0.0
+         port: 20001
+         authenticatePeer: no
+         saslMechanisms: ANONYMOUS
+    }
+
+    # Connect to C
+    connector {
+        role: inter-router
+        host: cnfde7.ptp.lab.eng.bos.redhat.com
+        port: 30038
+        saslMechanisms: ANONYMOUS
+    }
+
+    address {
+        prefix: closest
+        distribution: closest
+    }
+
+    address {
+        prefix: multicast
+        distribution: multicast
+    }
+
+    address {
+        prefix: unicast
+        distribution: closest
+    }
+
+    address {
+        prefix: exclusive
+        distribution: closest
+    }
+
+    address {
+        prefix: broadcast
+        distribution: multicast
+    }
+    address {
+        prefix: test
+        distribution: multicast
+    }
+    address {
+        prefix: event
+        distribution: multicast
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qpidrouter-config-C
   namespace: default
 data:
   qdrouterd.conf: |-
@@ -46,10 +236,27 @@ data:
         http: yes
     }
 
+    listener {
+         role: inter-router
+         host: 0.0.0.0
+         port: 20001
+         authenticatePeer: no
+         saslMechanisms: ANONYMOUS
+    }
+
+    # Connect to A
     connector {
         role: inter-router
-        host: dhcp16-231-212.ptp.lab.eng.bos.redhat.com
+        host: cnfde7.ptp.lab.eng.bos.redhat.com
         port: 30036
+        saslMechanisms: ANONYMOUS
+    }
+
+    # Connect to B
+    connector {
+        role: inter-router
+        host: cnfde7.ptp.lab.eng.bos.redhat.com
+        port: 30037
         saslMechanisms: ANONYMOUS
     }
 

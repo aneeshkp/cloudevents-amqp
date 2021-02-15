@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: qpid-dispatcherr-deployment
+  name: qpid-dispatcherr-deployment-A
   labels:
-    app: qpid-dispatcher
+    app: qpid-dispatcher-A
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: qpid-dispatcher
+      app: qpid-dispatcher-A
   template:
     metadata:
       labels:
-        app: qpid-dispatcher
+        app: qpid-dispatcher-A
     spec:
       affinity:
         nodeAffinity:
@@ -24,7 +24,7 @@ spec:
                     values:
                       - yolo
       containers:
-        - name: qpid-dispatcher
+        - name: qpid-dispatcher-A
           image: quay.io/interconnectedcloud/qdrouterd:1.14.0
           resources:
             requests:
@@ -32,12 +32,100 @@ spec:
             limits:
               cpu: "50m"
           volumeMounts:
-            - name: qpidrouter-config
+            - name: qpidrouter-config-A
               mountPath: /etc/qpid-dispatch/
       volumes:
-          - name: qpidrouter-config
+          - name: qpidrouter-config-A
             configMap:
-              name: qpidrouter-config
+              name: qpidrouter-config-A
               items:
                 - key: qdrouterd.conf
                   path: qdrouterd.conf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qpid-dispatcherr-deployment-B
+  labels:
+    app: qpid-dispatcher-B
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qpid-dispatcher-B
+  template:
+    metadata:
+      labels:
+        app: qpid-dispatcher-B
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: yolo
+                    operator: In
+                    values:
+                      - yolo
+      containers:
+        - name: qpid-dispatcher-B
+          image: quay.io/interconnectedcloud/qdrouterd:1.14.0
+          resources:
+            requests:
+              cpu: "50m"
+            limits:
+              cpu: "50m"
+          volumeMounts:
+            - name: qpidrouter-config-B
+              mountPath: /etc/qpid-dispatch/
+      volumes:
+        - name: qpidrouter-config-B
+          configMap:
+            name: qpidrouter-config-B
+            items:
+              - key: qdrouterd.conf
+                path: qdrouterd.conf
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qpid-dispatcherr-deployment-C
+  labels:
+    app: qpid-dispatcher-C
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qpid-dispatcher-C
+  template:
+    metadata:
+      labels:
+        app: qpid-dispatcher-C
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: yolo
+                    operator: In
+                    values:
+                      - yolo
+      containers:
+        - name: qpid-dispatcher-C
+          image: quay.io/interconnectedcloud/qdrouterd:1.14.0
+          resources:
+            requests:
+              cpu: "50m"
+            limits:
+              cpu: "50m"
+          volumeMounts:
+            - name: qpidrouter-config-C
+              mountPath: /etc/qpid-dispatch/
+      volumes:
+        - name: qpidrouter-config-C
+          configMap:
+            name: qpidrouter-config-C
+            items:
+              - key: qdrouterd.conf
+                path: qdrouterd.conf
