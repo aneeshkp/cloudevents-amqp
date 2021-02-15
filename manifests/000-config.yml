@@ -7,7 +7,7 @@ metadata:
 data:
   config.yml: |-
     timeout : 30
-    hostname: amqp://amqp-dispatch-service-B
+    hostname: amqp://amqp-dispatch-service-b
     port: 5672
     listener: # this creates count listeners listening to the following endpoints
       count: 1
@@ -28,7 +28,7 @@ metadata:
 data:
   config.yml: |-
     timeout : 30
-    hostname: amqp://amqp-dispatch-service-A
+    hostname: amqp://amqp-dispatch-service-a
     port: 5672
     listener: # this creates count listeners listening to the following endpoints
       count: 1
