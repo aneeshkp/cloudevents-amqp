@@ -8,9 +8,6 @@ spec:
   ports:
     - port: 5672
       name: amqp
-    - port: 20001
-      targetPort: 20001
-      nodePort: 30036
   selector:
     app: qpid-dispatcher-a
 ---
@@ -24,9 +21,6 @@ spec:
   ports:
     - port: 5672
       name: amqp
-    - port: 20002
-      targetPort: 20001
-      nodePort: 30037
   selector:
     app: qpid-dispatcher-b
 ---
@@ -40,9 +34,6 @@ spec:
   ports:
     - port: 5672
       name: amqp
-    - port: 20003
-      targetPort: 20001
-      nodePort: 30038
   selector:
     app: qpid-dispatcher-c
 ---
