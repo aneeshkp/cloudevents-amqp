@@ -10,8 +10,10 @@ resources:
 #  newName: quay.io/aneeshkp/cloudevents-sender
 #  newTag: latest
 replicas:
-  - name: cloud-events-consumer-deployment
+  - name: cloud-events-consumer-near-deployment
     count: 1
+  - name: cloud-events-consumer-far-deployment
+      count: 1
 images:
 - name: cnf
   newName: quay.io/aneeshkp/cnf-yolo

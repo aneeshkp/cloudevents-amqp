@@ -12,3 +12,4 @@ images:
 - name: consumer
   newName: quay.io/aneeshkp/cloudevents-receiver
   newTag: latest
+

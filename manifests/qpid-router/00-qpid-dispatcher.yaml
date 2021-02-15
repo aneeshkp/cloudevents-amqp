@@ -19,7 +19,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: yolo
+                  - key: app
                     operator: In
                     values:
                       - yolo
@@ -63,10 +63,10 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: yolo
+                  - key: app
                     operator: In
                     values:
-                      - yolo
+                      - yolo-remote
       containers:
         - name: qpid-dispatcher-b
           image: quay.io/interconnectedcloud/qdrouterd:1.14.0
@@ -107,10 +107,10 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: yolo
+                  - key: app
                     operator: In
                     values:
-                      - yolo
+                      - yolo-remote
       containers:
         - name: qpid-dispatcher-c
           image: quay.io/interconnectedcloud/qdrouterd:1.14.0
