@@ -9,7 +9,7 @@ spec:
     - port: 5672
       name: amqp
     - port: 20001
-      targetPort: 20001
+      name: tcp
   selector:
     app: qpid-dispatcher-a
 ---
@@ -24,7 +24,7 @@ spec:
     - port: 5672
       name: amqp
     - port: 20001
-      targetPort: 20001
+      name: tcp
   selector:
     app: qpid-dispatcher-b
 #---
