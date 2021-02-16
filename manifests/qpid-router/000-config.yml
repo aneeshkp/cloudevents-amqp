@@ -28,14 +28,14 @@ data:
     # See the qdrouterd.conf (5) manual page for information about this
     # file's format and options.
 
-    router {
-        mode: standalone
-    }
-
     #router {
-    #    mode: interior
-    #    id: QPD.A
+    #    mode: standalone
     #}
+
+    router {
+        mode: interior
+        id: QPD.A
+    }
 
     listener {
         host: 0.0.0.0
@@ -59,19 +59,12 @@ data:
     }
 
     # Connect to B
-    #connector {
-    #    role: inter-router
-    #    host: amqp-dispatch-service-b
-    #    port: 20001
-    #    saslMechanisms: ANONYMOUS
-    #}
-    # Connect to C
-    # connector {
-    #    role: inter-router
-    #    host: cnfde7.ptp.lab.eng.bos.redhat.com
-    #    port: 30038
-    #    saslMechanisms: ANONYMOUS
-    #}
+    connector {
+        role: inter-router
+        host: amqp-dispatch-service-b
+        port: 20001
+        saslMechanisms: ANONYMOUS
+    }
 
     address {
         prefix: closest
@@ -164,14 +157,6 @@ data:
          authenticatePeer: no
          saslMechanisms: ANONYMOUS
     }
-
-    #Connect to A
-    #connector {
-    #   role: inter-router
-    #   host: amqp-dispatch-service-a
-    #   port: 20001
-    #   saslMechanisms: ANONYMOUS
-    #}
 
     # Connect to C
     #connector {
