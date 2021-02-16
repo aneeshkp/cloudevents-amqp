@@ -61,8 +61,8 @@ data:
     # Connect to B
     connector {
         role: inter-router
-        host: cnfdt09.lab.eng.tlv2.redhat.com
-        port: 30037
+        host: amqp-dispatch-service-b
+        port: 20001
         saslMechanisms: ANONYMOUS
     }
     # Connect to C
@@ -168,8 +168,8 @@ data:
     #Connect to A
     connector {
        role: inter-router
-       host: cnfdt08.lab.eng.tlv2.redhat.com
-       port: 30036
+       host: amqp-dispatch-service-b
+       port: 20001
        saslMechanisms: ANONYMOUS
     }
     # Connect to C
