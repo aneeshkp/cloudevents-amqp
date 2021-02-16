@@ -19,7 +19,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: app
+                  - key: local-app
                     operator: In
                     values:
                       - yolo
@@ -80,10 +80,10 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: app
+                  - key: remote-app
                     operator: In
                     values:
-                      - yolo-remote
+                      - yolo
       containers:
         - name: cloudevents-remote-consumer
           image: consumer
