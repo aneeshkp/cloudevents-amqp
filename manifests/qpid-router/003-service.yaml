@@ -61,7 +61,7 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - port: 20001
+    - port: 20002
       targetPort: 20001
       nodePort: 30037
   selector:
