@@ -61,7 +61,7 @@ data:
     # Connect to B
     connector {
         role: inter-router
-        host: amqp-dispatch-service-b
+        host: amqp-dispatch-router-service-b
         port: 20001
         saslMechanisms: ANONYMOUS
     }
