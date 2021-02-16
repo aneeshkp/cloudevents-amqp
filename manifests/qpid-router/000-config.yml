@@ -166,12 +166,13 @@ data:
     }
 
     #Connect to A
-    connector {
-       role: inter-router
-       host: amqp-dispatch-service-a
-       port: 20001
-       saslMechanisms: ANONYMOUS
-    }
+    #connector {
+    #   role: inter-router
+    #   host: amqp-dispatch-service-a
+    #   port: 20001
+    #   saslMechanisms: ANONYMOUS
+    #}
+
     # Connect to C
     #connector {
     #    role: inter-router
