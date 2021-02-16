@@ -165,7 +165,7 @@ data:
          saslMechanisms: ANONYMOUS
     }
 
-   #Connect to A
+    #Connect to A
     connector {
        role: inter-router
        host: cnfdt08.lab.eng.tlv2.redhat.com
