@@ -1,30 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cloud-events-consumer-near-deployment
+  name: cloud-events-consumer-local-deployment
   labels:
-    app: cloudevents-consumer
+    app: cloudevents-local-consumer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: cloudevents-consumer
+      app: cloudevents-local-consumer
   template:
     metadata:
       labels:
-        app: cloudevents-consumer
+        app: cloudevents-local-consumer
     spec:
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: yolo
+                  - key: app
                     operator: In
                     values:
                       - yolo
       containers:
-        - name: cloudevents-near-consumer
+        - name: cloudevents-local-consumer
           image: consumer
           command: [ "./amqpReceiver" ]
           args: [ "-config", "/opt/config.yml"]
@@ -54,7 +54,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: amqp-near-config
+            name: amqp-local-config
             items:
               - key: config.yml
                 path: config.yml
@@ -62,30 +62,30 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cloud-events-consumer-far-deployment
+  name: cloud-events-consumer-remote-deployment
   labels:
-    app: cloudevents-consumer
+    app: cloudevents-remote-consumer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: cloudevents-consumer
+      app: cloudevents-remote-consumer
   template:
     metadata:
       labels:
-        app: cloudevents-consumer
+        app: cloudevents-remote-consumer
     spec:
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: yolo
+                  - key: app
                     operator: In
                     values:
-                      - yolo
+                      - yolo-remote
       containers:
-        - name: cloudevents-far-consumer
+        - name: cloudevents-remote-consumer
           image: consumer
           command: [ "./amqpReceiver" ]
           args: [ "-config", "/opt/config.yml"]
@@ -115,7 +115,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: amqp-far-config
+            name: amqp-remote-config
             items:
               - key: config.yml
                 path: config.yml

@@ -19,7 +19,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: yolo
+                  - key: app
                     operator: In
                     values:
                       - yolo
@@ -58,7 +58,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: amqp-near-config
+            name: amqp-local-config
             items:
               - key: config.yml
                 path: config.yml

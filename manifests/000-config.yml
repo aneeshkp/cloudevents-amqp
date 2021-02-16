@@ -2,12 +2,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: amqp-far-config
+  name: amqp-local-config
   namespace: default
 data:
   config.yml: |-
     timeout : 30
-    hostname: amqp://amqp-dispatch-service-b
+    hostname: amqp://amqp-dispatch-service-a
     port: 5672
     listener: # this creates count listeners listening to the following endpoints
       count: 1
@@ -23,12 +23,12 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: amqp-near-config
+  name: amqp-remote-config
   namespace: default
 data:
   config.yml: |-
     timeout : 30
-    hostname: amqp://amqp-dispatch-service-a
+    hostname: amqp://amqp-dispatch-service-b
     port: 5672
     listener: # this creates count listeners listening to the following endpoints
       count: 1

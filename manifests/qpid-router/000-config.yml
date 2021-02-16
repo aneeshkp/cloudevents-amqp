@@ -58,13 +58,20 @@ data:
          saslMechanisms: ANONYMOUS
     }
 
-    # Connect to C
+    # Connect to B
     connector {
         role: inter-router
-        host: cnfde7.ptp.lab.eng.bos.redhat.com
-        port: 30038
+        host: cnfdt09.lab.eng.tlv2.redhat.com
+        port: 30037
         saslMechanisms: ANONYMOUS
     }
+    # Connect to C
+    # connector {
+    #    role: inter-router
+    #    host: cnfde7.ptp.lab.eng.bos.redhat.com
+    #    port: 30038
+    #    saslMechanisms: ANONYMOUS
+    #}
 
     address {
         prefix: closest
@@ -158,13 +165,20 @@ data:
          saslMechanisms: ANONYMOUS
     }
 
+    # Connect to A
+     connector {
+         role: inter-router
+         host: cnfde7.ptp.lab.eng.bos.redhat.com
+         port: 30036
+         saslMechanisms: ANONYMOUS
+     }
     # Connect to C
-    connector {
-        role: inter-router
-        host: cnfde7.ptp.lab.eng.bos.redhat.com
-        port: 30038
-        saslMechanisms: ANONYMOUS
-    }
+    #connector {
+    #    role: inter-router
+    #    host: cnfde7.ptp.lab.eng.bos.redhat.com
+    #    port: 30038
+    #    saslMechanisms: ANONYMOUS
+    #}
 
     address {
         prefix: closest

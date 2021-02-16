@@ -1,28 +1,21 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-#- 02-producer.yaml
 resources:
 - 000-config.yml
 - 01-consumer.yaml
 - 004-cnf.yaml
 - 005-yolo-service.yaml
-#- name: producer
-#  newName: quay.io/aneeshkp/cloudevents-sender
-#  newTag: latest
 replicas:
-  - name: cloud-events-consumer-near-deployment
-    count: 1
-  - name: cloud-events-consumer-far-deployment
-      count: 1
+- count: 1
+  name: cloud-events-consumer-local-deployment
+- count: 1
+  name: cloud-events-consumer-remote-deployment
 images:
 - name: cnf
   newName: quay.io/aneeshkp/cnf-yolo
   newTag: latest
 - name: consumer
   newName: quay.io/aneeshkp/cloudevents-receiver
-  newTag: latest
-- name: producer
-  newName: quay.io/aneeshkp/cloudevents-sender
   newTag: latest
 - name: sidecar
   newName: quay.io/aneeshkp/sidecar-yolo

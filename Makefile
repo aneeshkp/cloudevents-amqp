@@ -38,8 +38,8 @@ endif
 run-amqp-consumer:
 	go run ./cmd/amqp/consumer/main.go --config ./config/amqp/config.yml
 
-run-amqp-sender:
-	go run ./cmd/amqp/producer/main.go --config ./config/amqp/config.yml
+#run-amqp-sender:
+#	go run ./cmd/amqp/producer/main.go --config ./config/amqp/config.yml
 
 run-sidecar:
 	go run ./cmd/sidecar/main.go
@@ -78,7 +78,7 @@ docker-push:
 build:
 	go fmt ./...
 	make lint
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/amqpSender ./cmd/amqp/producer/main.go
+	#CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/amqpSender ./cmd/amqp/producer/main.go
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/amqpReceiver ./cmd/amqp/consumer/main.go
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/httpSender ./cmd/http/send/main.go
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/httpReceiver ./cmd/http/receive/main.go
@@ -88,7 +88,8 @@ build:
 
 # Deploy all in the configured Kubernetes cluster in ~/.kube/config
 deploy: kustomize
-	cd ./manifests && $(KUSTOMIZE) edit set image consumer=${RECEIVER_IMG} && $(KUSTOMIZE) edit set image producer=${SENDER_IMG}
+    # && $(KUSTOMIZE) edit set image producer=${SENDER_IMG}
+	cd ./manifests && $(KUSTOMIZE) edit set image consumer=${RECEIVER_IMG}
 	cd ./manifests && $(KUSTOMIZE) edit set image cnf=${CNF_IMG} && $(KUSTOMIZE) edit set image sidecar=${SIDECAR_IMG}
 	$(KUSTOMIZE) build ./manifests | kubectl apply -f -
 

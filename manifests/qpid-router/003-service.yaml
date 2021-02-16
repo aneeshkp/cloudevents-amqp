@@ -23,19 +23,19 @@ spec:
       name: amqp
   selector:
     app: qpid-dispatcher-b
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: amqp-dispatch-service-c
-  labels:
-    app: qpid-dispatcher-c
-spec:
-  ports:
-    - port: 5672
-      name: amqp
-  selector:
-    app: qpid-dispatcher-c
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: amqp-dispatch-service-c
+#  labels:
+#    app: qpid-dispatcher-c
+#spec:
+#  ports:
+#    - port: 5672
+#      name: amqp
+#  selector:
+#    app: qpid-dispatcher-c
 ---
 apiVersion: v1
 kind: Service
@@ -66,18 +66,18 @@ spec:
       nodePort: 30037
   selector:
     app: qpid-dispatcher-b
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: amqp-dispatch-router-service-c
-  labels:
-    app: qpid-dispatcher-c
-spec:
-  type: NodePort
-  ports:
-    - port: 20002
-      targetPort: 20001
-      nodePort: 30038
-  selector:
-    app: qpid-dispatcher-c
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: amqp-dispatch-router-service-c
+#  labels:
+#    app: qpid-dispatcher-c
+#spec:
+#  type: NodePort
+#  ports:
+#    - port: 20002
+#      targetPort: 20001
+#      nodePort: 30038
+#  selector:
+#    app: qpid-dispatcher-c
