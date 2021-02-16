@@ -8,6 +8,6 @@ replicas:
   - name: qpid-dispatcher-deployment-a
     count: 1
   - name: qpid-dispatcher-deployment-b
-    count: 1
+    count: 0
 #  - name: qpid-dispatcher-deployment-c
 #    count: 1
