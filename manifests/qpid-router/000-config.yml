@@ -168,7 +168,7 @@ data:
     # Connect to A
      connector {
          role: inter-router
-         host: cnfde7.ptp.lab.eng.bos.redhat.com
+         host: cnfdt08.lab.eng.tlv2.redhat.com
          port: 30036
          saslMechanisms: ANONYMOUS
      }
