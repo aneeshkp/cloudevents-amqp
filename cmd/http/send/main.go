@@ -24,7 +24,7 @@ var (
 func main() {
 	//	portPtr := flag.String("port", "8080", "a string")
 
-	ctx := cloudevents.ContextWithTarget(context.Background(), fmt.Sprintf("http://localhost:%d/", httpPort))
+	ctx := cloudevents.ContextWithTarget(context.Background(), fmt.Sprintf("rest://localhost:%d/", httpPort))
 
 	p, err := cloudevents.NewHTTP()
 	if err != nil {
@@ -56,11 +56,11 @@ func main() {
 			}
 			wg.Done()
 			elapsed := time.Since(start)
-			log.Printf("ce-http Took %s to send message number %d", elapsed, i)
+			log.Printf("ce-rest Took %s to send message number %d", elapsed, i)
 		}(i, start)
 	}
 	wg.Wait()
 	elapsed := time.Since(start)
-	log.Printf("ce-http Took %s to send all %d messages ", elapsed, defaultMsgCount)
+	log.Printf("ce-rest Took %s to send all %d messages ", elapsed, defaultMsgCount)
 
 }
