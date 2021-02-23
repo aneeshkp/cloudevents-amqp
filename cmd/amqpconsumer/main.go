@@ -49,7 +49,7 @@ func main() {
 			event.SetTime(time.Now())
 			event.SetType("com.cloudevents.poc.event.sent")
 
-			log.Printf("Setting Data for %d", i)
+			log.Printf("Setting DataIn for %d", i)
 			err := event.SetData(cloudevents.ApplicationJSON,
 				&Message{
 					Sequence: i,

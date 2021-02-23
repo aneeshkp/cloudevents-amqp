@@ -47,6 +47,8 @@ spec:
                   fieldPath: status.podIP
         - name: yolo-sidecar
           image: sidecar
+          lifecycle:
+            type: Sidecar
           command: [ "./sidecar-yolo" ]
           args: [ "-config", "/opt/config.yml" ]
           volumeMounts:

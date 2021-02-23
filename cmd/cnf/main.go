@@ -61,8 +61,8 @@ func main() {
 		},
 	}
 
-	fmt.Printf("Sleeping %d sec...\n", 10)
-	time.Sleep(time.Duration(10) * time.Second)
+	//fmt.Printf("Sleeping %d sec...\n", 10)
+	//time.Sleep(time.Duration(10) * time.Second)
 	//diceTicker := time.NewTicker(time.Duration(rollInMsMin) * time.Millisecond)
 	//avgPerSecTicker := time.NewTicker(time.Duration(1) * time.Second)
 
@@ -91,7 +91,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		for range time.Tick(time.Second) {
+		for  range time.Tick(time.Second) {
 			fmt.Printf("|Total message sent mps:|%2.2f|\n", float64(totalPerSecMsgCount))
 			//atomic.CompareAndSwapUint64(&totalPerSecMsgCount, totalPerSecMsgCount, 0)
 			totalPerSecMsgCount = 0

@@ -20,8 +20,9 @@ import (
 type Router struct {
 	Listeners map[string]*types.AMQPProtocol
 	Senders   map[string]*types.AMQPProtocol
-	Data      <-chan protocol.DataEvent
+	DataIn    <-chan protocol.DataEvent
 	cfg       protocol.Config
+	DataOut   chan <-protocol.DataEvent
 }
 
 func InitServer(hostname string, port int) *Router {
@@ -32,6 +33,7 @@ func InitServer(hostname string, port int) *Router {
 		},
 		Listeners: map[string]*types.AMQPProtocol{},
 		Senders:   map[string]*types.AMQPProtocol{},
+
 	}
 	return &server
 }
@@ -88,7 +90,6 @@ func (q *Router) Receive(wg *sync.WaitGroup, address string, fn func(e cloudeven
 	var err error
 	defer wg.Done()
 	if val, ok := q.Listeners[address]; ok {
-		wg.Add(1)
 		err = val.Client.StartReceiver(context.Background(), fn)
 		if err != nil {
 			log.Printf("AMQP receiver error: %v", err)
@@ -112,15 +113,39 @@ func (q *Router) ReceiveAll(wg *sync.WaitGroup, fn func(e cloudevents.Event)) {
 	}
 
 }
-func (q *Router) Sender(wg *sync.WaitGroup) {
+func (q *Router) QDRRouter(wg *sync.WaitGroup) {
 	defer wg.Done()
 	for { //nolint:gosimple
 		select {
-		case d := <-q.Data:
+		case d := <-q.DataIn:
+			if d.PubSubType == protocol.CONSUMER {
+				log.Printf("reading from data %s", d.Address)
+				if d.Address != "" && d.Data.Data() == nil { //create new address protocol
+					if _, ok := q.Listeners[d.Address]; !ok {
+						log.Printf("(1)Listener not found for the following address %s , creating listener", d.Address)
+						err := q.NewReceiver(d.Address)
+						if err != nil {
+							log.Printf("Error creating Receiver %v", err)
+						}else{
+							wg.Add(1)
+							go q.Receive(wg, d.Address, func(e cloudevents.Event) {
+								//log.Printf("Received event  %s", string(e.Data()))
+								 // Not the clean way of doing , revisit
+								q.DataOut <-protocol.DataEvent{
+									Address:   d.Address,
+									Data:e,
+									EventStatus: protocol.NEW,
+									PubSubType: protocol.CONSUMER,
+								}
+							})
+						}
+					}
+				}
+			} else if d.PubSubType == protocol.PRODUCER {
 			//log.Printf("reading from data %s", d.Address)
 			if d.Address != "" && d.Data.Data() == nil { //create new address protocol
 				if _, ok := q.Senders[d.Address]; !ok {
-					log.Printf("(1)Sender not found for the following address %s", d.Address)
+					log.Printf("(1)Sender not found for the following address %s , creating sender", d.Address)
 					err := q.NewSender(d.Address)
 					if err != nil {
 						log.Printf("Error creating sender %v", err)
@@ -132,19 +157,20 @@ func (q *Router) Sender(wg *sync.WaitGroup) {
 				q.SendToAll(wg, d.Data)
 			} else if d.Data.Data() != nil && d.Address != "" { //send to specific address
 				if _, ok := q.Senders[d.Address]; !ok {
-					log.Printf("(2)Sender not found for the following address %s", d.Address)
+					log.Printf("(2)Sender not found for the following address %s, creating sender", d.Address)
 					err := q.NewSender(d.Address)
 					if err != nil {
 						log.Printf("Error creating sender %v", err)
 					}
 				}
-				q.SendTo(wg, d.Address, d.Data)
+
+					q.SendTo(wg, d.Address, d.Data)
 			}
+		}
 		}
 	}
 }
 func (q *Router) SendTo(wg *sync.WaitGroup, address string, event cloudevents.Event) {
-	defer wg.Done()
 	if val, ok := q.Senders[address]; ok {
 		wg.Add(1) //for each sender you send a message since its
 		go func(s *types.AMQPProtocol, e cloudevents.Event, wg *sync.WaitGroup) {
@@ -153,16 +179,27 @@ func (q *Router) SendTo(wg *sync.WaitGroup, address string, event cloudevents.Ev
 			defer cancel()
 			if result := s.Client.Send(ctx, event); cloudevents.IsUndelivered(result) {
 				log.Printf("Failed to send: %v", result)
+				q.DataOut <-protocol.DataEvent{
+					Address:   address,
+					Data:e,
+					EventStatus: protocol.FAILED,
+					PubSubType: protocol.PRODUCER,
+				}
 			} else if cloudevents.IsNACK(result) {
 				log.Printf("Event not accepted: %v", result)
+				q.DataOut <-protocol.DataEvent{
+					Address:   address,
+					Data:e,
+					EventStatus: protocol.SUCCEED,
+					PubSubType: protocol.PRODUCER,
+				}
 			}
 		}(val, event, wg)
 	}
 }
 
 func (q *Router) SendToAll(wg *sync.WaitGroup, event cloudevents.Event) {
-	defer wg.Done()
-	for _, s := range q.Senders {
+	for k, s := range q.Senders {
 		wg.Add(1) //for each sender you send a message since its
 		go func(s *types.AMQPProtocol, e cloudevents.Event, wg *sync.WaitGroup) {
 			defer wg.Done()
@@ -170,8 +207,20 @@ func (q *Router) SendToAll(wg *sync.WaitGroup, event cloudevents.Event) {
 			defer cancel()
 			if result := s.Client.Send(ctx, event); cloudevents.IsUndelivered(result) {
 				log.Printf("Failed to send: %v", result)
+				q.DataOut <-protocol.DataEvent{
+					Address:k ,
+					Data:e,
+					EventStatus: protocol.FAILED,
+					PubSubType: protocol.PRODUCER,
+				} // Not the clean way of doing , revisit
 			} else if cloudevents.IsNACK(result) {
 				log.Printf("Event not accepted: %v", result)
+				q.DataOut <-protocol.DataEvent{
+					Address:k,
+					Data:e,
+					EventStatus: protocol.SUCCEED,
+					PubSubType: protocol.PRODUCER,
+				} // Not the clean way of doing , revisit
 			}
 		}(s, event, wg)
 	}

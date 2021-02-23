@@ -113,7 +113,7 @@ func SendMessage(wg *sync.WaitGroup, s *types.AMQPProtocol) {
 		event.SetSource("https://github.com/aneeshkp/cloud-events/producer")
 		event.SetTime(time.Now())
 		event.SetType("com.cloudevents.poc.event.sent")
-		//log.Printf("Setting Data for %d", i)
+		//log.Printf("Setting DataIn for %d", i)
 		msg := types.Message{ID: i, Msg: "Hello world"}
 		err := event.SetData(cloudevents.ApplicationJSON, msg)
 		if err != nil {
