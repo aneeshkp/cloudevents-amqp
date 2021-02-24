@@ -1,0 +1,291 @@
+package events
+
+import (
+	"bytes"
+	"encoding/json"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/chain"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
+	"log"
+	"math/rand"
+	"net"
+	"net/http"
+	"os"
+	"time"
+)
+
+//Event  creates event object
+type Event struct {
+	avgMsgPerSec int
+	totalMsgSent int64
+	eventHandler types.EventHandler
+	pubStore     map[string]types.Subscription
+	subStore     map[string]types.Subscription
+	port         int
+	returnURL    string
+}
+
+//GetTotalMsgSent returns total message sent
+func (e *Event) GetTotalMsgSent() int64 {
+	return e.totalMsgSent
+}
+
+//ResetTotalMsgSent to reset total message sent
+func (e *Event) ResetTotalMsgSent() {
+	e.totalMsgSent = 0
+}
+
+// New create new event object
+func New(avgMsgPerSec int, pubStore map[string]types.Subscription, subStore map[string]types.Subscription, port int, eventHandler types.EventHandler, eventPublisherURL string) *Event {
+	return &Event{
+		avgMsgPerSec: avgMsgPerSec,
+		totalMsgSent: 0,
+		eventHandler: eventHandler,
+		pubStore:     pubStore,
+		subStore:     subStore,
+		port:         port,
+		returnURL:    eventPublisherURL,
+	}
+}
+
+//GenerateEvents is used to generate mock data
+func (e *Event) GenerateEvents(id string) {
+
+	states := intiState(e.returnURL)
+
+	transition := [][]float32{
+		{
+			0.6, 0.1, 0.1, 0.0, 0.2,
+		},
+		{
+			0.1, 0.7, 0.1, 1.0, 1.0,
+		},
+		{
+			0.3, 0.3, 0.1, 0.1, 0.0,
+		},
+		{
+			0.2, 0.3, 0.3, 0.1, 0.1,
+		},
+		{
+			0.3, 0.3, 0.3, 0.1, 0.0,
+		},
+	}
+
+	//fmt.Printf("Sleeping %d sec...\n", 10)
+
+	// initialize current state
+	currentStateID := 1
+	c := chain.Create(transition, states)
+	currentStateChoice := c.GetStateChoice(currentStateID)
+	currentStateID = currentStateChoice.Item.(int)
+
+	avgMsgPeriodMs := 1000 / e.avgMsgPerSec //100
+	log.Printf("avgMsgPerMs: %d\n", avgMsgPeriodMs)
+	midpoint := avgMsgPeriodMs / 2
+
+	log.Printf("midpoint: %d\n", midpoint)
+
+	tck := time.NewTicker(time.Duration(1000) * time.Microsecond)
+	maxCount := avgMsgPeriodMs
+	counter := 0
+	for range tck.C {
+		currentStateChoice := c.GetStateChoice(currentStateID)
+		currentStateID = currentStateChoice.Item.(int)
+		currentState := c.GetState(currentStateID)
+		if counter >= maxCount {
+			if currentState.Probability > 0 {
+				//for i := 1; i <= currentState.Payload.ID; i++ {
+				if e.eventHandler == types.SOCKET {
+					err := e.udpEvent(currentState.Payload, id)
+					if err == nil {
+						e.totalMsgSent++
+					}
+				} else {
+					err := e.httpEvent(currentState.Payload, id)
+					if err == nil {
+						e.totalMsgSent++
+					}
+				}
+			}
+			maxCount = rand.Intn(avgMsgPeriodMs+1) + midpoint
+			counter = 0
+		}
+		counter++
+	}
+}
+
+func intiState(eventConsumeURL string) []chain.State {
+	//events := getSupportedEvents()
+	nodeName := os.Getenv("MY_NODE_NAME")
+	if nodeName == "" {
+		nodeName = "unknownnode"
+	}
+	states := []chain.State{
+		{
+			ID: 1,
+			Payload: types.Subscription{
+				SubscriptionID: "",
+				URILocation:    "",
+				ResourceType:   "",
+				EndpointURI:    eventConsumeURL,
+				ResourceQualifier: types.ResourceQualifier{
+					NodeName:    nodeName,
+					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
+					ClusterName: "unknown",
+					Suffix:      []string{"SYNC", "PTP"},
+				},
+				EventData:      types.EventDataType{State: types.FREERUN},
+				EventTimestamp: 0,
+				Error:          "",
+			},
+			Probability: 99,
+		},
+		{
+			ID: 2,
+			Payload: types.Subscription{
+				SubscriptionID: "",
+				URILocation:    "",
+				ResourceType:   "",
+				EndpointURI:    eventConsumeURL,
+				ResourceQualifier: types.ResourceQualifier{
+					NodeName:    nodeName,
+					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
+					ClusterName: "unknown",
+					Suffix:      []string{"SYNC", "PTP"},
+				},
+				EventData:      types.EventDataType{State: types.HOLDOVER},
+				EventTimestamp: 0,
+				Error:          "",
+			},
+			Probability: 99,
+		},
+		{
+			ID: 3,
+			Payload: types.Subscription{
+				SubscriptionID: "",
+				URILocation:    "",
+				ResourceType:   "",
+				EndpointURI:    eventConsumeURL,
+				ResourceQualifier: types.ResourceQualifier{
+					NodeName:    nodeName,
+					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
+					ClusterName: "unknown",
+					Suffix:      []string{"SYNC", "PTP"},
+				},
+				EventData:      types.EventDataType{State: types.LOCKED},
+				EventTimestamp: 0,
+				Error:          "",
+			},
+			Probability: 99,
+		},
+		{
+			ID: 4,
+			Payload: types.Subscription{
+				SubscriptionID: "",
+				URILocation:    "",
+				ResourceType:   "",
+				EndpointURI:    eventConsumeURL,
+				ResourceQualifier: types.ResourceQualifier{
+					NodeName:    nodeName,
+					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
+					ClusterName: "unknown",
+					Suffix:      []string{"SYNC", "PTP"},
+				},
+				EventData:      types.EventDataType{State: types.FREERUN},
+				EventTimestamp: 0,
+				Error:          "",
+			},
+			Probability: 99,
+		},
+		{
+			ID: 5,
+			Payload: types.Subscription{
+				SubscriptionID: "",
+				URILocation:    "",
+				ResourceType:   "",
+				EndpointURI:    eventConsumeURL,
+				ResourceQualifier: types.ResourceQualifier{
+					NodeName:    nodeName,
+					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
+					ClusterName: "unknown",
+					Suffix:      []string{"SYNC", "PTP"},
+				},
+				EventData:      types.EventDataType{State: types.LOCKED},
+				EventTimestamp: 0,
+				Error:          "",
+			},
+			Probability: 99,
+		},
+	}
+	return states
+}
+
+//Event will generate random events
+func (e *Event) httpEvent(payload types.Subscription, id string) (err error) {
+	//payload.EndpointURI = fmt.Sprintf("%s:%d%s/event/ack", "http://localhost", 9090, SUBROUTINE)
+	if pub, ok := e.pubStore[id]; ok {
+		payload.SubscriptionID = id
+		payload.URILocation = pub.URILocation
+		now := time.Now()
+		nanos := now.UnixNano()
+		// Note that there is no `UnixMillis`, so to get the
+		// milliseconds since epoch you'll need to manually
+		// divide from nanoseconds.
+		millis := nanos / 1000000
+		payload.EventTimestamp = millis
+		b, err := json.Marshal(payload)
+		if err != nil {
+			log.Printf("The marshal error %s\n", err)
+		}
+
+		//log.Printf("Posting event to %s\n", pub.EndpointURI)
+		response, err := http.Post(pub.EndpointURI, "application/json", bytes.NewBuffer(b))
+		if err != nil {
+			log.Printf("http event:the http request failed with and error %s\n", err)
+			return err
+		}
+		defer response.Body.Close()
+		if response.StatusCode == http.StatusAccepted {
+			log.Printf("failed to send events via http")
+		}
+	}
+
+	//fmt.Printf("Sending %v messages\n", payload)
+	return err
+}
+
+//Event will generate random events
+func (e *Event) udpEvent(payload types.Subscription, publisherID string) error {
+	if pub, ok := e.pubStore[publisherID]; ok {
+		payload.SubscriptionID = publisherID
+		payload.URILocation = pub.URILocation
+		//payload.EndpointURI = fmt.Sprintf("%s:%d%s/event/ack", "http://localhost", 9090, SUBROUTINE)
+		now := time.Now()
+		nanos := now.UnixNano()
+		// Note that there is no `UnixMillis`, so to get the
+		// milliseconds since epoch you'll need to manually
+		// divide from nanoseconds.
+		millis := nanos / 1000000
+		payload.EventTimestamp = millis
+
+		b, err := json.Marshal(payload)
+		if err != nil {
+			log.Printf("The marshal error %s\n", err)
+			return err
+		}
+		Conn, _ := net.DialUDP("udp", nil, &net.UDPAddr{IP: []byte{127, 0, 0, 1}, Port: e.port, Zone: ""})
+		defer Conn.Close()
+
+		if _, err = Conn.Write(b); err != nil {
+			log.Printf("The socket error %s\n", err)
+			return err
+		}
+
+		if err != nil {
+			log.Printf("failed to send  event via SOCKET %s\n", err)
+		}
+
+	}
+	//fmt.Printf("Sending %v messages\n", payload)
+	return nil
+
+}

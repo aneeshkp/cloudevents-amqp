@@ -8,33 +8,36 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 )
 
+// Address of teh QDR
 type Address struct {
+	// Name of teh QDR address
 	Name string `json:"name"`
 }
 
 var (
 	//TODO: sync.Map
-	PublisherStore    = map[string]types.Subscription{}
+
+	// PublisherStore stores publishers in a map
+	PublisherStore = map[string]types.Subscription{}
+	// SubscriptionStore stores subscription in a map
 	SubscriptionStore = map[string]types.Subscription{}
-	wg                sync.WaitGroup
 )
 
+// SUBROUTINE is constant for rest api endpoint
 const SUBROUTINE = "/api/ocloudnotifications/v1"
 
+// Server defines rest api server object
 type Server struct {
-	cfg          protocol.Config
-	address      []string
-	DataOut      chan<- protocol.DataEvent
-	addressStore []Address
-	lock         sync.RWMutex
-	HttpClient   *http.Client
+	cfg        protocol.Config
+	dataOut    chan<- protocol.DataEvent
+	HTTPClient *http.Client
 }
 
-func InitServer(hostname string, port int, pubFile, subFile string) *Server {
+// InitServer is used to supply configurations for rest api server
+func InitServer(hostname string, port int, pubFile, subFile string, dataOut chan<- protocol.DataEvent) *Server {
 	server := Server{
 		cfg: protocol.Config{
 			HostName:    hostname,
@@ -42,16 +45,17 @@ func InitServer(hostname string, port int, pubFile, subFile string) *Server {
 			PubFilePath: pubFile,
 			SubFilePath: subFile,
 		},
-		HttpClient: &http.Client{
+		dataOut: dataOut,
+		HTTPClient: &http.Client{
 			Timeout: 1 * time.Second,
 		},
 	}
 
 	return &server
 }
-func (s *Server) Start() error {
-	// init store
-	//load publisher store
+
+// Start will start res api service
+func (s *Server) Start() {
 	pub := types.Subscription{}
 	b, err := pub.ReadFromFile(s.cfg.PubFilePath)
 	if err != nil {
@@ -88,7 +92,7 @@ func (s *Server) Start() error {
 	/*Request
 	   {
 		"ResourceType": "PTP",
-	    "EndpointUri ": "http://localhost:9090/resourcestatus/ptp", /// daemon
+	    "EndpointURI ": "http://localhost:9090/resourcestatus/ptp", /// daemon
 		"ResourceQualifier": {
 				"NodeName":"worker-1"
 				"Source":"/cluster-x/worker-1/SYNC/PTP"
@@ -96,11 +100,11 @@ func (s *Server) Start() error {
 		}
 	Response:
 			{
-			//"SubscriptionId": "789be75d-7ac3-472e-bbbc-6d62878aad4a",
+			//"SubscriptionID": "789be75d-7ac3-472e-bbbc-6d62878aad4a",
 	        "PublisherId": "789be75d-7ac3-472e-bbbc-6d62878aad4a",
-			"UriLocation": "http://localhost:8080/ocloudNotifications/v1/subsciptions/789be75d-7ac3-472e-bbbc-6d62878aad4a",
+			"URILocation": "http://localhost:8080/ocloudNotifications/v1/subsciptions/789be75d-7ac3-472e-bbbc-6d62878aad4a",
 			"ResourceType": "PTP",
-	         "EndpointUri ": "http://localhost:9090/resourcestatus/ptp", // address where the event
+	         "EndpointURI ": "http://localhost:9090/resourcestatus/ptp", // address where the event
 				"ResourceQualifier": {
 				"NodeName":"worker-1"
 	              "Source":"/cluster-x/worker-1/SYNC/PTP"
@@ -137,31 +141,16 @@ func (s *Server) Start() error {
 	//TODO: Pull Status Notifications Not implementing
 
 	api.HandleFunc("/event/create", s.createEvent).Methods(http.MethodPost)
+	//	api.HandleFunc("/status/subscripio", s.getStatus).Methods(http.MethodGet)
 	//api.HandleFunc("/event/{address}/create", s.sendEvent).Methods(http.MethodPost)
 	api.HandleFunc("/", notFound)
 	log.Print("Started Rest API Server")
 	log.Printf("endpoint %s", SUBROUTINE)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", s.cfg.HostName, s.cfg.Port), api))
-	return nil
+
 }
-
-
-
 
 func notFound(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte(`{"message": "not found"}`))
-}
-
-func (s *Server) read(address string) []byte {
-	//s.lock.RLock()
-	//defer s.lock.RUnlock()
-	jsonString, _ := json.Marshal(s.addressStore)
-	return jsonString
-}
-func (s *Server) write(address string) {
-	//s.lock.Lock()
-	//defer s.lock.Unlock()
-	s.addressStore = append(s.addressStore, Address{Name: address})
 }

@@ -1,10 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/aneeshkp/cloudevents-amqp/pkg/chain"
+	routes2 "github.com/aneeshkp/cloudevents-amqp/cmd/cnf/routes"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/events"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol/rest"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/report"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
+	"github.com/gorilla/mux"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"sync"
 
 	"math/rand"
@@ -23,235 +31,313 @@ and send events between 1 to 100K
 */
 
 var (
-	udpPort = 10001
-	//totalMsgCount       int64  = 0
-	totalPerSecMsgCount uint64 = 0
-	avgMessagesPerSec          = 500
-	//rollInMsMax                = 5
-	wg sync.WaitGroup
+	//PubStore for storing publisher info that is returned by restapi
+	PubStore map[string]types.Subscription
+	//SubStore for storing Subscription info that is returned by restapi
+	SubStore           map[string]types.Subscription
+	senderSocketPort   = 30002
+	listenerSocketPort = 30001
+	avgMessagesPerSec  = 100
+	wg                 sync.WaitGroup
+	cnfType            = BOTH
+	sidCarAPIHostName  = "localhost"
+	sideCarAPIPort     = 8080
+	apiHostName        = "localhost"
+	apiPort            = 9090
+	eventHandler       = types.HTTP
+)
+
+//CNFTYPE is used to play both roles PTP daemon(PRODUCER) and vDU (CONSUMER)
+type CNFTYPE string
+
+const (
+	//SUBROUTINE rest subroutine path
+	SUBROUTINE = "/api/cnf/v1"
+	//PRODUCER specifies role of a CNF
+	PRODUCER CNFTYPE = "PRODUCER"
+	//CONSUMER specifies role of a CNF
+	CONSUMER CNFTYPE = "CONSUMER"
+	//BOTH specifies role of a CNF
+	BOTH CNFTYPE = "BOTH"
+)
+
+var (
+	publisherID     string
+	eventConsumeURL string
+	eventPublishURL string
 )
 
 // init sets initial values for variables used in the function.
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
+
 func main() {
-	//var err error
-	states := intiState()
+	config()
+	PubStore = map[string]types.Subscription{}
+	SubStore = map[string]types.Subscription{}
+
+	//Consumer vDU URL event are read from QDR by sidecar and posted to vDU
+	eventConsumeURL = fmt.Sprintf("http://%s:%d%s/event/alert", apiHostName, apiPort, SUBROUTINE)
+	//SIDECAR URL: PTP events are published via post to its sidecar
+	eventPublishURL = fmt.Sprintf("http://%s:%d%s/event/create", sidCarAPIHostName, sideCarAPIPort, rest.SUBROUTINE)
+	//Start the Rest API server to read ack
+	wg.Add(1)
+	go func() {
+		startServer(&wg)
+	}()
+
+	// continue after health check
+	healthCheckAPIEndpoints()
+
+	createPubSub(eventConsumeURL, eventPublishURL) //create publisher or subscription base on configurations
+	//Latency report
+	time.Sleep(5 * time.Second)
+
+	if eventHandler == types.SOCKET {
+		//send count to this channel
+		latencyCountCh := make(chan int64, 10)
+		latencyReport := report.New(&wg, "default")
+		latencyReport.Collect(latencyCountCh)
+		socketListener(&wg, "localhost", listenerSocketPort, latencyCountCh)
+	}
+
+	event := events.New(avgMessagesPerSec, PubStore, SubStore, senderSocketPort, eventHandler, eventConsumeURL)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for range time.Tick(1 * time.Second) {
+			fmt.Printf("|Total message sent mps:|%2.2f|\n", float64(event.GetTotalMsgSent()))
+			//atomic.CompareAndSwapUint64(&totalPerSecMsgCount, totalPerSecMsgCount, 0)
+			event.ResetTotalMsgSent()
+		}
+	}()
+	event.GenerateEvents(publisherID)
+}
+func startServer(wg *sync.WaitGroup) {
+	defer wg.Done()
+	routes := routes2.CnfRoutes{}
+	r := mux.NewRouter()
+	api := r.PathPrefix(SUBROUTINE).Subrouter()
+	api.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "api v1")
+	})
+	api.HandleFunc("/event/ack", routes.EventAck).Methods(http.MethodPost)
+	api.HandleFunc("/event/alert", routes.EventAlert).Methods(http.MethodPost)
+	api.HandleFunc("/health", routes.Health).Methods(http.MethodGet)
+	log.Print("Started Rest API Server")
+	log.Printf("endpoint %s", SUBROUTINE)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", apiHostName, apiPort), api))
+}
+
+//Side car publishers
+func healthCheckAPIEndpoints() {
+	//health check the webserver
+	for {
+		response, err := http.Get(fmt.Sprintf("http://%s:%d%s/health", apiHostName, apiPort, SUBROUTINE))
+		if err != nil {
+			log.Printf("Error connecting to rest api %v", err)
+			continue
+		}
+		if response != nil && response.StatusCode == http.StatusOK {
+			response.Body.Close()
+			break
+		}
+		response.Body.Close()
+		log.Printf("waiting for self hosted rest service to start\n")
+		time.Sleep(2 * time.Second)
+	}
+
+	//health check sidecar rest api
+	for {
+		response, err := http.Get(fmt.Sprintf("http://%s:%d%s/health", sidCarAPIHostName, sideCarAPIPort, rest.SUBROUTINE))
+		if err != nil {
+			log.Printf("Error connecting to rest api %v", err)
+			continue
+		}
+		if response != nil && response.StatusCode == http.StatusOK {
+			response.Body.Close()
+			break
+		}
+		response.Body.Close()
+		log.Printf("waiting for sidecar rest service to start\n")
+		time.Sleep(2 * time.Second)
+	}
+}
+
+func createPublisher(eventPublishURL string) (string, error) {
+	nodeName := os.Getenv("MY_NODE_NAME")
+	if nodeName == "" {
+		nodeName = "unknownnode"
+	}
+
+	ptpSubscription := types.Subscription{
+		URILocation:  fmt.Sprintf("http://%s:%d%s/event/ack", apiHostName, apiPort, SUBROUTINE),
+		ResourceType: "PTP",
+		EndpointURI:  eventPublishURL,
+		ResourceQualifier: types.ResourceQualifier{
+			NodeName:    nodeName,
+			ClusterName: "unknown",
+			Suffix:      []string{"SYNC", "PTP"},
+		},
+		EventData:      types.EventDataType{},
+		EventTimestamp: 0,
+		Error:          "",
+	}
+	jsonValue, _ := json.Marshal(ptpSubscription)
+	log.Printf("Post URL %s", fmt.Sprintf("http://%s:%d%s/publishers", sidCarAPIHostName, sideCarAPIPort, rest.SUBROUTINE))
+	response, err := http.Post(fmt.Sprintf("http://%s:%d%s/publishers", sidCarAPIHostName, sideCarAPIPort, rest.SUBROUTINE), "application/json; charset=utf-8", bytes.NewBuffer(jsonValue))
+	if err != nil {
+		log.Printf("create publisher: the http request failed with an error %s\n", err)
+		return "", err
+	}
+	defer response.Body.Close() // Close body only if response non-nil
+	if response.StatusCode == http.StatusCreated {
+		data, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return "", nil
+		}
+		var pub types.Subscription
+		err = json.Unmarshal(data, &pub)
+		if err != nil {
+			log.Println("failed to successfully marshal json data from the response")
+		} else {
+			fmt.Printf("The publisher return is %s\n", string(data))
+			PubStore[pub.SubscriptionID] = pub
+			return pub.SubscriptionID, nil
+		}
+	} else {
+		err = fmt.Errorf("error returning from http post %d", response.StatusCode)
+	}
+	return "", err
+}
+
+func createSubscription(eventPostURL string) (string, error) {
+	nodeName := os.Getenv("MY_NODE_NAME")
+	if nodeName == "" {
+		nodeName = "unknownnode"
+	}
+	ptpSubscription := types.Subscription{
+		URILocation:  "",
+		ResourceType: "PTP",
+		EndpointURI:  eventPostURL,
+		ResourceQualifier: types.ResourceQualifier{
+			NodeName:    nodeName,
+			ClusterName: "unknown",
+			Suffix:      []string{"SYNC", "PTP"},
+		},
+		EventData:      types.EventDataType{},
+		EventTimestamp: 0,
+		Error:          "",
+	}
+	jsonValue, _ := json.Marshal(ptpSubscription)
+
+	log.Println(fmt.Sprintf("http://%s:%d%s/subscriptions", sidCarAPIHostName, sideCarAPIPort, rest.SUBROUTINE))
+	response, err := http.Post(fmt.Sprintf("http://%s:%d%s/subscriptions", sidCarAPIHostName, sideCarAPIPort, rest.SUBROUTINE), "application/json; charset=utf-8", bytes.NewBuffer(jsonValue))
+	if err != nil {
+		log.Printf("The HTTP request failed with error %s\n", err)
+		return "", err
+	}
+	defer response.Body.Close() // Close body only if response non-nil
+	if response.StatusCode == http.StatusCreated {
+		defer response.Body.Close() // Close body only if response non-nil
+		data, _ := ioutil.ReadAll(response.Body)
+		var sub types.Subscription
+		err = json.Unmarshal(data, &sub)
+		if err != nil {
+			log.Println("failed to successfully marshal json data from the response")
+		} else {
+			log.Printf("The subscription return is %v", sub)
+			PubStore[sub.SubscriptionID] = sub
+			return sub.SubscriptionID, nil
+		}
+	} else {
+		log.Printf("failed to create subscription %d", response.StatusCode)
+		err = fmt.Errorf("error returning from http post %d", response.StatusCode)
+	}
+	return "", err
+}
+
+func socketListener(wg *sync.WaitGroup, hostname string, udpListenerPort int, latencyCountChannel chan int64) {
+	wg.Add(1)
+	go func(wg *sync.WaitGroup, hostname string, udpListenerPort int, latencyCountChannel chan int64) {
+		defer wg.Done()
+		ServerConn, err := net.ListenUDP("udp", &net.UDPAddr{IP: []byte{0, 0, 0, 0}, Port: udpListenerPort, Zone: ""})
+		if err != nil {
+			log.Fatalf("Error setting up socket %v", err)
+		}
+		defer ServerConn.Close()
+		buffer := make([]byte, 1024)
+		for {
+			n, _, err := ServerConn.ReadFromUDP(buffer)
+			if err != nil {
+				log.Printf("socker %v\n", err)
+				continue
+			}
+			//event := cloudevents.NewEvent()
+			sub := types.Subscription{}
+			err = json.Unmarshal(buffer[:n], &sub)
+			if err != nil {
+				log.Printf("Error marshalling cloud events")
+				continue
+			}
+			now := time.Now()
+			nanos := now.UnixNano()
+			// Note that there is no `UnixMillis`, so to get the
+			// milliseconds since epoch you'll need to manually
+			// divide from nanoseconds.
+			millis := nanos / 1000000
+			latency := millis - sub.EventTimestamp
+			latencyCountChannel <- latency
+		}
+	}(wg, hostname, udpListenerPort, latencyCountChannel)
+
+}
+
+func config() {
 	envMsgPerSec := os.Getenv("MSG_PER_SEC")
 	if envMsgPerSec != "" {
 		avgMessagesPerSec, _ = strconv.Atoi(envMsgPerSec)
 	}
 
-	transition := [][]float32{
-		{
-			0.6, 0.1, 0.1, 0.0, 0.2,
-		},
-		{
-			0.1, 0.7, 0.1, 1.0, 1.0,
-		},
-		{
-			0.3, 0.3, 0.1, 0.1, 0.0,
-		},
-		{
-			0.2, 0.3, 0.3, 0.1, 0.1,
-		},
-		{
-			0.3, 0.3, 0.3, 0.1, 0.0,
-		},
+	//determines either to act as event consumer or event publisher
+	envCNFType := os.Getenv("CNF_TYPE")
+	if envCNFType != "" {
+		cnfType = CNFTYPE(envCNFType)
 	}
-
-	//fmt.Printf("Sleeping %d sec...\n", 10)
-	//time.Sleep(time.Duration(10) * time.Second)
-	//diceTicker := time.NewTicker(time.Duration(rollInMsMin) * time.Millisecond)
-	//avgPerSecTicker := time.NewTicker(time.Duration(1) * time.Second)
-
-	// initialize current state
-	currentStateID := 1
-	c := chain.Create(transition, states)
-	currentStateChoice := c.GetStateChoice(currentStateID)
-	currentStateID = currentStateChoice.Item.(int)
-	//rand.Seed(time.Now().UnixNano())
-	/*min := -20 // rollInMsMin
-	max := 20 //rollInMsMax
-	*/
-	// start
-	//send message
-	// 100 ms as constant
-	// rand(-20 and 20)
-	// sleep 110ms
-	// send message
-
-	avgMsgPeriodMs := 1000 / avgMessagesPerSec //100
-	fmt.Printf("avgMsgPerMs: %d\n", avgMsgPeriodMs)
-	midpoint := avgMsgPeriodMs / 2
-
-	fmt.Printf("midpoint: %d\n", midpoint)
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for  range time.Tick(time.Second) {
-			fmt.Printf("|Total message sent mps:|%2.2f|\n", float64(totalPerSecMsgCount))
-			//atomic.CompareAndSwapUint64(&totalPerSecMsgCount, totalPerSecMsgCount, 0)
-			totalPerSecMsgCount = 0
-		}
-	}()
-
-	tck := time.NewTicker(time.Duration(1000) * time.Microsecond)
-	maxCount := avgMsgPeriodMs
-	counter := 0
-	for range tck.C {
-		currentStateChoice := c.GetStateChoice(currentStateID)
-		currentStateID = currentStateChoice.Item.(int)
-		currentState := c.GetState(currentStateID)
-		if counter >= maxCount {
-			if currentState.Payload.Probability > 0 {
-				//for i := 1; i <= currentState.Payload.ID; i++ {
-				_ = Event(currentState.Payload)
-				totalPerSecMsgCount++
-				//}
-			}
-
-			maxCount = rand.Intn(avgMsgPeriodMs+1) + midpoint
-			counter = 0
-		}
-		counter++
+	envSidCarAPIHostName := os.Getenv("SC_API_HOST_NAME")
+	if envSidCarAPIHostName != "" {
+		sidCarAPIHostName = envSidCarAPIHostName
 	}
-
-	//wg.Wait()
-	/*
-		for { //nolint:gosimple
-			select {
-			case <-diceTicker.C:
-				currentStateChoice := c.GetStateChoice(currentStateID)
-				currentStateID = currentStateChoice.Item.(int)
-				currentState := c.GetState(currentStateID)
-				//	r := rand.Intn(50)
-				if currentState.Payload.Probability > 0 {
-					//for i := 1; i <= currentState.Payload.ID; i++ {
-					_ = Event(currentState.Payload)
-					totalMsgCount++
-					totalPerSecMsgCount++
-					//}
-				}
-				diceTicker.Stop()
-				newTime := rand.Intn(max-min+1) + min
-				diceTicker = time.NewTicker(time.Duration(newTime) * time.Millisecond)
-
-
-
-			case <-avgPerSecTicker.C:
-				fmt.Printf("Total message sent mps: %2.2f\n", float64(totalPerSecMsgCount)/1)
-				totalPerSecMsgCount = 0
-				diceTicker.Stop()
-				newTime := rand.Intn(max-min+1) + min
-				diceTicker = time.NewTicker(time.Duration(newTime) * time.Millisecond)
-			}
-		}
-	*/
+	envSideCarAPIPort := os.Getenv("SC_API_PORT")
+	if envSideCarAPIPort != "" {
+		sideCarAPIPort, _ = strconv.Atoi(envSideCarAPIPort)
+	}
+	envAPIHostName := os.Getenv("API_HOST_NAME")
+	if envAPIHostName != "" {
+		apiHostName = envAPIHostName
+	}
+	envAPIPort := os.Getenv("API_PORT")
+	if envAPIPort != "" {
+		apiPort, _ = strconv.Atoi(envAPIPort)
+	}
 }
 
-/*func getSupportedEvents() []string {
-	return []string{"Forgot Badge", "Internet Down", "Fire Alarm", "Amazon package delivered"}
-}*/
-func intiState() []chain.State {
-	//events := getSupportedEvents()
-	states := []chain.State{
-		{
-			Payload: types.Message{
-				ID:      25,
-				StateID: 1,
-				Source: fmt.Sprintf("Node: %s Pod: %s NameSpace: %s IP:%s",
-					os.Getenv("MY_NODE_NAME"),
-					os.Getenv("MY_POD_NAME"),
-					os.Getenv("MY_POD_NAMESPACE"),
-					os.Getenv("MY_POD_IP"),
-				),
-				Msg:         fmt.Sprintf("Event Occurred %s", "Forgot Badge"),
-				Probability: 99,
-			},
-			ID: 1,
-		},
-		{
-			Payload: types.Message{
-				ID:      10,
-				StateID: 2,
-				Source: fmt.Sprintf("Node: %s Pod: %s NameSpace: %s IP:%s",
-					os.Getenv("MY_NODE_NAME"),
-					os.Getenv("MY_POD_NAME"),
-					os.Getenv("MY_POD_NAMESPACE"),
-					os.Getenv("MY_POD_IP"),
-				),
-				Msg:         fmt.Sprintf("Event Occurred %s:", "Internet Down"),
-				Probability: 99,
-			},
-			ID: 2,
-		},
-		{
-			Payload: types.Message{
-				StateID: 1,
-				ID:      50,
-				Source: fmt.Sprintf("Node: %s Pod: %s NameSpace: %s IP:%s",
-					os.Getenv("MY_NODE_NAME"),
-					os.Getenv("MY_POD_NAME"),
-					os.Getenv("MY_POD_NAMESPACE"),
-					os.Getenv("MY_POD_IP"),
-				),
-				Msg:         fmt.Sprintf("Event Occurred %s:", "Amazon package delivered"),
-				Probability: 99,
-			},
-			ID: 3,
-		},
-		{
-			Payload: types.Message{
-				ID:      4,
-				StateID: 4,
-				Source: fmt.Sprintf("Node: %s Pod: %s NameSpace: %s IP:%s",
-					os.Getenv("MY_NODE_NAME"),
-					os.Getenv("MY_POD_NAME"),
-					os.Getenv("MY_POD_NAMESPACE"),
-					os.Getenv("MY_POD_IP"),
-				),
-				Msg:         fmt.Sprintf("Event Occurred %s:", "Car breakdown"),
-				Probability: 99,
-			},
-			ID: 4,
-		},
-		{
-			Payload: types.Message{
-				ID:      5,
-				StateID: 5,
-				Source: fmt.Sprintf("Node: %s Pod: %s NameSpace: %s IP:%s",
-					os.Getenv("MY_NODE_NAME"),
-					os.Getenv("MY_POD_NAME"),
-					os.Getenv("MY_POD_NAMESPACE"),
-					os.Getenv("MY_POD_IP"),
-				),
-				Msg:         fmt.Sprintf("Event Occurred %s:", "Temp too high"),
-				Probability: 99,
-			},
-			ID: 5,
-		},
+func createPubSub(eventConsumer string, eventPublishURL string) {
+	if cnfType == PRODUCER {
+		log.Printf("Creating default Publishers")
+		_, _ = createPublisher(eventPublishURL)
+	} else if cnfType == CONSUMER {
+		log.Printf("Creating default Subscriptions")
+		_, _ = createSubscription(eventConsumeURL)
+	} else if cnfType == BOTH {
+		log.Printf("Creating default Subscriptions")
+		_, _ = createSubscription(eventConsumeURL)
+		log.Printf("Creating default Publishers")
+		publisherID, _ = createPublisher(eventPublishURL)
+	} else {
+		log.Println("Stop.Cannot detect if cnf is Producer or Consumer.")
+		return
 	}
-	return states
-}
 
-//Event will generate random events
-func Event(payload types.Message) error {
-	Conn, _ := net.DialUDP("udp", nil, &net.UDPAddr{IP: []byte{127, 0, 0, 1}, Port: udpPort, Zone: ""})
-	defer Conn.Close()
-
-	payload.SetTime(time.Now())
-	b, err := json.Marshal(payload)
-	if err != nil {
-		fmt.Printf("Error: %s", err)
-		return err
-	}
-	if _, err = Conn.Write(b); err != nil {
-		return err
-	}
-	//fmt.Printf("Sending %v messages\n", payload)
-
-	return nil
 }

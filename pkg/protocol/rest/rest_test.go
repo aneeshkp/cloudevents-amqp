@@ -19,25 +19,29 @@ import (
 )
 
 var (
-	server  *rest.Server
-	router  *qdr.Router
-	eventCh chan protocol.DataEvent
-	wg      sync.WaitGroup
+	server     *rest.Server
+	router     *qdr.Router
+	eventInCh  chan protocol.DataEvent
+	eventOutCh chan protocol.DataEvent
+	wg         sync.WaitGroup
 )
 
 func init() {
-	eventCh = make(chan protocol.DataEvent, 10)
+	eventInCh = make(chan protocol.DataEvent, 10)
+	eventOutCh = make(chan protocol.DataEvent, 10)
 }
 
 func TestServer_New(t *testing.T) {
 
 	// have one receiver for testing
-	router = qdr.InitServer("amqp://localhost", 5672)
-	router.DataIn = eventCh
+	router = qdr.InitServer("amqp://localhost", 5672, eventInCh, eventOutCh)
 
 	wg.Add(1)
 	// create a receiver
 	err := router.NewReceiver("test")
+	if err != nil {
+		t.Errorf("assert  error; %v ", err)
+	}
 	err = router.NewReceiver("test2")
 	if err != nil {
 		t.Errorf("assert  error; %v ", err)
@@ -53,8 +57,7 @@ func TestServer_New(t *testing.T) {
 	//Sender sitting and waiting either to send or receive just create address or create address and send or receive
 	go router.QDRRouter(&wg)
 
-	server = rest.InitServer("localhost", 8080, "emptydir/pub.json", "emptydir/sub.json")
-	server.DataOut = eventCh
+	server = rest.InitServer("localhost", 8080, "emptydir/pub.json", "emptydir/sub.json", eventOutCh)
 	//start http server
 	wg.Add(1)
 	go func() {
@@ -67,8 +70,11 @@ func TestServer_New(t *testing.T) {
 
 	// CHECK URL IS UP
 	req, err := http.NewRequest("GET", "http://localhost:8080/api/ocloudnotifications/v1/health", nil)
+	if err != nil {
+		panic(err)
+	}
 	req.Header.Set("Content-Type", "application/json")
-	resp, err := server.HttpClient.Do(req)
+	resp, err := server.HTTPClient.Do(req)
 	if err != nil {
 		panic(err)
 	}
@@ -76,10 +82,10 @@ func TestServer_New(t *testing.T) {
 
 	// create subscription
 	sub := types.Subscription{
-		SubscriptionId: "",
-		UriLocation:    "",
+		SubscriptionID: "",
+		URILocation:    "",
 		ResourceType:   "PTP",
-		EndpointUri:    "http://localhost:8080/api/ocloudnotifications/v1/suback",
+		EndpointURI:    "http://localhost:8080/api/ocloudnotifications/v1/suback",
 		ResourceQualifier: types.ResourceQualifier{
 			NodeName:    "TestNode",
 			ClusterName: "TestCluster",
@@ -88,14 +94,17 @@ func TestServer_New(t *testing.T) {
 		EventData:      types.EventDataType{State: types.FREERUN},
 		EventTimestamp: 0,
 	}
-	data, err :=  json.Marshal(&sub)
+	data, err := json.Marshal(&sub)
 	assert.Nil(t, err)
 	assert.NotNil(t, data)
 	resp.Body.Close()
 	/// create new subscription
 	req, err = http.NewRequest("POST", "http://localhost:8080/api/ocloudnotifications/v1/subscriptions", bytes.NewBuffer(data))
+	if err != nil {
+		panic(err)
+	}
 	req.Header.Set("Content-Type", "application/json")
-	resp, err = server.HttpClient.Do(req)
+	resp, err = server.HTTPClient.Do(req)
 	if err != nil {
 		panic(err)
 	}
@@ -111,9 +120,12 @@ func TestServer_New(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Get Just Created Subscription
-	req, err = http.NewRequest("GET", fmt.Sprintf("http://localhost:8080/api/ocloudnotifications/v1/subscriptions/%s", sub.SubscriptionId), nil)
+	req, err = http.NewRequest("GET", fmt.Sprintf("http://localhost:8080/api/ocloudnotifications/v1/subscriptions/%s", sub.SubscriptionID), nil)
+	if err != nil {
+		panic(err)
+	}
 	req.Header.Set("Content-Type", "application/json")
-	resp, err = server.HttpClient.Do(req)
+	resp, err = server.HTTPClient.Do(req)
 	if err != nil {
 		panic(err)
 	}
@@ -130,13 +142,16 @@ func TestServer_New(t *testing.T) {
 	bodyString = string(bodyBytes)
 	log.Print(bodyString)
 	assert.Nil(t, err)
-	assert.Equal(t, sub.SubscriptionId, rSub.SubscriptionId)
+	assert.Equal(t, sub.SubscriptionID, rSub.SubscriptionID)
 	resp.Body.Close()
 
 	// Get All Subscriptions
 	req, err = http.NewRequest("GET", "http://localhost:8080/api/ocloudnotifications/v1/subscriptions", nil)
+	if err != nil {
+		panic(err)
+	}
 	req.Header.Set("Content-Type", "application/json")
-	resp, err = server.HttpClient.Do(req)
+	resp, err = server.HTTPClient.Do(req)
 	if err != nil {
 		panic(err)
 	}
@@ -155,10 +170,10 @@ func TestServer_New(t *testing.T) {
 	// create subscription
 	// create subscription
 	pub := types.Subscription{
-		SubscriptionId: "",
-		UriLocation:    "",
+		SubscriptionID: "",
+		URILocation:    "",
 		ResourceType:   "PTP",
-		EndpointUri:    "http://localhost:8080/api/ocloudnotifications/v1/suback",
+		EndpointURI:    "http://localhost:8080/api/ocloudnotifications/v1/suback",
 		ResourceQualifier: types.ResourceQualifier{
 			NodeName:    "TestNode",
 			ClusterName: "TestCluster",
@@ -167,13 +182,16 @@ func TestServer_New(t *testing.T) {
 		EventData:      types.EventDataType{State: types.FREERUN},
 		EventTimestamp: 0,
 	}
-	pubData, err :=  json.Marshal(&pub)
+	pubData, err := json.Marshal(&pub)
 	assert.Nil(t, err)
 	assert.NotNil(t, pubData)
 
 	req, err = http.NewRequest("POST", "http://localhost:8080/api/ocloudnotifications/v1/publishers", bytes.NewBuffer(pubData))
+	if err != nil {
+		panic(err)
+	}
 	req.Header.Set("Content-Type", "application/json")
-	resp, err = server.HttpClient.Do(req)
+	resp, err = server.HTTPClient.Do(req)
 	if err != nil {
 		panic(err)
 	}
@@ -191,9 +209,12 @@ func TestServer_New(t *testing.T) {
 	resp.Body.Close()
 
 	// Get Just created Publisher
-	req, err = http.NewRequest("GET", fmt.Sprintf("http://localhost:8080/api/ocloudnotifications/v1/publishers/%s", pub.SubscriptionId), nil)
+	req, err = http.NewRequest("GET", fmt.Sprintf("http://localhost:8080/api/ocloudnotifications/v1/publishers/%s", pub.SubscriptionID), nil)
+	if err != nil {
+		panic(err)
+	}
 	req.Header.Set("Content-Type", "application/json")
-	resp, err = server.HttpClient.Do(req)
+	resp, err = server.HTTPClient.Do(req)
 	if err != nil {
 		panic(err)
 	}
@@ -203,17 +224,20 @@ func TestServer_New(t *testing.T) {
 		log.Fatal(err)
 	}
 	var rPub types.Subscription
-	log.Printf("the data %s",string(pubBodyBytes))
+	log.Printf("the data %s", string(pubBodyBytes))
 	err = json.Unmarshal(pubBodyBytes, &rPub)
 	assert.Equal(t, resp.StatusCode, http.StatusOK)
 	assert.Nil(t, err)
-	assert.Equal(t, pub.SubscriptionId, rPub.SubscriptionId)
+	assert.Equal(t, pub.SubscriptionID, rPub.SubscriptionID)
 	resp.Body.Close()
 
 	// Get All Publisher
 	req, err = http.NewRequest("GET", "http://localhost:8080/api/ocloudnotifications/v1/publishers", nil)
+	if err != nil {
+		panic(err)
+	}
 	req.Header.Set("Content-Type", "application/json")
-	resp, err = server.HttpClient.Do(req)
+	resp, err = server.HTTPClient.Do(req)
 	if err != nil {
 		panic(err)
 	}
@@ -247,21 +271,24 @@ func TestServer_New(t *testing.T) {
 	// Delete All Publisher
 	/*req, err = http.NewRequest("DELETE", "http://localhost:8080/api/ocloudnotifications/v1/publishers", nil)
 	req.Header.Set("Content-Type", "application/json")
-	resp, err = server.HttpClient.Do(req)
+	resp, err = server.HTTPClient.Do(req)
 	if err != nil {
 		panic(err)
 	}
-*/
+	*/
 	// Delete All Subscriptions
 	req, err = http.NewRequest("DELETE", "http://localhost:8080/api/ocloudnotifications/v1/subsriptions", nil)
-	req.Header.Set("Content-Type", "application/json")
-	resp, err = server.HttpClient.Do(req)
 	if err != nil {
 		panic(err)
 	}
-	close(eventCh)
+	req.Header.Set("Content-Type", "application/json")
+	_, err = server.HTTPClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	close(eventOutCh)
+	close(eventInCh)
 
 	//wg.Wait()
 
 }
-
