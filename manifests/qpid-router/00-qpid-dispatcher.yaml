@@ -22,7 +22,7 @@ spec:
                   - key: local-app
                     operator: In
                     values:
-                      - yolo
+                      - local
       containers:
         - name: qpid-dispatcher-a
           image: quay.io/interconnectedcloud/qdrouterd:1.14.0
