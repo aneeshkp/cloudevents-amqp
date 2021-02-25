@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: yolo-cnf-deployment
+  name: vdu-deployment
   labels:
-    app: yolo-cnf
+    app: vdu
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: yolo-cnf
+      app: vdu
   template:
     metadata:
       labels:
-        app: yolo-cnf
+        app: vdu
     spec:
       affinity:
         nodeAffinity:
@@ -22,13 +22,11 @@ spec:
                   - key: local-app
                     operator: In
                     values:
-                      - yolo
+                      - local
       containers:
-        - name: yolo-cnf
-          image: cnf
+        - name: vdu
+          image: vdu
           env:
-            - name: MSG_PER_SEC
-              value: "100"
             - name: MY_NODE_NAME
               valueFrom:
                 fieldRef:
@@ -45,22 +43,19 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-        - name: yolo-sidecar
+        - name: vdu-sidecar
           image: sidecar
           lifecycle:
             type: Sidecar
-          command: [ "./sidecar-yolo" ]
+          command: [ "./vdu-sidecar" ]
           args: [ "-config", "/opt/config.yml" ]
           volumeMounts:
             - name: config-volume
               mountPath: /opt/
-          env:
-            - name: PORT
-              value: "10001"
       volumes:
         - name: config-volume
           configMap:
-            name: amqp-local-config
+            name: vdu-config
             items:
               - key: config.yml
                 path: config.yml

@@ -6,12 +6,10 @@ import (
 	"fmt"
 	amqp1 "github.com/cloudevents/sdk-go/protocol/amqp/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/cloudevents/sdk-go/v2/types"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
-	"time"
 )
 
 // EventHandler types of SOCKET and HTTP
@@ -26,62 +24,14 @@ const (
 
 // AMQPProtocol loads clients
 type AMQPProtocol struct {
-	ID               string
-	MsgCount         int
-	Protocol         *amqp1.Protocol
-	Ctx              context.Context
-	ParentContext    context.Context
-	CancelFn         context.CancelFunc
-	Client           cloudevents.Client
-	Queue            string
-	MaxDiff          int64
-	MinDiff          int64
-	MaxDiff2         int64
-	MinDiff2         int64
-	CurrentMax       int64
-	CurrentMax2      int64
-	MsgReceivedCount uint64
-}
-
-//Result ...
-type Result struct {
-	ID                    string
-	FromSourceMaxDiff     int64
-	FromSourceMinDiff     int64
-	FromSourceCurrentMax  int64
-	FromSideCarMinDiff    int64
-	FromSideCarMaxDiff    int64
-	FromSideCarCurrentMax int64
-	MsgReceivedCount      int64
-	LatencyBin            map[int64]int64
-}
-
-// Message defines the DataIn of CloudEvent
-type Message struct {
-	// Msg holds the message from the event
-	ID          int              `json:"id,omitempty,string"`
-	Source      string           `json:"source,omitempty,string"`
-	Msg         string           `json:"msg,omitempty,string"`
-	Time        *types.Timestamp `json:"time,omitempty"`
-	Probability int              `json:"probability,omitempty"`
-	StateID     int              `json:"stateid,omitempty"`
-}
-
-//GetTime ...
-func (m *Message) GetTime() time.Time {
-	if m.Time != nil {
-		return m.Time.Time
-	}
-	return time.Time{}
-}
-
-// SetTime implements EventContextWriter.SetTime
-func (m *Message) SetTime(t time.Time) {
-	if t.IsZero() {
-		m.Time = nil
-	} else {
-		m.Time = &types.Timestamp{Time: t}
-	}
+	ID            string
+	MsgCount      int
+	Protocol      *amqp1.Protocol
+	Ctx           context.Context
+	ParentContext context.Context
+	CancelFn      context.CancelFunc
+	Client        cloudevents.Client
+	Queue         string
 }
 
 /*{
@@ -259,6 +209,18 @@ func (s *Subscription) ReadFromFile(filePath string) (b []byte, err error) {
 	}
 	return b, nil
 
+}
+
+//Message ...
+type Message struct {
+	ID      int
+	Message string
+}
+
+//ResourceStatus is used for PTP status update
+type ResourceStatus struct {
+	ReturnAddress string `json:"returnaddress,omitempty,string"`
+	Status        string `json:"status,omitempty,string"`
 }
 
 /*

@@ -42,8 +42,8 @@ func main() {
 		go func(i int, start time.Time) {
 			e := cloudevents.NewEvent()
 			e.SetType("com.cloudevents.sample.sent")
-			e.SetSource("https://github.com/cloudevents/sdk-go/v2/samples/httpb/sender")
-			msg := types.Message{ID: i, Msg: "Hello world"}
+			e.SetSource("https://github.com/cloudevents/sdk-go/v2/samples/httpb/ptp")
+			msg := types.Message{ID: i, Message: "Hello world"}
 			_ = e.SetData(cloudevents.ApplicationJSON, msg)
 
 			res := c.Send(ctx, e)
@@ -52,7 +52,6 @@ func main() {
 			} else {
 				var httpResult *cehttp.Result
 				cloudevents.ResultAs(res, &httpResult)
-				log.Printf("Sent %d with status code %d", i, httpResult.StatusCode)
 			}
 			wg.Done()
 			elapsed := time.Since(start)

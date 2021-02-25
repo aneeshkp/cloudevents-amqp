@@ -1,0 +1,25 @@
+amqp:
+  hostname: amqp://localhost
+  port: 5672
+api:
+  hostname: localhost
+  port: 8081
+host:
+  hostname: localhost
+  port: 9091
+socket:
+  listener:
+    hostname: localhost
+    port: 30001
+  sender:
+    hostname: localhost
+    port: 30002
+cluster:
+  name: "CLUSTER1"
+  node: "NODE1"
+  namespace: "Default"
+statusresource:
+pubfilepath: pub.json
+subfilepath: pub.json
+publishstatus: false
+protocol: SOCKET #SOCKET HTTP

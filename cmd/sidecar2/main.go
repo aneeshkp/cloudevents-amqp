@@ -25,10 +25,10 @@ import (
 )
 
 var (
-	defaultSenderSocketPort   = 20001
-	defaultListenerSocketPort = 20002
-	defaultAPIPort            = 8080
-	defaultHostPort           = 9090
+	defaultSenderSocketPort   = 30001
+	defaultListenerSocketPort = 30002
+	defaultAPIPort            = 8081
+	defaultHostPort           = 9091
 
 	server          *rest.Server
 	router          *qdr.Router
@@ -55,7 +55,7 @@ func main() {
 		log.Printf("Could not load configuration file --config, loading default queue\n")
 		//swap socket ports
 		cfg = eventconfig.DefaultConfig(defaultHostPort, defaultAPIPort, defaultSenderSocketPort, defaultListenerSocketPort,
-			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), true)
+			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), false)
 		cfg.EventHandler = types.SOCKET
 	}
 	//swap the port to solve conflict
@@ -85,7 +85,6 @@ func main() {
 			PubSubType:  protocol.STATUS,
 		}
 	}
-
 	//rest api writes data to qdrEventInCh, which is consumed by QDR
 	server = rest.InitServer(cfg, qdrEventInCh)
 
@@ -119,8 +118,8 @@ func main() {
 				resourceStatus := types.ResourceStatus{}
 				err := json.Unmarshal(d.Data.Data(), &resourceStatus)
 				if err != nil {
-					log.Printf("error marshalling event data when reading from QDR %v", err)
-					resourceStatus.Status = "error marshalling ptp status "
+					log.Printf("Error marshalling event data when reading from QDR %v", err)
+					resourceStatus.Status = fmt.Sprintf("error %v", err)
 					_ = d.Data.SetData(cloudevents.ApplicationJSON, resourceStatus)
 					//if it fails then we cant get return address
 				} else {
@@ -134,20 +133,19 @@ func main() {
 
 					sender, err := qdr.NewSender(cfg.AMQP.HostName, cfg.AMQP.Port, resourceStatus.ReturnAddress)
 					if err != nil {
-						log.Printf("failed to send: %s", resourceStatus.ReturnAddress)
+						log.Printf("Failed to send: %s", resourceStatus.ReturnAddress)
 						continue
 					}
 					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-					//log.Printf("Sending PTP data back %s to %s", status, resourceStatus.ReturnAddress)
-					d.Data.SetSpecVersion(cloudevents.VersionV1)
 					if result := sender.Client.Send(ctx, d.Data); cloudevents.IsUndelivered(result) {
-						log.Printf("failed to send status: %v", result)
+						log.Printf("Failed to send: %v", result)
 					} else if cloudevents.IsNACK(result) {
-						log.Printf("status not accepted: %v", result)
+						log.Printf("Event not accepted: %v", result)
 					}
 					cancel()
-					sender.Protocol.Close(ctx)
+
 				}
+
 				continue
 			}
 
@@ -164,10 +162,10 @@ func main() {
 							sub := types.Subscription{}
 							err := json.Unmarshal(d.Data.Data(), &sub)
 							if err != nil {
-								log.Printf("failed to send events to CNF via socket %v", err)
+								log.Printf("Failed to send events to CNF via socket %v", err)
 							} else {
 								if err := socketEvent(sub, cfg.Socket.Sender.Port); err != nil {
-									log.Printf("error sending to socket %v", err)
+									log.Printf("Error sending to socket %v", err)
 								}
 							}
 						}
@@ -218,7 +216,7 @@ func processConsumer(event protocol.DataEvent) {
 							d := json.NewDecoder(bytes.NewBuffer(bodyBytes))
 							d.UseNumber()
 							if err := d.Decode(&dat); err != nil {
-								log.Printf("error parising latency %v", err)
+								log.Printf("Error parising latemcy %v", err)
 								return
 							}
 							tags := dat["time"].(interface{})

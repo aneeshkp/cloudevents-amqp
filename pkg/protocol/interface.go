@@ -11,10 +11,12 @@ import (
 type PubSubType string
 
 const (
-	//PRODUCER is type of cnf either producer or consumer
+	//PRODUCER is type of vdu either producer or consumer
 	PRODUCER PubSubType = "producer"
-	//CONSUMER is type of cnf either producer or consumer
+	//CONSUMER is type of vdu either producer or consumer
 	CONSUMER PubSubType = "consumer"
+	//STATUS is type of event for status check
+	STATUS PubSubType = "status"
 )
 
 //EventStatus specifies status of the event
@@ -39,14 +41,6 @@ type DataEvent struct {
 	//fn          func(e cloudevents.Event) //nolint:structcheck
 }
 
-//Config stores config data
-type Config struct {
-	HostName    string
-	Port        int
-	PubFilePath string //pub.json
-	SubFilePath string //sub.json
-}
-
 //GetCloudEvent return data wrapped in a cloud events object
 func GetCloudEvent(msg []byte) (cloudevents.Event, error) {
 	event := cloudevents.NewEvent()
@@ -54,6 +48,7 @@ func GetCloudEvent(msg []byte) (cloudevents.Event, error) {
 	event.SetSource("https://github.com/aneeshkp/cloud-events/producer")
 	event.SetTime(time.Now())
 	event.SetType("com.cloudevents.poc.event.sent")
+	event.SetSpecVersion(cloudevents.VersionV1)
 	err := event.SetData(cloudevents.ApplicationJSON, msg)
 	return event, err
 }

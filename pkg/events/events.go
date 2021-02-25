@@ -19,9 +19,8 @@ type Event struct {
 	totalMsgSent int64
 	eventHandler types.EventHandler
 	pubStore     map[string]types.Subscription
-	subStore     map[string]types.Subscription
 	port         int
-	returnURL    string
+	subscription types.Subscription
 }
 
 //GetTotalMsgSent returns total message sent
@@ -35,22 +34,21 @@ func (e *Event) ResetTotalMsgSent() {
 }
 
 // New create new event object
-func New(avgMsgPerSec int, pubStore map[string]types.Subscription, subStore map[string]types.Subscription, port int, eventHandler types.EventHandler, eventPublisherURL string) *Event {
+func New(avgMsgPerSec int, pubStore map[string]types.Subscription, port int, eventHandler types.EventHandler, subscription types.Subscription) *Event {
 	return &Event{
 		avgMsgPerSec: avgMsgPerSec,
 		totalMsgSent: 0,
 		eventHandler: eventHandler,
 		pubStore:     pubStore,
-		subStore:     subStore,
 		port:         port,
-		returnURL:    eventPublisherURL,
+		subscription: subscription,
 	}
 }
 
 //GenerateEvents is used to generate mock data
 func (e *Event) GenerateEvents(id string) {
 
-	states := intiState(e.returnURL)
+	states := intiState(e.subscription.EndpointURI)
 
 	transition := [][]float32{
 		{
@@ -113,7 +111,7 @@ func (e *Event) GenerateEvents(id string) {
 	}
 }
 
-func intiState(eventConsumeURL string) []chain.State {
+func intiState(eventPublisherURL string) []chain.State {
 	//events := getSupportedEvents()
 	nodeName := os.Getenv("MY_NODE_NAME")
 	if nodeName == "" {
@@ -126,7 +124,7 @@ func intiState(eventConsumeURL string) []chain.State {
 				SubscriptionID: "",
 				URILocation:    "",
 				ResourceType:   "",
-				EndpointURI:    eventConsumeURL,
+				EndpointURI:    eventPublisherURL,
 				ResourceQualifier: types.ResourceQualifier{
 					NodeName:    nodeName,
 					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
@@ -145,7 +143,7 @@ func intiState(eventConsumeURL string) []chain.State {
 				SubscriptionID: "",
 				URILocation:    "",
 				ResourceType:   "",
-				EndpointURI:    eventConsumeURL,
+				EndpointURI:    eventPublisherURL,
 				ResourceQualifier: types.ResourceQualifier{
 					NodeName:    nodeName,
 					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
@@ -164,7 +162,7 @@ func intiState(eventConsumeURL string) []chain.State {
 				SubscriptionID: "",
 				URILocation:    "",
 				ResourceType:   "",
-				EndpointURI:    eventConsumeURL,
+				EndpointURI:    eventPublisherURL,
 				ResourceQualifier: types.ResourceQualifier{
 					NodeName:    nodeName,
 					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
@@ -183,7 +181,7 @@ func intiState(eventConsumeURL string) []chain.State {
 				SubscriptionID: "",
 				URILocation:    "",
 				ResourceType:   "",
-				EndpointURI:    eventConsumeURL,
+				EndpointURI:    eventPublisherURL,
 				ResourceQualifier: types.ResourceQualifier{
 					NodeName:    nodeName,
 					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
@@ -202,7 +200,7 @@ func intiState(eventConsumeURL string) []chain.State {
 				SubscriptionID: "",
 				URILocation:    "",
 				ResourceType:   "",
-				EndpointURI:    eventConsumeURL,
+				EndpointURI:    eventPublisherURL,
 				ResourceQualifier: types.ResourceQualifier{
 					NodeName:    nodeName,
 					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
@@ -247,6 +245,8 @@ func (e *Event) httpEvent(payload types.Subscription, id string) (err error) {
 		if response.StatusCode == http.StatusAccepted {
 			log.Printf("failed to send events via http")
 		}
+	} else {
+		log.Printf("Could not find data in publisher store for id %s\n", id)
 	}
 
 	//fmt.Printf("Sending %v messages\n", payload)

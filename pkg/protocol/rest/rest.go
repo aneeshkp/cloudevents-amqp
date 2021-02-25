@@ -3,6 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/config"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	"github.com/gorilla/mux"
@@ -31,20 +32,16 @@ const SUBROUTINE = "/api/ocloudnotifications/v1"
 
 // Server defines rest api server object
 type Server struct {
-	cfg        protocol.Config
+	cfg        *config.Config
 	dataOut    chan<- protocol.DataEvent
 	HTTPClient *http.Client
 }
 
 // InitServer is used to supply configurations for rest api server
-func InitServer(hostname string, port int, pubFile, subFile string, dataOut chan<- protocol.DataEvent) *Server {
+func InitServer(cfg *config.Config, dataOut chan<- protocol.DataEvent) *Server {
+
 	server := Server{
-		cfg: protocol.Config{
-			HostName:    hostname,
-			Port:        port,
-			PubFilePath: pubFile,
-			SubFilePath: subFile,
-		},
+		cfg:     cfg,
 		dataOut: dataOut,
 		HTTPClient: &http.Client{
 			Timeout: 1 * time.Second,
@@ -136,17 +133,19 @@ func (s *Server) Start() {
 
 	api.HandleFunc("/subscriptions", s.deleteAllSubscriptions).Methods(http.MethodDelete)
 	api.HandleFunc("/publishers", s.deleteAllPublishers).Methods(http.MethodDelete)
-	// for testing only
+
 	api.HandleFunc("/health", s.health).Methods(http.MethodGet)
+
+	api.HandleFunc("/{ResourceType}/CurrentState", s.health).Methods(http.MethodGet)
 	//TODO: Pull Status Notifications Not implementing
 
 	api.HandleFunc("/event/create", s.createEvent).Methods(http.MethodPost)
-	//	api.HandleFunc("/status/subscripio", s.getStatus).Methods(http.MethodGet)
-	//api.HandleFunc("/event/{address}/create", s.sendEvent).Methods(http.MethodPost)
+	api.HandleFunc("/status", s.getResourceStatus).Methods(http.MethodPost)
+
 	api.HandleFunc("/", notFound)
 	log.Print("Started Rest API Server")
 	log.Printf("endpoint %s", SUBROUTINE)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", s.cfg.HostName, s.cfg.Port), api))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", s.cfg.API.HostName, s.cfg.API.Port), api))
 
 }
 

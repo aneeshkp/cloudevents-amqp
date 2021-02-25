@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	eventconfig "github.com/aneeshkp/cloudevents-amqp/pkg/config"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol/qdr"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol/rest"
@@ -13,6 +14,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -32,9 +34,10 @@ func init() {
 }
 
 func TestServer_New(t *testing.T) {
-
+	cfg := eventconfig.DefaultConfig(9091, 8080, 2020, 2021,
+		os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), true)
 	// have one receiver for testing
-	router = qdr.InitServer("amqp://localhost", 5672, eventInCh, eventOutCh)
+	router = qdr.InitServer(cfg, eventInCh, eventOutCh)
 
 	wg.Add(1)
 	// create a receiver
@@ -57,7 +60,7 @@ func TestServer_New(t *testing.T) {
 	//Sender sitting and waiting either to send or receive just create address or create address and send or receive
 	go router.QDRRouter(&wg)
 
-	server = rest.InitServer("localhost", 8080, "emptydir/pub.json", "emptydir/sub.json", eventOutCh)
+	server = rest.InitServer(cfg, eventOutCh)
 	//start http server
 	wg.Add(1)
 	go func() {

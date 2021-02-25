@@ -2,41 +2,64 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: amqp-local-config
+  name: ptp-config
   namespace: default
 data:
   config.yml: |-
-    timeout : 30
-    hostname: amqp://amqp-dispatch-service-a
-    port: 5672
-    listener: # this creates count listeners listening to the following endpoints
-      count: 1
-      queues:
-        - name: "test"
-          count: 1
-    sender: # this will send messages to the following endpoints
-      count: 1
-      queues: #
-        - name: "test"
-          count: 1
+    amqp:
+      hostname: amqp://amqp-dispatch-service
+      port: 5672
+    api:
+      hostname: localhost
+      port: 8080
+    host:
+      hostname: localhost
+      port: 9090
+    socket:
+      listener:
+        hostname: localhost
+        port: 20001
+      sender:
+        hostname: ""
+        port: 20002
+    cluster:
+      name: ""
+      node: ""
+      namespace: ""
+    statusresource:
+    - name: ptp-status
+    pubfilepath: pub.json
+    subfilepath: pub.json
+    publishstatus: true
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: amqp-remote-config
+  name: vdu-config
   namespace: default
 data:
   config.yml: |-
-    timeout : 30
-    hostname: amqp://amqp-dispatch-service-b
-    port: 5672
-    listener: # this creates count listeners listening to the following endpoints
-      count: 1
-      queues:
-        - name: "test"
-          count: 1
-    sender: # this will send messages to the following endpoints
-      count: 1
-      queues: #
-        - name: "test"
-          count: 1
+    amqp:
+      hostname: amqp://amqp-dispatch-service
+      port: 5672
+    api:
+      hostname: localhost
+      port: 8080
+    host:
+      hostname: localhost
+      port: 9090
+    socket:
+      listener:
+        hostname: localhost
+        port: 20001
+      sender:
+        hostname: localhost
+        port: 20002
+    cluster:
+      name: ""
+      node: ""
+      namespace: ""
+    statusresource:
+    pubfilepath: pub.json
+    subfilepath: pub.json
+    publishstatus: false
