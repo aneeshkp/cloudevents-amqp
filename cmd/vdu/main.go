@@ -83,18 +83,20 @@ func main() {
 	_, _ = createSubscription()
 
 	//check once of often, your choice
-	/*tck := time.NewTicker(time.Duration(10) * time.Second)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for range tck.C {
-			event, err := checkPTPStatus()
-			if err != nil {
-				log.Printf("error check ptp status %v\n", err)
+
+		tck := time.NewTicker(time.Duration(10) * time.Second)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for range tck.C {
+				event, err := checkPTPStatus()
+				if err != nil {
+					log.Printf("error check ptp status %v\n", err)
+				}
+				log.Printf("PTP status %v\n", string(event.Data()))
 			}
-			log.Printf("PTP status %v\n", string(event.Data()))
-		}
-	}()*/
+		}()
+
 
 	if cfg.EventHandler == types.SOCKET {
 		socketListener(&wg, cfg.Socket.Listener.HostName, cfg.Socket.Listener.Port, latencyCountCh)
@@ -270,7 +272,7 @@ func socketListener(wg *sync.WaitGroup, hostname string, listenerPort int, laten
 
 func checkPTPStatus() (event cloudevents.Event, err error) {
 
-	log.Printf("Posting to PTP status %s\n", fmt.Sprintf("http://%s:%d%s/status", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix))
+	//log.Printf("Posting to PTP status %s\n", fmt.Sprintf("http://%s:%d%s/status", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix))
 	/*client := http.Client{
 		Timeout: 10 * time.Second,
 	}*/
@@ -284,12 +286,9 @@ func checkPTPStatus() (event cloudevents.Event, err error) {
 	if response.StatusCode == http.StatusOK {
 		defer response.Body.Close() // Close body only if response non-nil
 		data, _ := ioutil.ReadAll(response.Body)
-		log.Printf("what is in the PTP data %v\n", string(data))
 		err = json.Unmarshal(data, &event)
 		if err != nil {
 			log.Println("failed to successfully marshal ptp status json data from the response")
-		} else {
-			log.Printf("Got status %s", string(data))
 		}
 	} else {
 		log.Printf("failed to create PTP status %d", response.StatusCode)

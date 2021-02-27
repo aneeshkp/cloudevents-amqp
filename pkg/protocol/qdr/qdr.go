@@ -139,7 +139,6 @@ func (q *Router) QDRRouter(wg *sync.WaitGroup) {
 								wg.Add(1)
 								go q.Receive(wg, d.Address, func(e cloudevents.Event) { // just spawn and forget
 									// Not the clean way of doing , revisit
-									log.Println("yes GOT TEH DATA")
 									q.DataOut <- protocol.DataEvent{
 										Address:     d.Address,
 										Data:        e,

@@ -7,6 +7,7 @@ import (
 	routes3 "github.com/aneeshkp/cloudevents-amqp/pkg/cnf/routes"
 	eventconfig "github.com/aneeshkp/cloudevents-amqp/pkg/config"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/events"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/socket"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	"github.com/gorilla/mux"
 	"io"
@@ -41,9 +42,9 @@ var (
 	defaultSenderSocketPort   = 20001
 	defaultListenerSocketPort = 20002
 
-	defaultAPIPort            = 8080
-	defaultHostPort           = 9090
-	cfg                       *eventconfig.Config
+	defaultAPIPort  = 8080
+	defaultHostPort = 9090
+	cfg             *eventconfig.Config
 )
 
 var (
@@ -67,16 +68,16 @@ func main() {
 	if err != nil {
 		log.Printf("Could not load configuration file --config, loading default queue\n")
 		cfg = eventconfig.DefaultConfig(defaultHostPort, defaultAPIPort, defaultSenderSocketPort, defaultListenerSocketPort,
-			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), false)
+			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), true)
 		cfg.EventHandler = types.SOCKET
 		cfg.HostPathPrefix = "/api/ptp/v1"
 		cfg.APIPathPrefix = "/api/ocloudnotifications/v1"
 	}
-	log.Printf("Framework type :%s\n",cfg.EventHandler)
+	log.Printf("Framework type :%s\n", cfg.EventHandler)
 	// can override externally
-	envEventHandler:=os.Getenv("EVENT_HANDLER")
-	if envEventHandler!=""{
-		cfg.EventHandler =types.EventHandler(envEventHandler)
+	envEventHandler := os.Getenv("EVENT_HANDLER")
+	if envEventHandler != "" {
+		cfg.EventHandler = types.EventHandler(envEventHandler)
 	}
 
 	//Start the Rest API server to read ack
@@ -91,7 +92,7 @@ func main() {
 	publisherID, _ = createPublisher()
 
 	//Start sending events
-	event := events.New(avgMessagesPerSec, PubStore,  PubStore[publisherID],*cfg)
+	event := events.New(avgMessagesPerSec, PubStore, PubStore[publisherID], *cfg)
 	time.Sleep(5 * time.Second)
 	wg.Add(1)
 	go func() {
@@ -102,8 +103,13 @@ func main() {
 			event.ResetTotalMsgSent()
 		}
 	}()
+	//PTP STATUS HANDLER
+	if cfg.PublishStatus {
+		ptpStatusWriteToSocket(&wg)
+	}
+
 	// the PTP has to know where to trigger the events //TODO expose this via ENV
-	time.Sleep(5*time.Second)
+	time.Sleep(5 * time.Second)
 	event.GenerateEvents(fmt.Sprintf("http://%s:%d%s/create/event", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix), publisherID)
 	wg.Wait()
 }
@@ -236,5 +242,7 @@ func createPublisher() (string, error) {
 
 //Event will generate random events
 func ptpStatusWriteToSocket(wg *sync.WaitGroup) { //nolint:deadcode,unused
-	panic("not implemented")
+	wg.Add(1)
+	defer wg.Done()
+	go socket.SetUpPTPStatusServer(wg)
 }

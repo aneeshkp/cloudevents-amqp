@@ -59,6 +59,7 @@ func main() {
 		cfg.EventHandler = types.SOCKET
 		cfg.HostPathPrefix = "/api/vdu/v1"
 		cfg.APIPathPrefix = "/api/ocloudnotifications/v1"
+
 	}
 	log.Printf("Framework type :%s\n",cfg.EventHandler)
 	// can override externally
@@ -303,7 +304,6 @@ func socketEvent(payload types.Subscription, port int) error {
 		log.Printf("Is there any error in udp %v", err)
 		return err
 	}
-	log.Printf("sent via SOCKET %d\n",port)
 	//fmt.Printf("Sending %v messages\n", payload)
 
 	return nil

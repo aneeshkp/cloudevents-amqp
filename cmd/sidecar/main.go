@@ -10,6 +10,7 @@ import (
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol/qdr"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol/rest"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/socket"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/fsnotify/fsnotify"
@@ -37,13 +38,12 @@ var (
 	SubStore           map[string]types.Subscription
 )
 
-
 func main() {
 	var err error
-	var server          *rest.Server
-	var router          *qdr.Router
-	var qdrEventOutCh   chan protocol.DataEvent
-	var qdrEventInCh    chan protocol.DataEvent
+	var server *rest.Server
+	var router *qdr.Router
+	var qdrEventOutCh chan protocol.DataEvent
+	var qdrEventInCh chan protocol.DataEvent
 	qdrEventOutCh = make(chan protocol.DataEvent, 100)
 	qdrEventInCh = make(chan protocol.DataEvent, 100)
 
@@ -54,18 +54,19 @@ func main() {
 	if err != nil {
 		log.Printf("Could not load configuration file --config, loading default queue\n")
 		cfg = eventconfig.DefaultConfig(defaultHostPort, defaultAPIPort, defaultSenderSocketPort, defaultListenerSocketPort,
-			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), false)
+			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), true)
 		//switching between socket and http
-		cfg.EventHandler=types.SOCKET
+		cfg.EventHandler = types.SOCKET
 		cfg.HostPathPrefix = "/api/ptp/v1"
 		cfg.APIPathPrefix = "/api/ocloudnotifications/v1"
 	}
+
 	// can override externally
-	envEventHandler:=os.Getenv("EVENT_HANDLER")
-	if envEventHandler!=""{
-		cfg.EventHandler =types.EventHandler(envEventHandler)
+	envEventHandler := os.Getenv("EVENT_HANDLER")
+	if envEventHandler != "" {
+		cfg.EventHandler = types.EventHandler(envEventHandler)
 	}
-	log.Printf("Framework type :%s\n",cfg.EventHandler)
+	log.Printf("Framework type :%s\n", cfg.EventHandler)
 
 	//swap the port to solve conflict, since side car and main conatiners are sending and listening to ports
 	senderPort := cfg.Socket.Sender.Port
@@ -160,7 +161,7 @@ func main() {
 				if d.PubSubType == protocol.EVENT { //|always event or status| d.PubSubType == protocol.CONSUMER
 					if cfg.EventHandler == types.SOCKET {
 						//now send events from QDR to CNF SOCKET
-						log.Printf("data is here %v",d)
+						log.Printf("data is here %v", d)
 						if d.EventStatus == protocol.NEW {
 							sub := types.Subscription{}
 							err := json.Unmarshal(d.Data.Data(), &sub)
@@ -217,11 +218,11 @@ func watchStoreUpdates(wg *sync.WaitGroup) {
 		}
 	}(wg)
 
-	err=watcher.Add(cfg.SubFilePath)
+	err = watcher.Add(cfg.SubFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err=watcher.Add(cfg.PubFilePath)
+	err = watcher.Add(cfg.PubFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -241,7 +242,7 @@ func processConsumer(event protocol.DataEvent) {
 			}
 		}*/
 		//TODO: share store between
-		eventConsumeURL=fmt.Sprintf("http://%s:%d%s/%s",cfg.Host.HostName,cfg.Host.Port,cfg.HostPathPrefix,"event/alert")
+		eventConsumeURL = fmt.Sprintf("http://%s:%d%s/%s", cfg.Host.HostName, cfg.Host.Port, cfg.HostPathPrefix, "event/alert")
 		if eventConsumeURL == "" {
 			log.Printf("Could not find publisher/subscription for address %s", event.Address)
 		} else {
@@ -250,7 +251,7 @@ func processConsumer(event protocol.DataEvent) {
 				log.Printf("publisher failed to post event to consumer %v for url %s", err, event.EndPointURI)
 			} else {
 				if response.StatusCode != http.StatusAccepted {
-					log.Printf("publisher failed to post event to the consumer %s status %d",eventConsumeURL, response.StatusCode)
+					log.Printf("publisher failed to post event to the consumer %s status %d", eventConsumeURL, response.StatusCode)
 				}
 			}
 		}
@@ -373,7 +374,31 @@ func SocketListener(wg *sync.WaitGroup, udpListenerPort int, dataOut chan<- prot
 	}(wg, udpListenerPort)
 }
 func checkPTPStatus(wg *sync.WaitGroup) string {
-	return "PTP SOCKET IS DOING AWESOME"
+
+	c, err := net.Dial("unix", socket.SocketFile)
+	if err != nil {
+		log.Println("Dial error", err)
+		return "Could not read PTP event"
+	}
+	defer c.Close()
+
+	msg := "hi PTP, what is your status?"
+	_, err = c.Write([]byte(msg))
+	if err != nil {
+		log.Printf("Write error:%v", err)
+		return "Could not read PTP event(2)"
+	}
+
+		buf := make([]byte, 1024)
+		for {
+			n, err := c.Read(buf[:])
+			if err != nil {
+				return "error reading ptp socket. Contact admin now"
+			}
+			return string(buf[0:n])
+		}
+
+	//return "PTP SOCKET IS DOING AWESOME"
 }
 
 /*func checkPTPStatus(wg *sync.WaitGroup) string {
