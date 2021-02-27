@@ -10,16 +10,14 @@ import (
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol/qdr"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol/rest"
-	"github.com/aneeshkp/cloudevents-amqp/pkg/report"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/fsnotify/fsnotify"
 	"github.com/google/uuid"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"os"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -30,45 +28,53 @@ var (
 	defaultAPIPort            = 8080
 	defaultHostPort           = 9090
 
-	server          *rest.Server
-	router          *qdr.Router
-	qdrEventOutCh   chan protocol.DataEvent
-	qdrEventInCh    chan protocol.DataEvent
-	latencyCountCh  chan int64
 	wg              sync.WaitGroup
 	cfg             *config2.Config
 	eventConsumeURL string
 	//FOR PTP only
 	statusCheckAddress string
+	PubStore           map[string]types.Subscription
+	SubStore           map[string]types.Subscription
 )
 
-func init() {
-	qdrEventOutCh = make(chan protocol.DataEvent, 10)
-	qdrEventInCh = make(chan protocol.DataEvent, 10)
-}
 
 func main() {
 	var err error
+	var server          *rest.Server
+	var router          *qdr.Router
+	var qdrEventOutCh   chan protocol.DataEvent
+	var qdrEventInCh    chan protocol.DataEvent
+	qdrEventOutCh = make(chan protocol.DataEvent, 100)
+	qdrEventInCh = make(chan protocol.DataEvent, 100)
+
+	PubStore = map[string]types.Subscription{}
+	SubStore = map[string]types.Subscription{}
 
 	cfg, err = eventconfig.GetConfig()
 	if err != nil {
 		log.Printf("Could not load configuration file --config, loading default queue\n")
-		//swap socket ports
 		cfg = eventconfig.DefaultConfig(defaultHostPort, defaultAPIPort, defaultSenderSocketPort, defaultListenerSocketPort,
-			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), true)
-		cfg.EventHandler = types.SOCKET
+			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), false)
+		//switching between socket and http
+		cfg.EventHandler=types.SOCKET
+		cfg.HostPathPrefix = "/api/ptp/v1"
+		cfg.APIPathPrefix = "/api/ocloudnotifications/v1"
 	}
-	//swap the port to solve conflict
+	// can override externally
+	envEventHandler:=os.Getenv("EVENT_HANDLER")
+	if envEventHandler!=""{
+		cfg.EventHandler =types.EventHandler(envEventHandler)
+	}
+	log.Printf("Framework type :%s\n",cfg.EventHandler)
+
+	//swap the port to solve conflict, since side car and main conatiners are sending and listening to ports
 	senderPort := cfg.Socket.Sender.Port
 	cfg.Socket.Sender.Port = cfg.Socket.Listener.Port
 	cfg.Socket.Listener.Port = senderPort
 
-	//Consumer vDU URL event are read from QDR by sidecar and posted to vDU
-	eventConsumeURL = fmt.Sprintf("http://%s:%d%s/event/alert", cfg.Host.HostName, cfg.Host.Port, "/api/vdu/v1")
-	//SIDECAR URL: PTP events are published via post to its sidecar
-	//eventPublishURL = fmt.Sprintf("http://%s:%d%s/event/create", sidCarAPIHostName, sideCarAPIPort, rest.SUBROUTINE)
+	//watchStoreUpdates(&wg)
 
-	log.Printf("Connecting to host %s:%d", cfg.AMQP.HostName, cfg.AMQP.Port)
+	log.Printf("Connecting to qdr host %s:%d", cfg.AMQP.HostName, cfg.AMQP.Port)
 	//Sender sitting and waiting either to send or just create address or create address and send
 	router = qdr.InitServer(cfg, qdrEventInCh, qdrEventOutCh)
 	//qdrEventInCh   // qdr gets data from here via rest api to send data out or create adr address or to listen
@@ -76,19 +82,8 @@ func main() {
 	// Initialize QDR router configurations
 	router.QDRRouter(&wg)
 
-	// QUE to listen for status
-	if cfg.PublishStatus {
-		statusCheckAddress = fmt.Sprintf("/%s/%s/%s", cfg.Cluster.Name, cfg.Cluster.Node, "status")
-		qdrEventInCh <- protocol.DataEvent{
-			Address:     statusCheckAddress,
-			EventStatus: protocol.NEW,
-			PubSubType:  protocol.STATUS,
-		}
-	}
-
-	//rest api writes data to qdrEventInCh, which is consumed by QDR
+	//Start web services rest api writes data to qdrEventInCh, which is consumed by QDR
 	server = rest.InitServer(cfg, qdrEventInCh)
-
 	//start http server
 	wg.Add(1)
 	go func() {
@@ -98,24 +93,29 @@ func main() {
 
 	//health check sidecar rest api
 	healthChk()
-	//Latency report
 
 	if cfg.EventHandler == types.SOCKET {
+		log.Println("Listening to socket")
 		SocketListener(&wg, cfg.Socket.Listener.Port, qdrEventInCh)
-	} else if cfg.EventHandler == types.HTTP {
-		//send count to this channel
-		latencyCountCh = make(chan int64, 10)
-		latencyReport := report.New(&wg, "default")
-		latencyReport.Collect(latencyCountCh)
 	}
 
-	//listen to data coming out of qdrEventOutCh
+	//Special: Create a QDR Listener for listening to incoming status request
+	if cfg.PublishStatus {
+		statusCheckAddress = fmt.Sprintf("/%s/%s/%s", cfg.Cluster.Name, cfg.Cluster.Node, "status")
+		qdrEventInCh <- protocol.DataEvent{
+			Address:     statusCheckAddress,
+			EventStatus: protocol.NEW,
+			PubSubType:  protocol.STATUS,
+		}
+	}
+
+	//qdr throws out the data on this channel ,listen to data coming out of qdrEventOutCh
 	for { //nolint:gosimple
 		select { //nolint:gosimple
 		case d := <-qdrEventOutCh: // do something that is put out by QDR
 			//Special handle need to redesign
+			// PTP status request ,get teh request data ask for PTP socket for data and send it back in its return address
 			if d.PubSubType == protocol.STATUS {
-				status := checkPTPStatus(&wg)
 				resourceStatus := types.ResourceStatus{}
 				err := json.Unmarshal(d.Data.Data(), &resourceStatus)
 				if err != nil {
@@ -124,30 +124,30 @@ func main() {
 					_ = d.Data.SetData(cloudevents.ApplicationJSON, resourceStatus)
 					//if it fails then we cant get return address
 				} else {
+					status := checkPTPStatus(&wg) // check for PTP status
 					if status != "" {
 						resourceStatus.Status = status
-						_ = d.Data.SetData(cloudevents.ApplicationJSON, resourceStatus)
 					} else {
 						resourceStatus.Status = "could not get PTP status"
-						_ = d.Data.SetData(cloudevents.ApplicationJSON, resourceStatus)
 					}
-
-					sender, err := qdr.NewSender(cfg.AMQP.HostName, cfg.AMQP.Port, resourceStatus.ReturnAddress)
-					if err != nil {
-						log.Printf("failed to send: %s", resourceStatus.ReturnAddress)
-						continue
-					}
-					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-					//log.Printf("Sending PTP data back %s to %s", status, resourceStatus.ReturnAddress)
-					d.Data.SetSpecVersion(cloudevents.VersionV1)
-					if result := sender.Client.Send(ctx, d.Data); cloudevents.IsUndelivered(result) {
-						log.Printf("failed to send status: %v", result)
-					} else if cloudevents.IsNACK(result) {
-						log.Printf("status not accepted: %v", result)
-					}
-					cancel()
-					sender.Protocol.Close(ctx)
+					_ = d.Data.SetData(cloudevents.ApplicationJSON, resourceStatus)
 				}
+				// send it back to where it came from
+				sender, err := qdr.NewSender(cfg.AMQP.HostName, cfg.AMQP.Port, resourceStatus.ReturnAddress)
+				if err != nil {
+					log.Printf("failed to send: %s", resourceStatus.ReturnAddress)
+					continue
+				}
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				//log.Printf("Sending PTP data back %s to %s", status, resourceStatus.ReturnAddress)
+				d.Data.SetSpecVersion(cloudevents.VersionV1)
+				if result := sender.Client.Send(ctx, d.Data); cloudevents.IsUndelivered(result) {
+					log.Printf("failed to send status: %v", result)
+				} else if cloudevents.IsNACK(result) {
+					log.Printf("status not accepted: %v", result)
+				}
+				cancel()
+				sender.Protocol.Close(ctx)
 				continue
 			}
 
@@ -157,9 +157,10 @@ func main() {
 				log.Printf("Error marshalling event data when reading from QDR %v", err)
 			} else {
 				// find the endpoint you need to post
-				if d.PubSubType == protocol.CONSUMER {
+				if d.PubSubType == protocol.EVENT { //|always event or status| d.PubSubType == protocol.CONSUMER
 					if cfg.EventHandler == types.SOCKET {
-						//now send events from QDR to CNF SOCKET port
+						//now send events from QDR to CNF SOCKET
+						log.Printf("data is here %v",d)
 						if d.EventStatus == protocol.NEW {
 							sub := types.Subscription{}
 							err := json.Unmarshal(d.Data.Data(), &sub)
@@ -171,7 +172,7 @@ func main() {
 								}
 							}
 						}
-					} else {
+					} else { // need to post it via http
 						processConsumer(d)
 					}
 				} else if d.PubSubType == protocol.PRODUCER {
@@ -186,51 +187,70 @@ func main() {
 	wg.Wait()
 }
 
+func watchStoreUpdates(wg *sync.WaitGroup) {
+	// creates a new file watcher
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		fmt.Println("ERROR", err)
+	}
+	defer watcher.Close()
+	wg.Add(1)
+	go func(wg *sync.WaitGroup) {
+		defer wg.Done()
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				log.Println("event:", event)
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					log.Println("modified file:", event.Name)
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					log.Println("error:", err)
+					return
+				}
+				log.Println("error:", err)
+			}
+		}
+	}(wg)
+
+	err=watcher.Add(cfg.SubFilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err=watcher.Add(cfg.PubFilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 func processConsumer(event protocol.DataEvent) {
 	// if its consumer then check subscription map TODO
 	if event.EventStatus == protocol.NEW { // switch you endpoint url
 		//fmt.Sprintf("http://%s:%d%s/event/alert", cnfAPIHostName, cnfAPIPort, "/api/vdu/v1")
 		// check for subscription to fetch  the end url
 		//TODO: This is required but takes lots of time , adds latency
-		/*var endpointUri string
-		for _,v:= range rest.SubscriptionStore{
-			if v.ResourceQualifier.GetAddress()==d.Address{
-				endpointUri=v.EndpointURI
+		/*var eventConsumeURL string
+		for _, v := range rest.SubscriptionStore {
+			fmt.Printf("search in %s for %s",v.ResourceQualifier.GetAddress(),event.Address)
+			if v.ResourceQualifier.GetAddress() == event.Address {
+				eventConsumeURL = v.EndpointURI
 				break
 			}
 		}*/
+		//TODO: share store between
+		eventConsumeURL=fmt.Sprintf("http://%s:%d%s/%s",cfg.Host.HostName,cfg.Host.Port,cfg.HostPathPrefix,"event/alert")
 		if eventConsumeURL == "" {
-			log.Printf("Could not find subscription for address %s", event.Address)
+			log.Printf("Could not find publisher/subscription for address %s", event.Address)
 		} else {
 			response, err := http.Post(eventConsumeURL, "application/json", bytes.NewBuffer(event.Data.Data()))
 			if err != nil {
 				log.Printf("publisher failed to post event to consumer %v for url %s", err, event.EndPointURI)
 			} else {
-				defer response.Body.Close()
-				if response.StatusCode == http.StatusAccepted {
-					bodyBytes, err := ioutil.ReadAll(response.Body)
-					if err != nil {
-						log.Printf("error reading response  after posting an event to consumer")
-					} else {
-						if cfg.EventHandler == types.HTTP { //for socket , collect report at sidecar level
-							//body := []byte("{time:1}")
-							dat := make(map[string]interface{})
-							d := json.NewDecoder(bytes.NewBuffer(bodyBytes))
-							d.UseNumber()
-							if err := d.Decode(&dat); err != nil {
-								log.Printf("error parising latency %v", err)
-								return
-							}
-							tags := dat["time"].(interface{})
-							n := tags.(interface{}).(json.Number)
-							i64, _ := strconv.ParseInt(string(n), 10, 64)
-							latencyCountCh <- i64
-						}
-
-					}
-					//log.Printf("Successfully post the event to the consumer vdu. %v",err)
-				} else {
-					log.Printf("publisher failed to post event to the consumer status %d", response.StatusCode)
+				if response.StatusCode != http.StatusAccepted {
+					log.Printf("publisher failed to post event to the consumer %s status %d",eventConsumeURL, response.StatusCode)
 				}
 			}
 		}
@@ -252,8 +272,7 @@ func processProducer(event protocol.DataEvent) {
 					}
 					defer response.Body.Close()
 					if response.StatusCode != http.StatusAccepted {
-						log.Printf("failed to send event  ack to CNF %d", response.StatusCode)
-
+						log.Printf("failed to send event ack to CNF %d", response.StatusCode)
 					}
 				}
 			}(v)
@@ -289,9 +308,9 @@ func socketEvent(payload types.Subscription, port int) error {
 }
 
 func healthChk() {
-	log.Printf("health check %s ", fmt.Sprintf("http://%s:%d%s/health", cfg.API.HostName, cfg.API.Port, rest.SUBROUTINE))
+	log.Printf("health check %s ", fmt.Sprintf("http://%s:%d%s/health", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix))
 	for {
-		response, err := http.Get(fmt.Sprintf("http://%s:%d%s/health", cfg.API.HostName, cfg.API.Port, rest.SUBROUTINE))
+		response, err := http.Get(fmt.Sprintf("http://%s:%d%s/health", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix))
 		if err != nil {
 			time.Sleep(2 * time.Second)
 			continue
@@ -311,6 +330,7 @@ func SocketListener(wg *sync.WaitGroup, udpListenerPort int, dataOut chan<- prot
 	wg.Add(1)
 	go func(wg *sync.WaitGroup, udpListenerPort int) {
 		defer wg.Done()
+
 		ServerConn, err := net.ListenUDP("udp", &net.UDPAddr{IP: []byte{0, 0, 0, 0}, Port: udpListenerPort, Zone: ""})
 		if err != nil {
 			log.Fatalf("Error setting up socket %v", err)
@@ -323,6 +343,7 @@ func SocketListener(wg *sync.WaitGroup, udpListenerPort int, dataOut chan<- prot
 				log.Println(err)
 				continue
 			}
+
 			event := cloudevents.NewEvent()
 			sub := types.Subscription{}
 			err = json.Unmarshal(buffer[:n], &sub)
@@ -343,11 +364,10 @@ func SocketListener(wg *sync.WaitGroup, udpListenerPort int, dataOut chan<- prot
 			d := protocol.DataEvent{
 				Address:     sub.ResourceQualifier.GetAddress(),
 				Data:        event,
-				PubSubType:  protocol.PRODUCER,
+				PubSubType:  protocol.EVENT,
 				EventStatus: 0,
 				EndPointURI: sub.EndpointURI,
 			}
-			fmt.Printf("data sent %v", d)
 			dataOut <- d //send to QDR (Now only events are sent via socket , rest happens via http)
 		}
 	}(wg, udpListenerPort)

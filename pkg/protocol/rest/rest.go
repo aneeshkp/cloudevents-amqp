@@ -7,8 +7,10 @@ import (
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	"github.com/gorilla/mux"
+	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -27,8 +29,7 @@ var (
 	SubscriptionStore = map[string]types.Subscription{}
 )
 
-// SUBROUTINE is constant for rest api endpoint
-const SUBROUTINE = "/api/ocloudnotifications/v1"
+
 
 // Server defines rest api server object
 type Server struct {
@@ -79,10 +80,8 @@ func (s *Server) Start() {
 	}
 
 	r := mux.NewRouter()
-	api := r.PathPrefix(SUBROUTINE).Subrouter()
-	api.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "api v1")
-	})
+	api := r.PathPrefix(s.cfg.APIPathPrefix).Subrouter()
+
 	//The POST method creates a subscription resource for the (Event) API consumer.
 	// SubscriptionInfo  status 201
 	// Shall be returned when the subscription resource created successfully.
@@ -134,17 +133,50 @@ func (s *Server) Start() {
 	api.HandleFunc("/subscriptions", s.deleteAllSubscriptions).Methods(http.MethodDelete)
 	api.HandleFunc("/publishers", s.deleteAllPublishers).Methods(http.MethodDelete)
 
-	api.HandleFunc("/health", s.health).Methods(http.MethodGet)
+	api.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, "OK")
+	}).Methods(http.MethodGet)
 
-	api.HandleFunc("/{ResourceType}/CurrentState", s.health).Methods(http.MethodGet)
 	//TODO: Pull Status Notifications Not implementing
 
-	api.HandleFunc("/event/create", s.createEvent).Methods(http.MethodPost)
+	api.HandleFunc("/create/event", s.publishEvent).Methods(http.MethodPost)
 	api.HandleFunc("/status", s.getResourceStatus).Methods(http.MethodPost)
 
-	api.HandleFunc("/", notFound)
+	err = r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		pathTemplate, err := route.GetPathTemplate()
+		if err == nil {
+			fmt.Println("ROUTE:", pathTemplate)
+		}
+		pathRegexp, err := route.GetPathRegexp()
+		if err == nil {
+			fmt.Println("Path regexp:", pathRegexp)
+		}
+		queriesTemplates, err := route.GetQueriesTemplates()
+		if err == nil {
+			fmt.Println("Queries templates:", strings.Join(queriesTemplates, ","))
+		}
+		queriesRegexps, err := route.GetQueriesRegexp()
+		if err == nil {
+			fmt.Println("Queries regexps:", strings.Join(queriesRegexps, ","))
+		}
+		methods, err := route.GetMethods()
+		if err == nil {
+			fmt.Println("Methods:", strings.Join(methods, ","))
+		}
+		fmt.Println()
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	api.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, r)
+	})
+
+
 	log.Print("Started Rest API Server")
-	log.Printf("endpoint %s", SUBROUTINE)
+	log.Printf("endpoint %s", s.cfg.APIPathPrefix)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", s.cfg.API.HostName, s.cfg.API.Port), api))
 
 }

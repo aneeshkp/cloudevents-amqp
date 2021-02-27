@@ -56,6 +56,8 @@ type Config struct {
 	SubFilePath    string             `json:"subfilepath,omitempty,string"` //sub.json
 	PublishStatus  bool               `json:"publishstatus,omitempty,bool"` //nolint:staticcheck
 	EventHandler   types.EventHandler `yaml:"eventhandler" json:"eventandler"`
+	APIPathPrefix  string             `yaml:"apipathprefix" json:"apipathprefix"`
+	HostPathPrefix string             `yaml:"hostpathprefix" json:"hostpathprefix"`
 }
 
 // NewConfig  returns a new decoded AMQPConfig struct
@@ -128,13 +130,13 @@ func (c *Config) SaveConfig(configPath string) (err error) {
 //DefaultConfig fills up teh default configurations
 func DefaultConfig(defaultHosPort, defaultAPIPort, senderSocketPort, listenerSocketPort int, cluster, node, namespace string, publishStatus bool) *Config {
 	if cluster == "" {
-		cluster = "clusternamenotknown"
+		cluster = "clusternameunknown"
 	}
 	if node == "" {
-		node = "nodenamenotknown"
+		node = "nodenameunknown"
 	}
 	if namespace == "" {
-		namespace = "namespacenotknown"
+		namespace = "namespaceunknown"
 	}
 
 	cfg := &Config{
@@ -144,11 +146,11 @@ func DefaultConfig(defaultHosPort, defaultAPIPort, senderSocketPort, listenerSoc
 		},
 		API: HostConfig{
 			HostName: "localhost",
-			Port:     defaultAPIPort,
+			Port:     defaultHosPort,
 		},
 		Host: HostConfig{
 			HostName: "localhost",
-			Port:     defaultHosPort,
+			Port:     defaultAPIPort,
 		},
 		Socket: SocketConfig{
 			Listener: HostConfig{

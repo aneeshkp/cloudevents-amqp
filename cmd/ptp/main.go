@@ -7,12 +7,13 @@ import (
 	routes3 "github.com/aneeshkp/cloudevents-amqp/pkg/cnf/routes"
 	eventconfig "github.com/aneeshkp/cloudevents-amqp/pkg/config"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/events"
-	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol/rest"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	"github.com/gorilla/mux"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 
 	"math/rand"
@@ -37,16 +38,12 @@ var (
 	avgMessagesPerSec        = 100
 	wg                       sync.WaitGroup
 
-	defaultListenerSocketPort = 20001
-	defaultSenderSocketPort   = 20002
+	defaultSenderSocketPort   = 20001
+	defaultListenerSocketPort = 20002
+
 	defaultAPIPort            = 8080
 	defaultHostPort           = 9090
 	cfg                       *eventconfig.Config
-)
-
-const (
-	//SUBROUTINE rest subroutine path
-	SUBROUTINE = "/api/vdu/v1"
 )
 
 var (
@@ -70,8 +67,16 @@ func main() {
 	if err != nil {
 		log.Printf("Could not load configuration file --config, loading default queue\n")
 		cfg = eventconfig.DefaultConfig(defaultHostPort, defaultAPIPort, defaultSenderSocketPort, defaultListenerSocketPort,
-			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), true)
+			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), false)
 		cfg.EventHandler = types.SOCKET
+		cfg.HostPathPrefix = "/api/ptp/v1"
+		cfg.APIPathPrefix = "/api/ocloudnotifications/v1"
+	}
+	log.Printf("Framework type :%s\n",cfg.EventHandler)
+	// can override externally
+	envEventHandler:=os.Getenv("EVENT_HANDLER")
+	if envEventHandler!=""{
+		cfg.EventHandler =types.EventHandler(envEventHandler)
 	}
 
 	//Start the Rest API server to read ack
@@ -84,9 +89,10 @@ func main() {
 	healthCheckAPIEndpoints()
 
 	publisherID, _ = createPublisher()
-	//Latency report
+
+	//Start sending events
+	event := events.New(avgMessagesPerSec, PubStore,  PubStore[publisherID],*cfg)
 	time.Sleep(5 * time.Second)
-	event := events.New(avgMessagesPerSec, PubStore, cfg.Socket.Sender.Port, cfg.EventHandler, PubStore[publisherID])
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -96,32 +102,64 @@ func main() {
 			event.ResetTotalMsgSent()
 		}
 	}()
-	event.GenerateEvents(publisherID)
+	// the PTP has to know where to trigger the events //TODO expose this via ENV
+	time.Sleep(5*time.Second)
+	event.GenerateEvents(fmt.Sprintf("http://%s:%d%s/create/event", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix), publisherID)
 	wg.Wait()
 }
 func startServer(wg *sync.WaitGroup) {
 	defer wg.Done()
 	routes := routes3.CnfRoutes{}
 	r := mux.NewRouter()
-	api := r.PathPrefix(SUBROUTINE).Subrouter()
+	api := r.PathPrefix(cfg.HostPathPrefix).Subrouter()
 	api.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "api v1")
 	})
-	api.HandleFunc("/event/ack", routes.EventAck).Methods(http.MethodPost)
-	api.HandleFunc("/event/alert", routes.EventAlert).Methods(http.MethodPost)
-	api.HandleFunc("/health", routes.Health).Methods(http.MethodGet)
-	log.Print("Started Rest API Server")
-	log.Printf("endpoint %s", SUBROUTINE)
+	api.HandleFunc("/publisher/ack", routes.PublisherAck).Methods(http.MethodPost)
+	api.HandleFunc("/event/alert", routes.EventSubmit).Methods(http.MethodPost)
+	api.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, "OK")
+	}).Methods(http.MethodGet)
+	err := r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		pathTemplate, err := route.GetPathTemplate()
+		if err == nil {
+			fmt.Println("ROUTE:", pathTemplate)
+		}
+		pathRegexp, err := route.GetPathRegexp()
+		if err == nil {
+			fmt.Println("Path regexp:", pathRegexp)
+		}
+		queriesTemplates, err := route.GetQueriesTemplates()
+		if err == nil {
+			fmt.Println("Queries templates:", strings.Join(queriesTemplates, ","))
+		}
+		queriesRegexps, err := route.GetQueriesRegexp()
+		if err == nil {
+			fmt.Println("Queries regexps:", strings.Join(queriesRegexps, ","))
+		}
+		methods, err := route.GetMethods()
+		if err == nil {
+			fmt.Println("Methods:", strings.Join(methods, ","))
+		}
+		fmt.Println()
+		return nil
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+	http.Handle("/", r)
+
+	log.Printf("started rest API server at %s", fmt.Sprintf("http://%s/%d%s", cfg.Host.HostName, cfg.Host.Port, cfg.HostPathPrefix))
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", cfg.Host.HostName, cfg.Host.Port), api))
 }
 
 //Side car publishers
 func healthCheckAPIEndpoints() {
 	//health check the webserver
-	log.Printf("Health check on hosted services %s", fmt.Sprintf("http://%s:%d%s/health", cfg.Host.HostName, cfg.Host.Port, SUBROUTINE))
+	log.Printf("Health check on hosted services %s", fmt.Sprintf("http://%s:%d%s/health", cfg.Host.HostName, cfg.Host.Port, cfg.HostPathPrefix))
 	log.Printf("waiting for self hosted rest service to start\n")
 	for {
-		response, err := http.Get(fmt.Sprintf("http://%s:%d%s/health", cfg.Host.HostName, cfg.Host.Port, SUBROUTINE))
+		response, err := http.Get(fmt.Sprintf("http://%s:%d%s/health", cfg.Host.HostName, cfg.Host.Port, cfg.HostPathPrefix))
 		if err != nil {
 			time.Sleep(2 * time.Second)
 			continue
@@ -135,10 +173,9 @@ func healthCheckAPIEndpoints() {
 	}
 
 	//health check sidecar rest api
-	log.Printf("Health check on rest api's %s", fmt.Sprintf("http://%s:%d%s/health", cfg.API.HostName, cfg.API.Port, rest.SUBROUTINE))
-	log.Printf("waiting for sidecar reest rest service to start\n")
+	log.Printf("waiting for sidecar rest service to start\n")
 	for {
-		response, err := http.Get(fmt.Sprintf("http://%s:%d%s/health", cfg.API.HostName, cfg.API.Port, rest.SUBROUTINE))
+		response, err := http.Get(fmt.Sprintf("http://%s:%d%s/health", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix))
 		if err != nil {
 			time.Sleep(2 * time.Second)
 			continue
@@ -150,21 +187,18 @@ func healthCheckAPIEndpoints() {
 		response.Body.Close()
 		time.Sleep(2 * time.Second)
 	}
+	log.Printf("Ready...")
 }
 
+//createPublisher  PTP produces publishers
 func createPublisher() (string, error) {
-	nodeName := os.Getenv("MY_NODE_NAME")
-	if nodeName == "" {
-		nodeName = "unknownnode"
-	}
-
 	ptpSubscription := types.Subscription{
-		URILocation:  fmt.Sprintf("http://%s:%d%s/event/ack", cfg.Host.HostName, cfg.Host.Port, SUBROUTINE),
+		URILocation:  "", //will be filled by the api
 		ResourceType: "PTP",
-		EndpointURI:  "",
+		EndpointURI:  fmt.Sprintf("http://%s:%d%s/publisher/ack", cfg.Host.HostName, cfg.Host.Port, cfg.HostPathPrefix), //return url
 		ResourceQualifier: types.ResourceQualifier{
-			NodeName:    nodeName,
-			ClusterName: "unknown",
+			ClusterName: cfg.Cluster.Name,
+			NodeName:    cfg.Cluster.Node,
 			Suffix:      []string{"SYNC", "PTP"},
 		},
 		EventData:      types.EventDataType{},
@@ -172,8 +206,9 @@ func createPublisher() (string, error) {
 		Error:          "",
 	}
 	jsonValue, _ := json.Marshal(ptpSubscription)
-	log.Printf("Post URL %s", fmt.Sprintf("http://%s:%d%s/publishers", cfg.API.HostName, cfg.API.Port, rest.SUBROUTINE))
-	response, err := http.Post(fmt.Sprintf("http://%s:%d%s/publishers", cfg.API.HostName, cfg.API.Port, rest.SUBROUTINE), "application/json; charset=utf-8", bytes.NewBuffer(jsonValue))
+	//Create publisher
+	response, err := http.Post(fmt.Sprintf("http://%s:%d%s/publishers", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix),
+		"application/json; charset=utf-8", bytes.NewBuffer(jsonValue))
 	if err != nil {
 		log.Printf("create publisher: the http request failed with an error %s\n", err)
 		return "", err

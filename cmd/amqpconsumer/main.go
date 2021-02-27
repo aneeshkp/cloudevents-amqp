@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol/qdr"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	"log"
@@ -13,16 +14,33 @@ import (
 
 func main() {
 	var wg sync.WaitGroup
-	for i := 0; i < 10; i++ {
+	//for i := 0; i < 10; i++ {
 		runTest(&wg)
-		time.Sleep(10 * time.Second)
-	}
+		//time.Sleep(10 * time.Second)
+	//}
+	wg.Wait()
 }
 
 func runTest(wg *sync.WaitGroup) {
 	//build address
-	senderAddress := "/clusternamenotknown/nodenamenotknown/CurrentStatus"
-	receiveAddress := "/clusternamenotknown/nodenamenotknown/CurrentStatus"
+	senderAddress := "/clusternameunknown/nodenameunknown/SYNC/PTP"
+	//receiveAddress :="/clusternameunknown/nodenameunknown/SYNC/PTP"
+	sub:=types.Subscription{
+	SubscriptionID:    "1231231231",
+	URILocation:       "",
+	ResourceType:      "PTP",
+	EndpointURI:       "",
+	ResourceQualifier: types.ResourceQualifier{
+		NodeName:    "clusternameunknown",
+		NameSpace:   "nodenameunknown",
+		ClusterName: "",
+		Suffix: []string{"SYNC","PTP"},
+
+	},
+	EventData:         types.EventDataType{},
+	EventTimestamp:    0,
+	Error:             "",
+}
 
 	event := cloudevents.NewEvent()
 	event = cloudevents.NewEvent()
@@ -30,11 +48,12 @@ func runTest(wg *sync.WaitGroup) {
 	event.SetSource("https://github.com/aneeshkp/cloud-events/vdu")
 	event.SetTime(time.Now())
 	event.SetType("com.cloudevents.poc.ptp.status")
-	event.SetSubject("PTPCurrentStatus")
-	_ = event.SetData(cloudevents.ApplicationJSON, fmt.Sprintf(`{"address:%s"}`, receiveAddress))
+	//event.SetSubject("PTPCurrentStatus")
+	_ = event.SetData(cloudevents.ApplicationJSON, fmt.Sprintf(`{"address:%s"}`, senderAddress))
+	_ = event.SetData(cloudevents.ApplicationJSON, sub)
 	ctx := context.Background()
 
-	listener, err := qdr.NewReceiver("amqp://localhost", 5672, receiveAddress)
+	/*listener, err := qdr.NewReceiver("amqp://localhost", 5672, receiveAddress)
 	if err != nil {
 		log.Printf("Error Dialing AMQP server::%v", err)
 		return
@@ -48,33 +67,46 @@ func runTest(wg *sync.WaitGroup) {
 		defer wg.Done()
 		err = listener.Client.StartReceiver(ctx2, func(e cloudevents.Event) {
 			fmt.Println(e)
-			cancel2()
 		})
 		if err != nil {
 			log.Printf("Error Dialing AMQP server::%v", err)
-			cancel2()
 		}
 	}(wg)
 
 	if err != nil {
 		log.Printf("Error Dialing AMQP server::%v", err)
 		return
-	}
+	}*/
 
 	sender, _ := qdr.NewSender("amqp://localhost", 5672, senderAddress)
-	ctx2, cancel := context.WithTimeout(ctx, 5*time.Second)
-	if result := sender.Client.Send(ctx2, event); cloudevents.IsUndelivered(result) {
-		log.Printf("failed to send: %v", result)
+
+
+	for i:=0;i<=200;i++ {
+		wg.Add(1)
+		go func(wg *sync.WaitGroup,sender *types.AMQPProtocol){
+			defer wg.Done()
+		ctx2, cancel := context.WithTimeout(ctx, 5*time.Second)
+
+		if result := sender.Client.Send(ctx2, event); cloudevents.IsUndelivered(result) {
+			log.Printf("failed to send: %v", result)
+			cancel()
+			//cancel2()
+		} else if cloudevents.IsNACK(result) {
+			log.Printf("event not accepted: %v", result)
+			cancel()
+			//cancel2()
+		}else{
+			log.Printf("Event sent and ack")
+		}
+
 		cancel()
-		cancel2()
-	} else if cloudevents.IsNACK(result) {
-		log.Printf("event not accepted: %v", result)
-		cancel()
-		cancel2()
+		}(wg,sender)
+		//listener.Protocol.Close(ctx2)
+		//sender.Protocol.Close(ctx)
+
 	}
+	log.Printf("waiting %s","aneesh")
 	wg.Wait()
-	cancel()
-	listener.Protocol.Close(ctx2)
 	sender.Protocol.Close(ctx)
 
 }

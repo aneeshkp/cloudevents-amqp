@@ -3,17 +3,17 @@ amqp:
   port: 5672
 api:
   hostname: localhost
-  port: 8081
+  port: 8080
 host:
   hostname: localhost
-  port: 9091
+  port: 9099
 socket:
   listener:
     hostname: localhost
-    port: 30001
+    port: 20001
   sender:
     hostname: localhost
-    port: 30002
+    port: 20002
 cluster:
   name: "CLUSTER1"
   node: "NODE1"
@@ -23,3 +23,5 @@ pubfilepath: pub.json
 subfilepath: pub.json
 publishstatus: false
 protocol: SOCKET #SOCKET HTTP
+apipathprefix: "/api/ocloudnotifications/v1"
+hostapipathprefix: "/api/"

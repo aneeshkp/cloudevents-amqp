@@ -17,6 +17,8 @@ const (
 	CONSUMER PubSubType = "consumer"
 	//STATUS is type of event for status check
 	STATUS PubSubType = "status"
+	//EVENT is type of event for status check
+	EVENT PubSubType = "event"
 )
 
 //EventStatus specifies status of the event

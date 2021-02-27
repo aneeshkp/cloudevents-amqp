@@ -6,14 +6,15 @@ import (
 	"fmt"
 	routes3 "github.com/aneeshkp/cloudevents-amqp/pkg/cnf/routes"
 	eventconfig "github.com/aneeshkp/cloudevents-amqp/pkg/config"
-	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol/rest"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/report"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/gorilla/mux"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 
 	"math/rand"
@@ -22,29 +23,19 @@ import (
 	"time"
 )
 
-/*
-This vdu sends events at random time chosen between 0 to 500ms(configurable in pod)
-and send events between 1 to 100K
-
-
-
-*/
-
 var (
 	//SubStore for storing Subscription info that is returned by restapi
 	SubStore                  map[string]types.Subscription
 	wg                        sync.WaitGroup
 	cfg                       *eventconfig.Config
 	eventConsumeURL           string
-	defaultListenerSocketPort = 3001
-	defaultSenderSocketPort   = 3002
+	defaultSenderSocketPort   = 30001
+	defaultListenerSocketPort = 30002
+
 	defaultAPIPort            = 8081
 	defaultHostPort           = 9091
-)
-
-const (
-	//SUBROUTINE rest subroutine path
-	SUBROUTINE = "/api/vdu/v1"
+	latencyCountCh            chan report.Latency
+	routes                    *routes3.CnfRoutes
 )
 
 // init sets initial values for variables used in the function.
@@ -60,29 +51,39 @@ func main() {
 		cfg = eventconfig.DefaultConfig(defaultHostPort, defaultAPIPort, defaultSenderSocketPort, defaultListenerSocketPort,
 			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), false)
 		cfg.EventHandler = types.SOCKET
+		cfg.HostPathPrefix = "/api/vdu/v1"
+		cfg.APIPathPrefix = "/api/ocloudnotifications/v1"
 	}
+	// can override externally
+	envEventHandler:=os.Getenv("EVENT_HANDLER")
+	if envEventHandler!=""{
+		cfg.EventHandler =types.EventHandler(envEventHandler)
+	}
+	log.Printf("Framework type :%s\n",cfg.EventHandler)
 	SubStore = map[string]types.Subscription{}
+	// if the event handler is socket then do this
+
+	//Prepare for collecting latency
+	latencyCountCh = make(chan report.Latency, 10)
+	latencyReport := report.New(&wg, "default")
+	routes = &routes3.CnfRoutes{LatencyIn: latencyCountCh}
 
 	//Consumer vDU URL event are read from QDR by sidecar and posted to vDU
-	eventConsumeURL = fmt.Sprintf("http://%s:%d%s/event/alert", cfg.Host.HostName, cfg.Host.Port, SUBROUTINE)
+
 	//SIDECAR URL: PTP events are published via post to its sidecar
 	//eventPublishURL = fmt.Sprintf("http://%s:%d%s/event/create", cfg.API.HostName, cfg.API.Port, rest.SUBROUTINE)
 	//Start the Rest API server to read ack
 	wg.Add(1)
 	go func() {
-		startServer(&wg)
+		startServer(&wg, routes)
 	}()
-
 	// continue after health check
 	healthCheckAPIEndpoints()
-
 	// create various subscriptions that you are interested to subscribe to
-	_, _ = createSubscription(eventConsumeURL)
+	_, _ = createSubscription()
 
-	time.Sleep(5 * time.Second)
-
-	// check status of PTP
-	tck := time.NewTicker(time.Duration(10) * time.Second)
+	//check once of often, your choice
+	/*tck := time.NewTicker(time.Duration(10) * time.Second)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -93,41 +94,71 @@ func main() {
 			}
 			log.Printf("PTP status %v\n", string(event.Data()))
 		}
-	}()
+	}()*/
 
 	if cfg.EventHandler == types.SOCKET {
-		//send count to this channel
-		latencyCountCh := make(chan int64, 10)
-		latencyReport := report.New(&wg, "default")
-		latencyReport.Collect(latencyCountCh)
 		socketListener(&wg, cfg.Socket.Listener.HostName, cfg.Socket.Listener.Port, latencyCountCh)
 	}
-
+	//preparing to collect latency
+	log.Printf("collect latency report")
+	latencyReport.Collect(latencyCountCh)
 	wg.Wait()
 }
-func startServer(wg *sync.WaitGroup) {
+func startServer(wg *sync.WaitGroup, cnfRoutes *routes3.CnfRoutes) {
 	defer wg.Done()
-	routes := routes3.CnfRoutes{}
+
 	r := mux.NewRouter()
-	api := r.PathPrefix(SUBROUTINE).Subrouter()
+	api := r.PathPrefix(cfg.HostPathPrefix).Subrouter()
 	api.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "api v1")
 	})
-	api.HandleFunc("/event/ack", routes.EventAck).Methods(http.MethodPost)
-	api.HandleFunc("/event/alert", routes.EventAlert).Methods(http.MethodPost)
-	api.HandleFunc("/health", routes.Health).Methods(http.MethodGet)
+	api.HandleFunc("/publisher/ack", cnfRoutes.PublisherAck).Methods(http.MethodPost)
+	api.HandleFunc("/event/alert", cnfRoutes.EventSubmit).Methods(http.MethodPost)
+	api.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, "OK")
+	}).Methods(http.MethodGet)
+	err := r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		pathTemplate, err := route.GetPathTemplate()
+		if err == nil {
+			fmt.Println("ROUTE:", pathTemplate)
+		}
+		pathRegexp, err := route.GetPathRegexp()
+		if err == nil {
+			fmt.Println("Path regexp:", pathRegexp)
+		}
+		queriesTemplates, err := route.GetQueriesTemplates()
+		if err == nil {
+			fmt.Println("Queries templates:", strings.Join(queriesTemplates, ","))
+		}
+		queriesRegexps, err := route.GetQueriesRegexp()
+		if err == nil {
+			fmt.Println("Queries regexps:", strings.Join(queriesRegexps, ","))
+		}
+		methods, err := route.GetMethods()
+		if err == nil {
+			fmt.Println("Methods:", strings.Join(methods, ","))
+		}
+		fmt.Println()
+		return nil
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	http.Handle("/", r)
+
 	log.Print("Started Rest API Server")
-	log.Printf("endpoint %s", SUBROUTINE)
+
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", cfg.Host.HostName, cfg.Host.Port), api))
 }
 
 //Side car publishers
 func healthCheckAPIEndpoints() {
 	//health check the webserver
-	log.Printf("Health check on hosted services %s", fmt.Sprintf("http://%s:%d%s/health", cfg.Host.HostName, cfg.Host.Port, SUBROUTINE))
+	log.Printf("Health check on hosted services %s", fmt.Sprintf("http://%s:%d%s/health", cfg.Host.HostName, cfg.Host.Port, cfg.HostPathPrefix))
 	log.Printf("waiting for self hosted rest service to start\n")
 	for {
-		response, err := http.Get(fmt.Sprintf("http://%s:%d%s/health", cfg.Host.HostName, cfg.Host.Port, SUBROUTINE))
+		response, err := http.Get(fmt.Sprintf("http://%s:%d%s/health", cfg.Host.HostName, cfg.Host.Port, cfg.HostPathPrefix))
 		if err != nil {
 			time.Sleep(2 * time.Second)
 			continue
@@ -141,10 +172,10 @@ func healthCheckAPIEndpoints() {
 	}
 
 	//health check sidecar rest api
-	log.Printf("health check on rest api's %s", fmt.Sprintf("http://%s:%d%s/health", cfg.API.HostName, cfg.API.Port, rest.SUBROUTINE))
-	log.Printf("waiting for sidecar reest rest service to start\n")
+	log.Printf("health check on rest api's %s", fmt.Sprintf("http://%s:%d%s/health", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix))
+	log.Printf("waiting for sidecar rest service to start\n")
 	for {
-		response, err := http.Get(fmt.Sprintf("http://%s:%d%s/health", cfg.API.HostName, cfg.API.Port, rest.SUBROUTINE))
+		response, err := http.Get(fmt.Sprintf("http://%s:%d%s/health", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix))
 		if err != nil {
 			time.Sleep(2 * time.Second)
 			continue
@@ -156,20 +187,18 @@ func healthCheckAPIEndpoints() {
 		response.Body.Close()
 		time.Sleep(2 * time.Second)
 	}
+	log.Printf("Ready...")
 }
 
-func createSubscription(eventPostURL string) (string, error) {
-	nodeName := os.Getenv("MY_NODE_NAME")
-	if nodeName == "" {
-		nodeName = "unknownnode"
-	}
+func createSubscription() (string, error) {
+	log.Printf("creating subscription")
 	ptpSubscription := types.Subscription{
 		URILocation:  "",
 		ResourceType: "PTP",
-		EndpointURI:  eventPostURL,
+		EndpointURI:  fmt.Sprintf("http://%s:%d%s/event/alert", cfg.Host.HostName, cfg.Host.Port, cfg.HostPathPrefix),
 		ResourceQualifier: types.ResourceQualifier{
-			NodeName:    nodeName,
-			ClusterName: "unknown",
+			ClusterName: cfg.Cluster.Name,
+			NodeName:    cfg.Cluster.Node,
 			Suffix:      []string{"SYNC", "PTP"},
 		},
 		EventData:      types.EventDataType{},
@@ -177,9 +206,9 @@ func createSubscription(eventPostURL string) (string, error) {
 		Error:          "",
 	}
 	jsonValue, _ := json.Marshal(ptpSubscription)
+	response, err := http.Post(fmt.Sprintf("http://%s:%d%s/subscriptions", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix),
+		"application/json; charset=utf-8", bytes.NewBuffer(jsonValue))
 
-	log.Println(fmt.Sprintf("http://%s:%d%s/subscriptions", cfg.API.HostName, cfg.API.Port, rest.SUBROUTINE))
-	response, err := http.Post(fmt.Sprintf("http://%s:%d%s/subscriptions", cfg.API.HostName, cfg.API.Port, rest.SUBROUTINE), "application/json; charset=utf-8", bytes.NewBuffer(jsonValue))
 	if err != nil {
 		log.Printf("The HTTP request failed with error %s\n", err)
 		return "", err
@@ -191,7 +220,7 @@ func createSubscription(eventPostURL string) (string, error) {
 		var sub types.Subscription
 		err = json.Unmarshal(data, &sub)
 		if err != nil {
-			log.Println("failed to successfully marshal json data from the response")
+			log.Printf("failed to successfully marshal json data from the response %v\n",err)
 		} else {
 			SubStore[sub.SubscriptionID] = sub
 			return sub.SubscriptionID, nil
@@ -203,9 +232,9 @@ func createSubscription(eventPostURL string) (string, error) {
 	return "", err
 }
 
-func socketListener(wg *sync.WaitGroup, hostname string, listenerPort int, latencyCountChannel chan int64) {
+func socketListener(wg *sync.WaitGroup, hostname string, listenerPort int, latencyCountChannel chan<- report.Latency) {
 	wg.Add(1)
-	go func(wg *sync.WaitGroup, hostname string, udpListenerPort int, latencyCountChannel chan int64) {
+	go func(wg *sync.WaitGroup, hostname string, udpListenerPort int, latencyCountChannel chan<- report.Latency) {
 		defer wg.Done()
 		ServerConn, err := net.ListenUDP("udp", &net.UDPAddr{IP: []byte{0, 0, 0, 0}, Port: listenerPort, Zone: ""})
 		if err != nil {
@@ -233,7 +262,7 @@ func socketListener(wg *sync.WaitGroup, hostname string, listenerPort int, laten
 			// divide from nanoseconds.
 			millis := nanos / 1000000
 			latency := millis - sub.EventTimestamp
-			latencyCountChannel <- latency
+			latencyCountChannel <- report.Latency{Time: latency}
 		}
 	}(wg, hostname, listenerPort, latencyCountChannel)
 
@@ -241,11 +270,11 @@ func socketListener(wg *sync.WaitGroup, hostname string, listenerPort int, laten
 
 func checkPTPStatus() (event cloudevents.Event, err error) {
 
-	log.Printf("Posting to PTP status %s\n", fmt.Sprintf("http://%s:%d%s/status", cfg.API.HostName, cfg.API.Port, rest.SUBROUTINE))
+	log.Printf("Posting to PTP status %s\n", fmt.Sprintf("http://%s:%d%s/status", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix))
 	/*client := http.Client{
 		Timeout: 10 * time.Second,
 	}*/
-	response, err := http.Post(fmt.Sprintf("http://%s:%d%s/status", cfg.API.HostName, cfg.API.Port, rest.SUBROUTINE),
+	response, err := http.Post(fmt.Sprintf("http://%s:%d%s/status", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix),
 		"application/json; charset=utf-8", nil)
 	if err != nil {
 		log.Printf("The HTTP request for PTP status failed with error %s\n", err)

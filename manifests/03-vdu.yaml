@@ -47,11 +47,13 @@ spec:
           image: sidecar
           lifecycle:
             type: Sidecar
-          command: [ "./vdu-sidecar" ]
+          command: [ "./sidecar" ]
           args: [ "-config", "/opt/config.yml" ]
           volumeMounts:
             - name: config-volume
               mountPath: /opt/
+            - name: pubsubs
+              mountPath: /store
       volumes:
         - name: config-volume
           configMap:
@@ -59,6 +61,8 @@ spec:
             items:
               - key: config.yml
                 path: config.yml
+        - name: pubsubs
+          emptyDir: { }
 
 
 

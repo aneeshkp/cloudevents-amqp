@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol"
 	amqp1 "github.com/cloudevents/sdk-go/protocol/amqp/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"io/ioutil"
@@ -32,6 +33,8 @@ type AMQPProtocol struct {
 	CancelFn      context.CancelFunc
 	Client        cloudevents.Client
 	Queue         string
+	DataIn    <-chan protocol.DataEvent
+	DataOut   chan<- protocol.DataEvent
 }
 
 /*{
@@ -108,7 +111,7 @@ type ResourceQualifier struct {
 
 // GetAddress return qdr address
 func (r *ResourceQualifier) GetAddress() string {
-	return fmt.Sprintf("/%s/%s/%s", r.NodeName, r.ClusterName, strings.Join(r.Suffix, "/"))
+	return fmt.Sprintf("/%s/%s/%s", r.ClusterName, r.NodeName, strings.Join(r.Suffix, "/"))
 }
 
 //WriteToFile writes subscription data to a file

@@ -28,8 +28,8 @@ data:
       namespace: ""
     statusresource:
     - name: ptp-status
-    pubfilepath: pub.json
-    subfilepath: pub.json
+    pubfilepath: /store/pub.json
+    subfilepath: /store/sub.json
     publishstatus: true
 ---
 apiVersion: v1
@@ -60,6 +60,6 @@ data:
       node: ""
       namespace: ""
     statusresource:
-    pubfilepath: pub.json
-    subfilepath: pub.json
+    pubfilepath: /store/pub.json
+    subfilepath: /store/sub.json
     publishstatus: false

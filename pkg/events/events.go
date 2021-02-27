@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/chain"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
+	eventconfig "github.com/aneeshkp/cloudevents-amqp/pkg/config"
 	"log"
 	"math/rand"
 	"net"
@@ -17,9 +18,8 @@ import (
 type Event struct {
 	avgMsgPerSec int
 	totalMsgSent int64
-	eventHandler types.EventHandler
 	pubStore     map[string]types.Subscription
-	port         int
+    cfg eventconfig.Config
 	subscription types.Subscription
 }
 
@@ -34,21 +34,21 @@ func (e *Event) ResetTotalMsgSent() {
 }
 
 // New create new event object
-func New(avgMsgPerSec int, pubStore map[string]types.Subscription, port int, eventHandler types.EventHandler, subscription types.Subscription) *Event {
+func New(avgMsgPerSec int, pubStore map[string]types.Subscription,subscription types.Subscription,cfg eventconfig.Config) *Event {
 	return &Event{
 		avgMsgPerSec: avgMsgPerSec,
 		totalMsgSent: 0,
-		eventHandler: eventHandler,
 		pubStore:     pubStore,
-		port:         port,
+		cfg:         cfg,
 		subscription: subscription,
 	}
+
 }
 
 //GenerateEvents is used to generate mock data
-func (e *Event) GenerateEvents(id string) {
+func (e *Event) GenerateEvents(eventPostAddress string ,id string) {
 
-	states := intiState(e.subscription.EndpointURI)
+	states := e.intiState(e.subscription.EndpointURI)
 
 	transition := [][]float32{
 		{
@@ -92,13 +92,13 @@ func (e *Event) GenerateEvents(id string) {
 		if counter >= maxCount {
 			if currentState.Probability > 0 {
 				//for i := 1; i <= currentState.Payload.ID; i++ {
-				if e.eventHandler == types.SOCKET {
+				if e.cfg.EventHandler == types.SOCKET {
 					err := e.udpEvent(currentState.Payload, id)
 					if err == nil {
 						e.totalMsgSent++
 					}
 				} else {
-					err := e.httpEvent(currentState.Payload, id)
+					err := e.httpEvent(eventPostAddress,currentState.Payload, id)
 					if err == nil {
 						e.totalMsgSent++
 					}
@@ -111,7 +111,7 @@ func (e *Event) GenerateEvents(id string) {
 	}
 }
 
-func intiState(eventPublisherURL string) []chain.State {
+func (e *Event)intiState(eventPublisherURL string) []chain.State {
 	//events := getSupportedEvents()
 	nodeName := os.Getenv("MY_NODE_NAME")
 	if nodeName == "" {
@@ -126,9 +126,9 @@ func intiState(eventPublisherURL string) []chain.State {
 				ResourceType:   "",
 				EndpointURI:    eventPublisherURL,
 				ResourceQualifier: types.ResourceQualifier{
-					NodeName:    nodeName,
-					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
-					ClusterName: "unknown",
+					NodeName:    e.cfg.Cluster.Node,
+					NameSpace:   e.cfg.Cluster.NameSpace,
+					ClusterName: e.cfg.Cluster.Name,
 					Suffix:      []string{"SYNC", "PTP"},
 				},
 				EventData:      types.EventDataType{State: types.FREERUN},
@@ -145,9 +145,9 @@ func intiState(eventPublisherURL string) []chain.State {
 				ResourceType:   "",
 				EndpointURI:    eventPublisherURL,
 				ResourceQualifier: types.ResourceQualifier{
-					NodeName:    nodeName,
-					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
-					ClusterName: "unknown",
+					NodeName:    e.cfg.Cluster.Node,
+					NameSpace:   e.cfg.Cluster.NameSpace,
+					ClusterName: e.cfg.Cluster.Name,
 					Suffix:      []string{"SYNC", "PTP"},
 				},
 				EventData:      types.EventDataType{State: types.HOLDOVER},
@@ -164,9 +164,9 @@ func intiState(eventPublisherURL string) []chain.State {
 				ResourceType:   "",
 				EndpointURI:    eventPublisherURL,
 				ResourceQualifier: types.ResourceQualifier{
-					NodeName:    nodeName,
-					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
-					ClusterName: "unknown",
+					NodeName:    e.cfg.Cluster.Node,
+					NameSpace:   e.cfg.Cluster.NameSpace,
+					ClusterName: e.cfg.Cluster.Name,
 					Suffix:      []string{"SYNC", "PTP"},
 				},
 				EventData:      types.EventDataType{State: types.LOCKED},
@@ -183,9 +183,9 @@ func intiState(eventPublisherURL string) []chain.State {
 				ResourceType:   "",
 				EndpointURI:    eventPublisherURL,
 				ResourceQualifier: types.ResourceQualifier{
-					NodeName:    nodeName,
-					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
-					ClusterName: "unknown",
+					NodeName:    e.cfg.Cluster.Node,
+					NameSpace:   e.cfg.Cluster.NameSpace,
+					ClusterName: e.cfg.Cluster.Name,
 					Suffix:      []string{"SYNC", "PTP"},
 				},
 				EventData:      types.EventDataType{State: types.FREERUN},
@@ -202,9 +202,9 @@ func intiState(eventPublisherURL string) []chain.State {
 				ResourceType:   "",
 				EndpointURI:    eventPublisherURL,
 				ResourceQualifier: types.ResourceQualifier{
-					NodeName:    nodeName,
-					NameSpace:   os.Getenv("MY_POD_NAMESPACE"),
-					ClusterName: "unknown",
+					NodeName:    e.cfg.Cluster.Node,
+					NameSpace:   e.cfg.Cluster.NameSpace,
+					ClusterName: e.cfg.Cluster.Name,
 					Suffix:      []string{"SYNC", "PTP"},
 				},
 				EventData:      types.EventDataType{State: types.LOCKED},
@@ -218,7 +218,7 @@ func intiState(eventPublisherURL string) []chain.State {
 }
 
 //Event will generate random events
-func (e *Event) httpEvent(payload types.Subscription, id string) (err error) {
+func (e *Event) httpEvent(eventPostAddress string ,payload types.Subscription, id string) (err error) {
 	//payload.EndpointURI = fmt.Sprintf("%s:%d%s/event/ack", "http://localhost", 9090, SUBROUTINE)
 	if pub, ok := e.pubStore[id]; ok {
 		payload.SubscriptionID = id
@@ -236,14 +236,15 @@ func (e *Event) httpEvent(payload types.Subscription, id string) (err error) {
 		}
 
 		//log.Printf("Posting event to %s\n", pub.EndpointURI)
-		response, err := http.Post(pub.EndpointURI, "application/json", bytes.NewBuffer(b))
+
+		response, err := http.Post(eventPostAddress, "application/json", bytes.NewBuffer(b))
 		if err != nil {
 			log.Printf("http event:the http request failed with and error %s\n", err)
 			return err
 		}
 		defer response.Body.Close()
-		if response.StatusCode == http.StatusAccepted {
-			log.Printf("failed to send events via http")
+		if response.StatusCode != http.StatusAccepted {
+			log.Printf("failed to send events via http %s and status %d",eventPostAddress,response.StatusCode)
 		}
 	} else {
 		log.Printf("Could not find data in publisher store for id %s\n", id)
@@ -272,18 +273,18 @@ func (e *Event) udpEvent(payload types.Subscription, publisherID string) error {
 			log.Printf("The marshal error %s\n", err)
 			return err
 		}
-		Conn, _ := net.DialUDP("udp", nil, &net.UDPAddr{IP: []byte{127, 0, 0, 1}, Port: e.port, Zone: ""})
+		Conn, _ := net.DialUDP("udp", nil, &net.UDPAddr{IP: []byte{127, 0, 0, 1}, Port: e.cfg.Socket.Sender.Port, Zone: ""})
 		defer Conn.Close()
-
 		if _, err = Conn.Write(b); err != nil {
 			log.Printf("The socket error %s\n", err)
 			return err
 		}
-
 		if err != nil {
 			log.Printf("failed to send  event via SOCKET %s\n", err)
 		}
 
+	}else{
+		log.Printf("Did not find the publisher to send events %s\n",publisherID)
 	}
 	//fmt.Printf("Sending %v messages\n", payload)
 	return nil

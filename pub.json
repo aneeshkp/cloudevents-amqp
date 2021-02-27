@@ -1,12 +1,12 @@
 [
  {
-  "subscriptionid": "\"3876bb3c-ee1f-49b5-83e4-831d4b93926a\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/3876bb3c-ee1f-49b5-83e4-831d4b93926a\"",
+  "subscriptionid": "\"de8f8345-121f-4ae1-a487-4149348b1e21\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/de8f8345-121f-4ae1-a487-4149348b1e21\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -15,13 +15,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"916a3d81-c375-45d7-9ade-17cebb91cb6f\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/916a3d81-c375-45d7-9ade-17cebb91cb6f\"",
+  "subscriptionid": "\"440b862b-6037-4c4b-ab66-e03fdacb4457\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/440b862b-6037-4c4b-ab66-e03fdacb4457\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -30,13 +30,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"0e669eee-8689-4832-8fc2-db2afa817160\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/0e669eee-8689-4832-8fc2-db2afa817160\"",
+  "subscriptionid": "\"685c863d-4a1a-409f-af3f-2555a3162a3f\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/685c863d-4a1a-409f-af3f-2555a3162a3f\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -45,13 +45,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"e4602f73-b5ab-4ac9-99d2-71d4b4d2093a\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/e4602f73-b5ab-4ac9-99d2-71d4b4d2093a\"",
+  "subscriptionid": "\"3ae1d326-5048-49b7-80d2-0e61c633898d\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/3ae1d326-5048-49b7-80d2-0e61c633898d\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -60,13 +60,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"d1cdf8f9-a31b-4fdc-b80d-61a10c12bbdd\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/d1cdf8f9-a31b-4fdc-b80d-61a10c12bbdd\"",
+  "subscriptionid": "\"14190b6a-62ad-4ea9-a783-b846d08165fc\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/14190b6a-62ad-4ea9-a783-b846d08165fc\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -75,13 +75,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"4ce7004e-409f-4a2b-a76e-76e1f389d743\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/4ce7004e-409f-4a2b-a76e-76e1f389d743\"",
+  "subscriptionid": "\"f023b12c-5020-4dd4-8339-742f7fee131f\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/f023b12c-5020-4dd4-8339-742f7fee131f\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -90,13 +90,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"a706d782-fe25-40ef-9946-1c51aace8bc2\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/a706d782-fe25-40ef-9946-1c51aace8bc2\"",
+  "subscriptionid": "\"ea878a61-75dc-4939-9d32-f82802a53ea1\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/ea878a61-75dc-4939-9d32-f82802a53ea1\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -105,13 +105,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"34a5e074-f4c7-40f3-af2e-70dbb44c071e\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/34a5e074-f4c7-40f3-af2e-70dbb44c071e\"",
+  "subscriptionid": "\"8b28e55b-1d5f-46dd-a425-1512211059da\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/8b28e55b-1d5f-46dd-a425-1512211059da\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -120,13 +120,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"12fba5ae-2137-4be9-b9da-94d1fb20be73\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/12fba5ae-2137-4be9-b9da-94d1fb20be73\"",
+  "subscriptionid": "\"85923f00-ec99-42ad-9d2f-3248f27df798\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/85923f00-ec99-42ad-9d2f-3248f27df798\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -135,13 +135,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"0d95487c-e4b9-44f7-9845-99b68d19a1a8\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/0d95487c-e4b9-44f7-9845-99b68d19a1a8\"",
+  "subscriptionid": "\"5644b3c7-321c-4446-a2a1-9b8cd23f77f3\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/5644b3c7-321c-4446-a2a1-9b8cd23f77f3\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -150,13 +150,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"af7932ea-c073-43f8-90b3-eb96b85fac56\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/af7932ea-c073-43f8-90b3-eb96b85fac56\"",
+  "subscriptionid": "\"dc6c3c14-0fa1-4e1d-9724-88355d08c3ad\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/dc6c3c14-0fa1-4e1d-9724-88355d08c3ad\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -165,13 +165,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"74182d57-62b2-4315-8874-68e4bb7d2145\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/74182d57-62b2-4315-8874-68e4bb7d2145\"",
+  "subscriptionid": "\"cdf0a6f5-a544-400f-a648-f329e5bbabc7\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/cdf0a6f5-a544-400f-a648-f329e5bbabc7\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -180,13 +180,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"892e6857-27c7-4f45-a2ff-adc1397e16b2\"",
-  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/892e6857-27c7-4f45-a2ff-adc1397e16b2\"",
+  "subscriptionid": "\"db284ff9-4933-4130-b64f-f3c935b7f072\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/db284ff9-4933-4130-b64f-f3c935b7f072\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:9090/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -195,13 +195,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"acb89b31-231e-4bb6-8388-eccaae163f90\"",
-  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/acb89b31-231e-4bb6-8388-eccaae163f90\"",
+  "subscriptionid": "\"d1fb8362-7b09-4b88-ae5c-127402ea29b2\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/d1fb8362-7b09-4b88-ae5c-127402ea29b2\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:9090/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -210,13 +210,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"999e354f-1ad5-413a-bb4c-2a35724e421f\"",
-  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/999e354f-1ad5-413a-bb4c-2a35724e421f\"",
+  "subscriptionid": "\"22e05bd3-3fc3-4860-9965-15ba91beb3bc\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/22e05bd3-3fc3-4860-9965-15ba91beb3bc\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:9090/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -225,13 +225,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"d6091608-da88-4978-ac5e-0e1593e06c8f\"",
-  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/d6091608-da88-4978-ac5e-0e1593e06c8f\"",
+  "subscriptionid": "\"cade66c8-fd35-4b8d-a460-456bedae8f5e\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/cade66c8-fd35-4b8d-a460-456bedae8f5e\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:9090/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -240,13 +240,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"f0dd6d0a-bb47-4cd2-bcc3-e15cb70b3998\"",
-  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/f0dd6d0a-bb47-4cd2-bcc3-e15cb70b3998\"",
+  "subscriptionid": "\"d32e5f7d-1220-4f7c-968a-92ca7a0f623f\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/d32e5f7d-1220-4f7c-968a-92ca7a0f623f\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:9090/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -255,13 +255,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"34db5783-be0e-4943-9513-0cc7197c547a\"",
-  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/34db5783-be0e-4943-9513-0cc7197c547a\"",
+  "subscriptionid": "\"8752b7f6-6034-4fee-9048-e9b5e1396845\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/8752b7f6-6034-4fee-9048-e9b5e1396845\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:9090/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -270,13 +270,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"4ee74cee-8001-461c-b8fb-bd7ac66a3612\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/4ee74cee-8001-461c-b8fb-bd7ac66a3612\"",
+  "subscriptionid": "\"5aacef3d-5124-4a10-8323-af239767d7bb\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/5aacef3d-5124-4a10-8323-af239767d7bb\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -285,13 +285,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"b7019233-7bd9-42dc-806d-68251222af56\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/b7019233-7bd9-42dc-806d-68251222af56\"",
+  "subscriptionid": "\"5a644450-6e95-4d91-9c80-0bf5e0c5f136\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/5a644450-6e95-4d91-9c80-0bf5e0c5f136\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -300,13 +300,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"cf5dd37f-5753-497e-bcd4-fa850543a831\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/cf5dd37f-5753-497e-bcd4-fa850543a831\"",
+  "subscriptionid": "\"bb0b08d3-1174-436e-9705-80b4174a33a4\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/bb0b08d3-1174-436e-9705-80b4174a33a4\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -315,13 +315,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"7f371b3f-c624-46bb-9ed8-e39491bcf639\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/7f371b3f-c624-46bb-9ed8-e39491bcf639\"",
+  "subscriptionid": "\"270310f6-6e50-417b-846e-00b493c25fd8\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/270310f6-6e50-417b-846e-00b493c25fd8\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -330,13 +330,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"1def03f8-197d-45c3-bb42-b87f8fb14015\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/1def03f8-197d-45c3-bb42-b87f8fb14015\"",
+  "subscriptionid": "\"daef5f77-c983-4c35-9efc-a17178a80792\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/daef5f77-c983-4c35-9efc-a17178a80792\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -345,13 +345,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"6da10d4c-0484-4574-899d-047fc2d7d596\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/6da10d4c-0484-4574-899d-047fc2d7d596\"",
+  "subscriptionid": "\"389f60ca-b2c2-4c64-9a47-e405dae6b94b\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/389f60ca-b2c2-4c64-9a47-e405dae6b94b\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -360,13 +360,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"1d96f1ea-0f8d-4dc5-95e5-a301602c4d97\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/1d96f1ea-0f8d-4dc5-95e5-a301602c4d97\"",
+  "subscriptionid": "\"1593a510-9075-46bf-a875-484f8cdef636\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/1593a510-9075-46bf-a875-484f8cdef636\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -375,13 +375,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"e68adc3b-b637-4dd9-91d0-fe3b7179ca6c\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/e68adc3b-b637-4dd9-91d0-fe3b7179ca6c\"",
+  "subscriptionid": "\"a95918fe-f728-4ee0-8217-ba78e0d5a018\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/a95918fe-f728-4ee0-8217-ba78e0d5a018\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -390,12 +390,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"1e84d312-e0b6-473a-b661-e5d4553ed266\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/1e84d312-e0b6-473a-b661-e5d4553ed266\"",
+  "subscriptionid": "\"75b2d47c-b816-4b62-a382-f2d15a3a24d4\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/75b2d47c-b816-4b62-a382-f2d15a3a24d4\"",
   "resourcetype": "\"PTP\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -404,12 +405,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"fb4d51d5-6962-41f1-8b78-0f37d91cf0fe\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/fb4d51d5-6962-41f1-8b78-0f37d91cf0fe\"",
+  "subscriptionid": "\"f5388efd-ea9d-432d-9dfe-bcee24bfb482\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/f5388efd-ea9d-432d-9dfe-bcee24bfb482\"",
   "resourcetype": "\"PTP\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -418,13 +420,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"6d0146df-5dcd-4174-8e24-b928b8c5760b\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/6d0146df-5dcd-4174-8e24-b928b8c5760b\"",
+  "subscriptionid": "\"578ac005-62c3-4e99-8679-5b89590bf1b9\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/578ac005-62c3-4e99-8679-5b89590bf1b9\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -433,13 +435,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"0961ac3f-e36d-4f9b-b9f7-afeb41e1690a\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/0961ac3f-e36d-4f9b-b9f7-afeb41e1690a\"",
+  "subscriptionid": "\"92db1a02-a37c-4f9a-8817-94e0a80cafed\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/92db1a02-a37c-4f9a-8817-94e0a80cafed\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -448,13 +450,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"dbb78687-ed15-41e2-a179-ad38714951f6\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/dbb78687-ed15-41e2-a179-ad38714951f6\"",
+  "subscriptionid": "\"8649b464-3837-482f-b8c3-88f4978b042b\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/8649b464-3837-482f-b8c3-88f4978b042b\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -463,13 +465,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"425d8687-7af0-4f37-abf1-04c549fddedd\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/425d8687-7af0-4f37-abf1-04c549fddedd\"",
+  "subscriptionid": "\"42da14a8-f31a-458b-b8de-f2baa862a90c\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/42da14a8-f31a-458b-b8de-f2baa862a90c\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -478,13 +480,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"7c8f0d24-e3ba-42cb-90f1-153301718858\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/7c8f0d24-e3ba-42cb-90f1-153301718858\"",
+  "subscriptionid": "\"c35d8184-251c-46f2-8ae3-4a91f90646f4\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/c35d8184-251c-46f2-8ae3-4a91f90646f4\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -493,13 +495,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"6a9d8c2c-5a43-4764-91d2-a0438ae7f68a\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/6a9d8c2c-5a43-4764-91d2-a0438ae7f68a\"",
+  "subscriptionid": "\"789c9fe1-0299-4a2e-8172-77b02f4b88ac\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/789c9fe1-0299-4a2e-8172-77b02f4b88ac\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -508,13 +510,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"fff53e8a-c086-40bd-8355-8d692cc58527\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/fff53e8a-c086-40bd-8355-8d692cc58527\"",
+  "subscriptionid": "\"e01d6a08-c610-4de5-9971-82603299d559\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/e01d6a08-c610-4de5-9971-82603299d559\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -523,13 +525,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"38dda360-4dee-4f98-a615-b48726995bcc\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/38dda360-4dee-4f98-a615-b48726995bcc\"",
+  "subscriptionid": "\"452482e4-f186-49e0-8c0b-0049e2828717\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/452482e4-f186-49e0-8c0b-0049e2828717\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -538,13 +540,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"e0572941-4744-4d73-991c-d71dcb710005\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/e0572941-4744-4d73-991c-d71dcb710005\"",
+  "subscriptionid": "\"b163f578-bc8d-4392-a3e5-1768e8fb482b\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/b163f578-bc8d-4392-a3e5-1768e8fb482b\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -553,13 +555,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"e256960a-192a-4f24-bb6b-a29c15461e1f\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/e256960a-192a-4f24-bb6b-a29c15461e1f\"",
+  "subscriptionid": "\"1a31d71f-3b3c-49bc-9ddb-4c211dc624b4\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/1a31d71f-3b3c-49bc-9ddb-4c211dc624b4\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -568,13 +570,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"6e5e0ab8-e668-4283-b25f-0b163ecc3310\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/6e5e0ab8-e668-4283-b25f-0b163ecc3310\"",
+  "subscriptionid": "\"cbfe2926-f230-48bb-96a1-6755fdec4af6\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/cbfe2926-f230-48bb-96a1-6755fdec4af6\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -583,13 +585,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"f0c5a6cf-18ca-4124-9ed6-6d02bc981186\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/f0c5a6cf-18ca-4124-9ed6-6d02bc981186\"",
+  "subscriptionid": "\"ca90e300-c783-4b9e-8199-c59d1d4e02cd\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/ca90e300-c783-4b9e-8199-c59d1d4e02cd\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"
@@ -598,988 +600,13 @@
   "eventdata": {}
  },
  {
-  "subscriptionid": "\"8f5cd3a7-d764-4c5a-af42-4d8c79abfa10\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/8f5cd3a7-d764-4c5a-af42-4d8c79abfa10\"",
+  "subscriptionid": "\"bb551835-4608-4013-b3bb-3d5463caa882\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/bb551835-4608-4013-b3bb-3d5463caa882\"",
   "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
+  "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"8b22ba85-4888-4fbc-b132-4a48a3481ad5\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/8b22ba85-4888-4fbc-b132-4a48a3481ad5\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"0d3438a3-caed-49c9-a572-f031782001a1\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/0d3438a3-caed-49c9-a572-f031782001a1\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"93eeefb7-8795-4454-852f-9363befa42af\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/93eeefb7-8795-4454-852f-9363befa42af\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"7211dcbc-b4c7-4ed0-958c-1961fd097951\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/7211dcbc-b4c7-4ed0-958c-1961fd097951\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"824b5e5c-0b2f-457d-b4bf-1ed7d3d1009c\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/824b5e5c-0b2f-457d-b4bf-1ed7d3d1009c\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"69b1d97b-770a-47a9-aeea-d4ab8737309c\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/69b1d97b-770a-47a9-aeea-d4ab8737309c\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"b18cc496-cbe3-4f4d-b9b5-ee477e7201c9\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/b18cc496-cbe3-4f4d-b9b5-ee477e7201c9\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"76e8d8d5-a57a-4f0f-b700-6f123912a82f\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/76e8d8d5-a57a-4f0f-b700-6f123912a82f\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"469408b2-578b-48db-8fce-6e8be2559cea\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/469408b2-578b-48db-8fce-6e8be2559cea\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"7a51a22b-ca1a-4569-84cd-3b9e9cd3eb5b\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/7a51a22b-ca1a-4569-84cd-3b9e9cd3eb5b\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"82469d8d-7ead-4101-b478-66d7d87a3134\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/82469d8d-7ead-4101-b478-66d7d87a3134\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"30d31d50-a23f-470c-ad4a-a6a87108624e\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/30d31d50-a23f-470c-ad4a-a6a87108624e\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"79a09390-8e7c-42c9-9efd-6acdf44e5b7d\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/79a09390-8e7c-42c9-9efd-6acdf44e5b7d\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"d0961303-cc32-4b89-b0b4-93510b09b0dd\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/d0961303-cc32-4b89-b0b4-93510b09b0dd\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"c6a5d476-e9a1-4b6f-a772-67bc2764955e\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/c6a5d476-e9a1-4b6f-a772-67bc2764955e\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"04c2d580-5dce-4b6c-9a71-b30d3e0402ed\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/04c2d580-5dce-4b6c-9a71-b30d3e0402ed\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"d6aa18ff-4114-436c-a46f-40560eaec7c2\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/d6aa18ff-4114-436c-a46f-40560eaec7c2\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"d4f83af5-2e8a-48dc-8c0c-f7115b95d2db\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/d4f83af5-2e8a-48dc-8c0c-f7115b95d2db\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"5fcb1d4a-c18e-4a22-9ce6-62c4b5ca77a3\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/5fcb1d4a-c18e-4a22-9ce6-62c4b5ca77a3\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"befe2155-843a-45ef-ad58-df0cd461449d\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/befe2155-843a-45ef-ad58-df0cd461449d\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"4ee7bb22-a2ff-4dd5-b8b7-1c9824b427c4\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/4ee7bb22-a2ff-4dd5-b8b7-1c9824b427c4\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"f7af559e-d542-4964-a25f-affd7211d25d\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/f7af559e-d542-4964-a25f-affd7211d25d\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"42184813-8da2-4969-bd38-d1039eea63c1\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/42184813-8da2-4969-bd38-d1039eea63c1\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"fa110aeb-e765-4092-8bcf-b0ec9ff70b19\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/fa110aeb-e765-4092-8bcf-b0ec9ff70b19\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"6bdf5077-0220-485d-ab88-34532118c58c\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/6bdf5077-0220-485d-ab88-34532118c58c\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"9a6e2da3-6a34-4bc1-a50e-f44dc53725b1\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/9a6e2da3-6a34-4bc1-a50e-f44dc53725b1\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"21da86a7-f093-49cf-bc2c-1506e1fe6863\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/21da86a7-f093-49cf-bc2c-1506e1fe6863\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"eb08c3d2-00f7-45aa-8f1f-e166226eb5b0\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/eb08c3d2-00f7-45aa-8f1f-e166226eb5b0\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"82f032e7-1658-4526-b62c-8659b803894f\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/82f032e7-1658-4526-b62c-8659b803894f\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"eeb94967-bfef-493e-9701-65b993b7194c\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/eeb94967-bfef-493e-9701-65b993b7194c\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"74bf1eab-c938-4dbc-80c5-0337c14bfb15\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/74bf1eab-c938-4dbc-80c5-0337c14bfb15\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"2ebafab3-c92a-4d67-ad3a-da05dec0d080\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/2ebafab3-c92a-4d67-ad3a-da05dec0d080\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"2bdb6626-d404-41e8-bbdd-09456ee49204\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/2bdb6626-d404-41e8-bbdd-09456ee49204\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"fa4e7c48-e763-4d99-9b82-5d9f397450ba\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/fa4e7c48-e763-4d99-9b82-5d9f397450ba\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"a1eeda5f-0bce-479a-99bf-1804daddf2c1\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/a1eeda5f-0bce-479a-99bf-1804daddf2c1\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"20d33c70-7b8c-4f35-82e1-be1c5ffbbd4f\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/20d33c70-7b8c-4f35-82e1-be1c5ffbbd4f\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"5411e4da-661c-43bf-9b90-eb7339abe356\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/5411e4da-661c-43bf-9b90-eb7339abe356\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"5c848efa-b9fc-4a71-905d-8c9fd328a8a4\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/5c848efa-b9fc-4a71-905d-8c9fd328a8a4\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"74c732b1-5d2f-4fcc-9ba4-dfe6b134671f\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/74c732b1-5d2f-4fcc-9ba4-dfe6b134671f\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"bdaeda09-7606-4ec7-870c-e169394f3694\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/bdaeda09-7606-4ec7-870c-e169394f3694\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"b3488dd0-7ae7-4a57-b585-ffbbeb0333e9\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/b3488dd0-7ae7-4a57-b585-ffbbeb0333e9\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"44853aaa-e367-43ce-ab27-72c9c747d586\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/44853aaa-e367-43ce-ab27-72c9c747d586\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"a3e0a76d-7433-418b-9b20-563a291ad57b\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/a3e0a76d-7433-418b-9b20-563a291ad57b\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"f6d866f0-7ac5-4492-bcf3-23e720fa6a62\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/f6d866f0-7ac5-4492-bcf3-23e720fa6a62\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"c4c221b3-2fc5-485c-bac5-6c308dfa0c14\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/c4c221b3-2fc5-485c-bac5-6c308dfa0c14\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"fc3a394a-7b4b-4c87-9ebc-70e8d781e971\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/fc3a394a-7b4b-4c87-9ebc-70e8d781e971\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"0ef38bd3-e051-4a53-a5d6-9f70122c078e\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/0ef38bd3-e051-4a53-a5d6-9f70122c078e\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"fdfff14d-8f66-4417-94f1-26a40e8b93ae\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/fdfff14d-8f66-4417-94f1-26a40e8b93ae\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"c051263c-dd10-4ba9-85f9-3eab09b3b157\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/c051263c-dd10-4ba9-85f9-3eab09b3b157\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"da908739-ec06-4a3c-a007-a0426475c998\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/da908739-ec06-4a3c-a007-a0426475c998\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"10361cd9-d074-459e-83e9-8a78650a7986\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/10361cd9-d074-459e-83e9-8a78650a7986\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"a3fee1d1-0331-49ae-83d6-b7f3f8d57550\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/a3fee1d1-0331-49ae-83d6-b7f3f8d57550\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"c746aa0a-8735-49da-9f5b-d0344026c794\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/c746aa0a-8735-49da-9f5b-d0344026c794\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"99e1d50d-5872-4e26-ab71-f68f8f77df3e\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/99e1d50d-5872-4e26-ab71-f68f8f77df3e\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"01924894-62c2-47f6-b183-2ce4911bea5e\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/01924894-62c2-47f6-b183-2ce4911bea5e\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"d1b2044b-ddd3-48e7-89ca-433a94492f8f\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/d1b2044b-ddd3-48e7-89ca-433a94492f8f\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"614b7eb6-e672-44f6-879f-68e8fabaa55c\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/614b7eb6-e672-44f6-879f-68e8fabaa55c\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"54693c0e-9464-42dc-921b-1797f6ad4b2c\"",
-  "urilocation": "\"http://localhost:8081/api/ocloudnotifications/v1/subscriptions/54693c0e-9464-42dc-921b-1797f6ad4b2c\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8081/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"2450e2cf-ab3b-4e88-bc55-d9abb6a18a56\"",
-  "urilocation": "\"http://localhost:8081/api/ocloudnotifications/v1/subscriptions/2450e2cf-ab3b-4e88-bc55-d9abb6a18a56\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8081/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"cf6795aa-7430-4276-a130-699c0eeb0613\"",
-  "urilocation": "\"http://localhost:8081/api/ocloudnotifications/v1/subscriptions/cf6795aa-7430-4276-a130-699c0eeb0613\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8081/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"0204b069-f94e-42ae-b611-fb312f10f0d7\"",
-  "urilocation": "\"http://localhost:8081/api/ocloudnotifications/v1/subscriptions/0204b069-f94e-42ae-b611-fb312f10f0d7\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8081/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"d59f5dcd-2b34-492d-b484-8ccb22301f99\"",
-  "urilocation": "\"http://localhost:8081/api/ocloudnotifications/v1/subscriptions/d59f5dcd-2b34-492d-b484-8ccb22301f99\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8081/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"43d5dfc9-08c7-46ca-bda9-148cf5762b96\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/43d5dfc9-08c7-46ca-bda9-148cf5762b96\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"52efa5d6-6cdb-432c-9823-9906a71df5a7\"",
-  "urilocation": "\"http://localhost:8081/api/ocloudnotifications/v1/subscriptions/52efa5d6-6cdb-432c-9823-9906a71df5a7\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8081/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
-   "suffix": [
-    "SYNC",
-    "PTP"
-   ]
-  },
-  "eventdata": {}
- },
- {
-  "subscriptionid": "\"bc048ce4-9d7a-4dcb-ab2d-3b03c9506f74\"",
-  "urilocation": "\"http://localhost:8080/api/ocloudnotifications/v1/publishers/bc048ce4-9d7a-4dcb-ab2d-3b03c9506f74\"",
-  "resourcetype": "\"PTP\"",
-  "endpointuri": "\"http://localhost:8080/api/ocloudnotifications/v1/event/create\"",
-  "resourcequalifier": {
-   "nodename": "\"unknownnode\"",
-   "clustername": "\"unknown\"",
+   "nodename": "\"nodenameunknown\"",
+   "clustername": "\"clusternameunknown\"",
    "suffix": [
     "SYNC",
     "PTP"

@@ -36,7 +36,7 @@ func New(wg *sync.WaitGroup, ID string) *LatencyReport {
 }
 
 // Collect collects latency information and prints it
-func (l *LatencyReport) Collect(msg <-chan int64) {
+func (l *LatencyReport) Collect(msg <-chan Latency) {
 	l.wg.Add(1)
 	go func() {
 		defer l.wg.Done()
@@ -44,10 +44,10 @@ func (l *LatencyReport) Collect(msg <-chan int64) {
 			select { //nolint:gosimple
 			case latency := <-msg:
 				l.print = true
-				if latency >= int64(maxBinSize) {
-					latency = int64(maxBinSize - 1)
+				if latency.Time >= int64(maxBinSize) {
+					latency.Time = int64(maxBinSize - 1)
 				}
-				l.latency[latency]++
+				l.latency[latency.Time]++
 				l.msgReceivedCount++
 			}
 		}

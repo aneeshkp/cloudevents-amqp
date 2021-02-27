@@ -24,3 +24,5 @@ pubfilepath: pub.json
 subfilepath: pub.json
 publishstatus: true
 protocol: HTTP #SOCKET HTTP
+apipathprefix: "/api/ocloudnotifications/v1"
+hostapipathprefix: "/api/"
