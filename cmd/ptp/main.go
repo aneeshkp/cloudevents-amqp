@@ -68,10 +68,10 @@ func main() {
 	if err != nil {
 		log.Printf("Could not load configuration file --config, loading default queue\n")
 		cfg = eventconfig.DefaultConfig(defaultHostPort, defaultAPIPort, defaultSenderSocketPort, defaultListenerSocketPort,
-			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), true)
-		cfg.EventHandler = types.SOCKET
+			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"))
 		cfg.HostPathPrefix = "/api/ptp/v1"
 		cfg.APIPathPrefix = "/api/ocloudnotifications/v1"
+		cfg.StatusResource.Status.PublishStatus = true
 	}
 	log.Printf("Framework type :%s\n", cfg.EventHandler)
 	// can override externally
@@ -104,13 +104,18 @@ func main() {
 		}
 	}()
 	//PTP STATUS HANDLER
-	if cfg.PublishStatus {
+	if cfg.StatusResource.Status.PublishStatus {
 		ptpStatusWriteToSocket(&wg)
 	}
 
 	// the PTP has to know where to trigger the events //TODO expose this via ENV
-	time.Sleep(5 * time.Second)
-	event.GenerateEvents(fmt.Sprintf("http://%s:%d%s/create/event", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix), publisherID)
+	if publisherID != "" {
+		time.Sleep(5 * time.Second)
+		event.GenerateEvents(fmt.Sprintf("http://%s:%d%s/create/event", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix), publisherID)
+	} else {
+		log.Printf("Error publisher found to send events")
+
+	}
 	wg.Wait()
 }
 func startServer(wg *sync.WaitGroup) {
@@ -124,7 +129,7 @@ func startServer(wg *sync.WaitGroup) {
 	api.HandleFunc("/publisher/ack", routes.PublisherAck).Methods(http.MethodPost)
 	api.HandleFunc("/event/alert", routes.EventSubmit).Methods(http.MethodPost)
 	api.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, "OK")
+		io.WriteString(w, "OK") //nolint:errcheck
 	}).Methods(http.MethodGet)
 	err := r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		pathTemplate, err := route.GetPathTemplate()

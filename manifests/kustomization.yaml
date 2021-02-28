@@ -4,7 +4,6 @@ resources:
 - 000-config.yml
 - 03-vdu.yaml
 - 004-ptp.yaml
-- 05-service.yaml
 replicas:
 - count: 1
   name: vdu-deployment

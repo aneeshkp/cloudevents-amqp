@@ -2,13 +2,11 @@ package types
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol"
 	amqp1 "github.com/cloudevents/sdk-go/protocol/amqp/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 )
@@ -33,8 +31,8 @@ type AMQPProtocol struct {
 	CancelFn      context.CancelFunc
 	Client        cloudevents.Client
 	Queue         string
-	DataIn    <-chan protocol.DataEvent
-	DataOut   chan<- protocol.DataEvent
+	DataIn        <-chan protocol.DataEvent
+	DataOut       chan<- protocol.DataEvent
 }
 
 /*{
@@ -114,88 +112,6 @@ func (r *ResourceQualifier) GetAddress() string {
 	return fmt.Sprintf("/%s/%s/%s", r.ClusterName, r.NodeName, strings.Join(r.Suffix, "/"))
 }
 
-//WriteToFile writes subscription data to a file
-func (s *Subscription) WriteToFile(filePath string) error {
-	//open file
-	file, err := os.OpenFile(filePath, os.O_RDWR, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	//read file and unmarshall json file to slice of users
-	b, err := ioutil.ReadAll(file)
-	if err != nil {
-		return err
-	}
-	var allSubs []Subscription
-	if len(b) > 0 {
-		err = json.Unmarshal(b, &allSubs)
-		if err != nil {
-			return err
-		}
-	}
-	allSubs = append(allSubs, *s)
-	newBytes, err := json.MarshalIndent(&allSubs, "", " ")
-	if err != nil {
-		return err
-	}
-	if err := ioutil.WriteFile(filePath, newBytes, 0666); err != nil {
-		return err
-	}
-	return nil
-
-}
-
-//DeleteAllFromFile deletes  publisher and subscription information from the file system
-func (s *Subscription) DeleteAllFromFile(filePath string) error {
-	//open file
-	if err := ioutil.WriteFile(filePath, []byte{}, 0666); err != nil {
-		return err
-	}
-	return nil
-}
-
-//DeleteFromFile is used to delete subscription from the file system
-func (s *Subscription) DeleteFromFile(filePath string) error {
-	//open file
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	//read file and unmarshall json file to slice of users
-	b, err := ioutil.ReadAll(file)
-	if err != nil {
-		return err
-	}
-	var allSubs []Subscription
-	if len(b) > 0 {
-		err = json.Unmarshal(b, &allSubs)
-		if err != nil {
-			return err
-		}
-	}
-	for k := range allSubs {
-		// Remove the element at index i from a.
-		if allSubs[k].SubscriptionID == s.SubscriptionID {
-			allSubs[k] = allSubs[len(allSubs)-1]     // Copy last element to index i.
-			allSubs[len(allSubs)-1] = Subscription{} // Erase last element (write zero value).
-			allSubs = allSubs[:len(allSubs)-1]       // Truncate slice.
-			break
-		}
-	}
-	newBytes, err := json.MarshalIndent(&allSubs, "", " ")
-	if err != nil {
-		log.Printf("error deleting sub %v", err)
-		return err
-	}
-	if err := ioutil.WriteFile(filePath, newBytes, 0666); err != nil {
-		return err
-	}
-	return nil
-
-}
-
 // ReadFromFile is used to read subscription from the file system
 func (s *Subscription) ReadFromFile(filePath string) (b []byte, err error) {
 	//open file
@@ -224,6 +140,7 @@ type Message struct {
 type ResourceStatus struct {
 	ReturnAddress string `json:"returnaddress,omitempty,string"`
 	Status        string `json:"status,omitempty,string"`
+	Message       string `json:"message,omitempty,string"`
 }
 
 /*

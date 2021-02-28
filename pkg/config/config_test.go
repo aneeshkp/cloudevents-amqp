@@ -15,39 +15,19 @@ import (
 var (
 	file       *os.File
 	err        error
-	test       eventConfig.Config
+	testCfg    *eventConfig.Config
 	configPath *string
 )
 
 func loadConfig() {
-	test.AMQP = eventConfig.HostConfig{
-		HostName: "amqps://localhost",
-		Port:     5672,
-	}
-	test.API = eventConfig.HostConfig{
-		HostName: "localhost",
-		Port:     8080,
-	}
-	test.Host = eventConfig.HostConfig{
-		HostName: "localhost",
-		Port:     9090,
-	}
-	test.Socket = eventConfig.SocketConfig{
-		Listener: eventConfig.HostConfig{
-			HostName: "localhost",
-			Port:     30001,
-		},
-		Sender: eventConfig.HostConfig{
-			HostName: "",
-			Port:     30002,
-		},
-	}
 
-	test.StatusResource = append(test.StatusResource, eventConfig.StatusResource{Name: "test"})
-	test.StatusResource = append(test.StatusResource, eventConfig.StatusResource{Name: "test2"})
-	test.PublishStatus = false
-	test.PubFilePath = "pub.json"
-	test.SubFilePath = "pub.json"
+	testCfg := eventConfig.DefaultConfig(8080, 9090, 2001, 2002, "unknown", "unknonw", "unknown")
+
+	var name []string
+	name = append(name, "test1")
+	testCfg.StatusResource.Name = name
+	testCfg.StatusResource.Status.PublishStatus = false
+	testCfg.StatusResource.Status.EnableStatusCheck = false
 
 }
 
@@ -56,9 +36,9 @@ func setup() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	test = eventConfig.Config{}
+	testCfg = &eventConfig.Config{}
 	loadConfig()
-	err = test.SaveConfig(file.Name())
+	err = testCfg.SaveConfig(file.Name())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -107,13 +87,13 @@ func TestConfigLoadFunction(t *testing.T) {
 	path, _ := os.Getwd()
 	var tests = []struct {
 		args  []string
-		conf  eventConfig.Config
+		conf  *eventConfig.Config
 		error string
 	}{
-		{[]string{"./ptp"}, test, "no such file or directory"},
-		{[]string{"./ptp", "-config", "config_not_exists"}, test, "no such file or directory"},
-		{[]string{"./ptp", "-config", path}, test, "is a directory, not a normal file"},
-		{[]string{"./ptp", "-config", file.Name()}, test, ""},
+		{[]string{"./ptp"}, testCfg, "no such file or directory"},
+		{[]string{"./ptp", "-config", "config_not_exists"}, testCfg, "no such file or directory"},
+		{[]string{"./ptp", "-config", path}, testCfg, "is a directory, not a normal file"},
+		{[]string{"./ptp", "-config", file.Name()}, testCfg, ""},
 	}
 	for _, tt := range tests {
 		t.Run(strings.Join(tt.args, " "), func(t *testing.T) {

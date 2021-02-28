@@ -22,7 +22,8 @@ var (
 
 //StatusResource name the status you want to check
 type StatusResource struct {
-	Name string `yaml:"name" json:"name"`
+	Name   []string `yaml:"name" json:"name"`
+	Status Status   `yaml:"status" json:"status"`
 }
 
 //HostConfig , configurations for containers
@@ -35,6 +36,18 @@ type HostConfig struct {
 type SocketConfig struct {
 	Listener HostConfig `yaml:"listener" json:"listener"`
 	Sender   HostConfig `yaml:"ptp" json:"ptp"`
+}
+
+//Store ...
+type Store struct {
+	PubFilePath string `yaml:"pubFilePath" json:"pubFilePath,omitempty,string"` //pub.json
+	SubFilePath string `yaml:"subFilePath" json:"subFilePath,omitempty,string"` //sub.json
+}
+
+//Status ...
+type Status struct {
+	PublishStatus     bool `yaml:"publishStatus" json:"publishStatus,omitempty,bool"`         //nolint:staticcheck
+	EnableStatusCheck bool `yaml:"enableStatusCheck" json:"enableStatusCheck,omitempty,bool"` //nolint:staticcheck
 }
 
 //Cluster , configurations for cluster info
@@ -51,13 +64,11 @@ type Config struct {
 	Host           HostConfig         `yaml:"host" json:"host"`
 	Socket         SocketConfig       `yaml:"socket" json:"socket"`
 	Cluster        Cluster            `yaml:"cluster" json:"cluster"`
-	StatusResource []StatusResource   `yaml:"statusresource" json:"statusresource"`
-	PubFilePath    string             `json:"pubfilepath,omitempty,string"` //pub.json
-	SubFilePath    string             `json:"subfilepath,omitempty,string"` //sub.json
-	PublishStatus  bool               `json:"publishstatus,omitempty,bool"` //nolint:staticcheck
-	EventHandler   types.EventHandler `yaml:"eventhandler" json:"eventandler"`
-	APIPathPrefix  string             `yaml:"apipathprefix" json:"apipathprefix"`
-	HostPathPrefix string             `yaml:"hostpathprefix" json:"hostpathprefix"`
+	StatusResource StatusResource     `yaml:"statusResource" json:"statusResource"`
+	EventHandler   types.EventHandler `yaml:"eventHandler" json:"eventHandler"`
+	APIPathPrefix  string             `yaml:"apiPathPrefix" json:"apiPathPrefix"`
+	HostPathPrefix string             `yaml:"hostPathPrefix" json:"hostPath{refix"`
+	Store          Store              `yaml:"store" json:"store"`
 }
 
 // NewConfig  returns a new decoded AMQPConfig struct
@@ -128,7 +139,7 @@ func (c *Config) SaveConfig(configPath string) (err error) {
 }
 
 //DefaultConfig fills up teh default configurations
-func DefaultConfig(defaultHosPort, defaultAPIPort, senderSocketPort, listenerSocketPort int, cluster, node, namespace string, publishStatus bool) *Config {
+func DefaultConfig(defaultHosPort, defaultAPIPort, senderSocketPort, listenerSocketPort int, cluster, node, namespace string) *Config {
 	if cluster == "" {
 		cluster = "clusternameunknown"
 	}
@@ -166,10 +177,21 @@ func DefaultConfig(defaultHosPort, defaultAPIPort, senderSocketPort, listenerSoc
 			Name:      cluster,
 			Node:      node,
 			NameSpace: namespace,
-		}, StatusResource: []StatusResource{{Name: "PTP"}},
-		PubFilePath:   "pub.json",
-		SubFilePath:   "sub.json",
-		PublishStatus: publishStatus,
+		},
+		StatusResource: StatusResource{
+			Name: []string{"/status/PTP"},
+			Status: Status{
+				PublishStatus:     false,
+				EnableStatusCheck: false,
+			},
+		},
+		Store: Store{
+			PubFilePath: "pub.json",
+			SubFilePath: "sub.json",
+		},
+		EventHandler:   "HTTP",
+		APIPathPrefix:  "/api/v1",
+		HostPathPrefix: "/api/ocloudnotifications/v1",
 	}
 	return cfg
 }

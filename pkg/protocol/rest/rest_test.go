@@ -35,7 +35,7 @@ func init() {
 
 func TestServer_New(t *testing.T) {
 	cfg := eventconfig.DefaultConfig(9091, 8080, 2020, 2021,
-		os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), true)
+		os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"))
 	// have one receiver for testing
 	router = qdr.InitServer(cfg, eventInCh, eventOutCh)
 

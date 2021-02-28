@@ -6,7 +6,7 @@ require (
 	github.com/Azure/go-amqp v0.12.7
 	github.com/cloudevents/sdk-go/protocol/amqp/v2 v2.3.1
 	github.com/cloudevents/sdk-go/v2 v2.3.1
-	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-fsnotify/fsnotify v0.0.0-20180321022601-755488143dae // indirect
 
 	//github.com/aneeshkp/sdk-go/protocol/amqp/v2 v2.3.1

@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/chain"
-	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	eventconfig "github.com/aneeshkp/cloudevents-amqp/pkg/config"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	"log"
 	"math/rand"
 	"net"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -19,7 +18,7 @@ type Event struct {
 	avgMsgPerSec int
 	totalMsgSent int64
 	pubStore     map[string]types.Subscription
-    cfg eventconfig.Config
+	cfg          eventconfig.Config
 	subscription types.Subscription
 }
 
@@ -34,19 +33,19 @@ func (e *Event) ResetTotalMsgSent() {
 }
 
 // New create new event object
-func New(avgMsgPerSec int, pubStore map[string]types.Subscription,subscription types.Subscription,cfg eventconfig.Config) *Event {
+func New(avgMsgPerSec int, pubStore map[string]types.Subscription, subscription types.Subscription, cfg eventconfig.Config) *Event {
 	return &Event{
 		avgMsgPerSec: avgMsgPerSec,
 		totalMsgSent: 0,
 		pubStore:     pubStore,
-		cfg:         cfg,
+		cfg:          cfg,
 		subscription: subscription,
 	}
 
 }
 
 //GenerateEvents is used to generate mock data
-func (e *Event) GenerateEvents(eventPostAddress string ,id string) {
+func (e *Event) GenerateEvents(eventPostAddress string, id string) {
 
 	states := e.intiState(e.subscription.EndpointURI)
 
@@ -98,7 +97,7 @@ func (e *Event) GenerateEvents(eventPostAddress string ,id string) {
 						e.totalMsgSent++
 					}
 				} else {
-					err := e.httpEvent(eventPostAddress,currentState.Payload, id)
+					err := e.httpEvent(eventPostAddress, currentState.Payload, id)
 					if err == nil {
 						e.totalMsgSent++
 					}
@@ -111,12 +110,7 @@ func (e *Event) GenerateEvents(eventPostAddress string ,id string) {
 	}
 }
 
-func (e *Event)intiState(eventPublisherURL string) []chain.State {
-	//events := getSupportedEvents()
-	nodeName := os.Getenv("MY_NODE_NAME")
-	if nodeName == "" {
-		nodeName = "unknownnode"
-	}
+func (e *Event) intiState(eventPublisherURL string) []chain.State {
 	states := []chain.State{
 		{
 			ID: 1,
@@ -218,7 +212,7 @@ func (e *Event)intiState(eventPublisherURL string) []chain.State {
 }
 
 //Event will generate random events
-func (e *Event) httpEvent(eventPostAddress string ,payload types.Subscription, id string) (err error) {
+func (e *Event) httpEvent(eventPostAddress string, payload types.Subscription, id string) (err error) {
 	//payload.EndpointURI = fmt.Sprintf("%s:%d%s/event/ack", "http://localhost", 9090, SUBROUTINE)
 	if pub, ok := e.pubStore[id]; ok {
 		payload.SubscriptionID = id
@@ -244,7 +238,7 @@ func (e *Event) httpEvent(eventPostAddress string ,payload types.Subscription, i
 		}
 		defer response.Body.Close()
 		if response.StatusCode != http.StatusAccepted {
-			log.Printf("failed to send events via http %s and status %d",eventPostAddress,response.StatusCode)
+			log.Printf("failed to send events via http %s and status %d", eventPostAddress, response.StatusCode)
 		}
 	} else {
 		log.Printf("Could not find data in publisher store for id %s\n", id)
@@ -283,8 +277,8 @@ func (e *Event) udpEvent(payload types.Subscription, publisherID string) error {
 			log.Printf("failed to send  event via SOCKET %s\n", err)
 		}
 
-	}else{
-		log.Printf("Did not find the publisher to send events %s\n",publisherID)
+	} else {
+		log.Printf("Did not find the publisher to send events %s\n", publisherID)
 	}
 	//fmt.Printf("Sending %v messages\n", payload)
 	return nil

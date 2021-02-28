@@ -47,7 +47,7 @@ func (q *Router) NewSender(address string) error {
 		log.Printf("Failed to create amqp protocol: %v", err)
 		return err
 	}
-	log.Printf("(New) Sender Connection established %s\n", address)
+
 	//fn := reflect.ValueOf(fn)
 	l := types.AMQPProtocol{}
 	c, err := cloudevents.NewClient(p)
@@ -119,7 +119,7 @@ func (q *Router) ReceiveAll(wg *sync.WaitGroup, fn func(e cloudevents.Event)) {
 
 }
 
-//THE QDR Server listens  on data and do action either create sender or receivers
+//QDRRouter the QDR Server listens  on data and do action either create sender or receivers
 //QDRRouter is qpid router object configured to create publishers and  consumers
 func (q *Router) QDRRouter(wg *sync.WaitGroup) {
 	wg.Add(1)
@@ -223,7 +223,7 @@ func (q *Router) SendTo(wg *sync.WaitGroup, address string, event cloudevents.Ev
 			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(2)*time.Second)
 			defer cancel()
 			if result := sender.Client.Send(ctx, event); cloudevents.IsUndelivered(result) {
-				log.Printf("Failed to send(TO): %s result %v", address, result)
+				log.Printf("Failed to send(TO): %s result %v, reason: no listeners", address, result)
 				q.DataOut <- protocol.DataEvent{
 					Address:     address,
 					Data:        e,
@@ -314,7 +314,6 @@ func NewSender(hostName string, port int, address string) (sender *types.AMQPPro
 		log.Printf("Failed to create amqp protocol: %v", err)
 		return
 	}
-	log.Printf("(New) Sender Connection established %s\n", address)
 	c, err := cloudevents.NewClient(p)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)

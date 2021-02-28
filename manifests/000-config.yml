@@ -7,7 +7,7 @@ metadata:
 data:
   config.yml: |-
     amqp:
-      hostname: amqp://amqp-dispatch-service
+      hostname: amqp://localhost
       port: 5672
     api:
       hostname: localhost
@@ -20,17 +20,23 @@ data:
         hostname: localhost
         port: 20001
       sender:
-        hostname: ""
+        hostname: localhost
         port: 20002
     cluster:
-      name: ""
-      node: ""
-      namespace: ""
-    statusresource:
-    - name: ptp-status
-    pubfilepath: /store/pub.json
-    subfilepath: /store/sub.json
-    publishstatus: true
+      name: "CLUSTER1"
+      node: "NODE1"
+      namespace: "Default"
+    statusResource:
+      name: []
+      status:
+        publishStatus: true
+        enableStatusCheck: false
+    eventHandler: "HTTP"
+    apiPathPrefix: "/api/ocloudnotifications/v1"
+    hostPathPrefix: "/api/ptp/v1"
+    store:
+      pubFilePath: "/store/pub.json"
+      subFilePath: "/store/sub.json"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -40,7 +46,7 @@ metadata:
 data:
   config.yml: |-
     amqp:
-      hostname: amqp://amqp-dispatch-service
+      hostname: amqp://localhost
       port: 5672
     api:
       hostname: localhost
@@ -56,10 +62,17 @@ data:
         hostname: localhost
         port: 20002
     cluster:
-      name: ""
-      node: ""
-      namespace: ""
-    statusresource:
-    pubfilepath: /store/pub.json
-    subfilepath: /store/sub.json
-    publishstatus: false
+      name: "CLUSTER1"
+      node: "NODE1"
+      namespace: "Default"
+    statusResource:
+      name: ["/status/PTP"]
+      status:
+        publishStatus: false
+        enableStatusCheck: true
+    eventHandler: "HTTP"
+    apiPathPrefix: "/api/ocloudnotifications/v1"
+    hostPathPrefix: "/api/vdu/v1"
+    store:
+      pubFilePath: "/store/pub.json"
+      subFilePath: "/store/sub.json"

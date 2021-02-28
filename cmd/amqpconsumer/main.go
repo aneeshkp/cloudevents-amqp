@@ -15,8 +15,8 @@ import (
 func main() {
 	var wg sync.WaitGroup
 	//for i := 0; i < 10; i++ {
-		runTest(&wg)
-		//time.Sleep(10 * time.Second)
+	runTest(&wg)
+	//time.Sleep(10 * time.Second)
 	//}
 	wg.Wait()
 }
@@ -25,22 +25,21 @@ func runTest(wg *sync.WaitGroup) {
 	//build address
 	senderAddress := "/clusternameunknown/nodenameunknown/SYNC/PTP"
 	//receiveAddress :="/clusternameunknown/nodenameunknown/SYNC/PTP"
-	sub:=types.Subscription{
-	SubscriptionID:    "1231231231",
-	URILocation:       "",
-	ResourceType:      "PTP",
-	EndpointURI:       "",
-	ResourceQualifier: types.ResourceQualifier{
-		NodeName:    "clusternameunknown",
-		NameSpace:   "nodenameunknown",
-		ClusterName: "",
-		Suffix: []string{"SYNC","PTP"},
-
-	},
-	EventData:         types.EventDataType{},
-	EventTimestamp:    0,
-	Error:             "",
-}
+	sub := types.Subscription{
+		SubscriptionID: "1231231231",
+		URILocation:    "",
+		ResourceType:   "PTP",
+		EndpointURI:    "",
+		ResourceQualifier: types.ResourceQualifier{
+			NodeName:    "clusternameunknown",
+			NameSpace:   "nodenameunknown",
+			ClusterName: "",
+			Suffix:      []string{"SYNC", "PTP"},
+		},
+		EventData:      types.EventDataType{},
+		EventTimestamp: 0,
+		Error:          "",
+	}
 
 	event := cloudevents.NewEvent()
 	event = cloudevents.NewEvent()
@@ -80,32 +79,31 @@ func runTest(wg *sync.WaitGroup) {
 
 	sender, _ := qdr.NewSender("amqp://localhost", 5672, senderAddress)
 
-
-	for i:=0;i<=200;i++ {
+	for i := 0; i <= 200; i++ {
 		wg.Add(1)
-		go func(wg *sync.WaitGroup,sender *types.AMQPProtocol){
+		go func(wg *sync.WaitGroup, sender *types.AMQPProtocol) {
 			defer wg.Done()
-		ctx2, cancel := context.WithTimeout(ctx, 5*time.Second)
+			ctx2, cancel := context.WithTimeout(ctx, 5*time.Second)
 
-		if result := sender.Client.Send(ctx2, event); cloudevents.IsUndelivered(result) {
-			log.Printf("failed to send: %v", result)
-			cancel()
-			//cancel2()
-		} else if cloudevents.IsNACK(result) {
-			log.Printf("event not accepted: %v", result)
-			cancel()
-			//cancel2()
-		}else{
-			log.Printf("Event sent and ack")
-		}
+			if result := sender.Client.Send(ctx2, event); cloudevents.IsUndelivered(result) {
+				log.Printf("failed to send: %v", result)
+				cancel()
+				//cancel2()
+			} else if cloudevents.IsNACK(result) {
+				log.Printf("event not accepted: %v", result)
+				cancel()
+				//cancel2()
+			} else {
+				log.Printf("Event sent and ack")
+			}
 
-		cancel()
-		}(wg,sender)
+			cancel()
+		}(wg, sender)
 		//listener.Protocol.Close(ctx2)
 		//sender.Protocol.Close(ctx)
 
 	}
-	log.Printf("waiting %s","aneesh")
+	log.Printf("waiting %s", "aneesh")
 	wg.Wait()
 	sender.Protocol.Close(ctx)
 

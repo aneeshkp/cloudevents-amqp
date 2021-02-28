@@ -8,8 +8,10 @@ import (
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	"github.com/gorilla/mux"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -20,22 +22,15 @@ type Address struct {
 	Name string `json:"name"`
 }
 
-var (
-	//TODO: sync.Map
-
-	// PublisherStore stores publishers in a map
-	PublisherStore = map[string]types.Subscription{}
-	// SubscriptionStore stores subscription in a map
-	SubscriptionStore = map[string]types.Subscription{}
-)
-
-
-
 // Server defines rest api server object
 type Server struct {
 	cfg        *config.Config
 	dataOut    chan<- protocol.DataEvent
 	HTTPClient *http.Client
+	// PublisherStore stores publishers in a map
+	publisherStore map[string]*types.Subscription
+	// SubscriptionStore stores subscription in a map
+	subscriptionStore map[string]*types.Subscription
 }
 
 // InitServer is used to supply configurations for rest api server
@@ -47,15 +42,119 @@ func InitServer(cfg *config.Config, dataOut chan<- protocol.DataEvent) *Server {
 		HTTPClient: &http.Client{
 			Timeout: 1 * time.Second,
 		},
+		publisherStore:    make(map[string]*types.Subscription),
+		subscriptionStore: make(map[string]*types.Subscription),
 	}
 
 	return &server
 }
 
+//GetFromPubStore get data from pub store
+func (s *Server) GetFromPubStore(address string) (types.Subscription, error) {
+	for _, pub := range s.publisherStore {
+		if pub.ResourceQualifier.GetAddress() == address {
+			return *pub, nil
+		}
+	}
+	return types.Subscription{}, fmt.Errorf("publisher not found for address %s", address)
+}
+
+//GetFromSubStore get data from sub store
+func (s *Server) GetFromSubStore(address string) (types.Subscription, error) {
+	for _, pub := range s.subscriptionStore {
+		if pub.ResourceQualifier.GetAddress() == address {
+			return *pub, nil
+		}
+	}
+	return types.Subscription{}, fmt.Errorf("subscription not found for address %s", address)
+}
+
+//WriteToFile writes subscription data to a file
+func (s *Server) writeToFile(sub types.Subscription, filePath string) error {
+	//open file
+	file, err := os.OpenFile(filePath, os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	//read file and unmarshall json file to slice of users
+	b, err := ioutil.ReadAll(file)
+	if err != nil {
+		return err
+	}
+	var allSubs []types.Subscription
+	if len(b) > 0 {
+		err = json.Unmarshal(b, &allSubs)
+		if err != nil {
+			return err
+		}
+	}
+	allSubs = append(allSubs, sub)
+	newBytes, err := json.MarshalIndent(&allSubs, "", " ")
+	if err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(filePath, newBytes, 0666); err != nil {
+		return err
+	}
+	return nil
+
+}
+
+//DeleteAllFromFile deletes  publisher and subscription information from the file system
+func (s *Server) deleteAllFromFile(filePath string) error {
+	//open file
+	if err := ioutil.WriteFile(filePath, []byte{}, 0666); err != nil {
+		return err
+	}
+	return nil
+}
+
+//DeleteFromFile is used to delete subscription from the file system
+func (s *Server) deleteFromFile(sub types.Subscription, filePath string) error {
+	//open file
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	//read file and unmarshall json file to slice of users
+	b, err := ioutil.ReadAll(file)
+	if err != nil {
+		return err
+	}
+	var allSubs []types.Subscription
+	if len(b) > 0 {
+		err = json.Unmarshal(b, &allSubs)
+		if err != nil {
+			return err
+		}
+	}
+	for k := range allSubs {
+		// Remove the element at index i from a.
+		if allSubs[k].SubscriptionID == sub.SubscriptionID {
+			allSubs[k] = allSubs[len(allSubs)-1]           // Copy last element to index i.
+			allSubs[len(allSubs)-1] = types.Subscription{} // Erase last element (write zero value).
+			allSubs = allSubs[:len(allSubs)-1]             // Truncate slice.
+			break
+		}
+	}
+	newBytes, err := json.MarshalIndent(&allSubs, "", " ")
+	if err != nil {
+		log.Printf("error deleting sub %v", err)
+		return err
+	}
+	if err := ioutil.WriteFile(filePath, newBytes, 0666); err != nil {
+		return err
+	}
+	return nil
+
+}
+
 // Start will start res api service
 func (s *Server) Start() {
 	pub := types.Subscription{}
-	b, err := pub.ReadFromFile(s.cfg.PubFilePath)
+	b, err := pub.ReadFromFile(s.cfg.Store.PubFilePath)
 	if err != nil {
 		panic(err)
 	}
@@ -65,10 +164,13 @@ func (s *Server) Start() {
 			panic(err)
 		}
 	}
+	for _, pub := range pubs {
+		s.publisherStore[pub.SubscriptionID] = &pub
+	}
 
 	//load subscription store
 	sub := types.Subscription{}
-	b, err = sub.ReadFromFile(s.cfg.SubFilePath)
+	b, err = sub.ReadFromFile(s.cfg.Store.SubFilePath)
 	if err != nil {
 		panic(err)
 	}
@@ -77,6 +179,9 @@ func (s *Server) Start() {
 		if err := json.Unmarshal(b, &subs); err != nil {
 			panic(err)
 		}
+	}
+	for _, sub := range subs {
+		s.subscriptionStore[sub.SubscriptionID] = &sub
 	}
 
 	r := mux.NewRouter()
@@ -134,13 +239,11 @@ func (s *Server) Start() {
 	api.HandleFunc("/publishers", s.deleteAllPublishers).Methods(http.MethodDelete)
 
 	api.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, "OK")
+		io.WriteString(w, "OK") //nolint:errcheck
 	}).Methods(http.MethodGet)
 
-	//TODO: Pull Status Notifications Not implementing
-
 	api.HandleFunc("/create/event", s.publishEvent).Methods(http.MethodPost)
-	api.HandleFunc("/status", s.getResourceStatus).Methods(http.MethodPost)
+	api.HandleFunc("/status/{index}", s.getResourceStatus).Methods(http.MethodPost)
 
 	err = r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		pathTemplate, err := route.GetPathTemplate()
@@ -174,14 +277,8 @@ func (s *Server) Start() {
 		fmt.Fprintln(w, r)
 	})
 
-
 	log.Print("Started Rest API Server")
 	log.Printf("endpoint %s", s.cfg.APIPathPrefix)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", s.cfg.API.HostName, s.cfg.API.Port), api))
 
-}
-
-func notFound(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusNotFound)
 }

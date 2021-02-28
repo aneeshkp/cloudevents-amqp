@@ -18,11 +18,14 @@ cluster:
   name: "CLUSTER1"
   node: "NODE1"
   namespace: "Default"
-statusresource:
-  - name: ptp
-pubfilepath: pub.json
-subfilepath: pub.json
-publishstatus: true
-protocol: HTTP #SOCKET HTTP
-apipathprefix: "/api/ocloudnotifications/v1"
-hostapipathprefix: "/api/"
+statusResource:
+  name: []
+  status:
+    publishStatus: true
+    enableStatusCheck: false
+eventHandler: "HTTP"
+apiPathPrefix: "/api/ocloudnotifications/v1"
+hostPathPrefix: "/api/ptp/v1"
+store:
+  pubFilePath: "pub.json"
+  subFilePath: "sub.json"

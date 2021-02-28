@@ -28,14 +28,13 @@ var (
 	SubStore                  map[string]types.Subscription
 	wg                        sync.WaitGroup
 	cfg                       *eventconfig.Config
-	eventConsumeURL           string
 	defaultSenderSocketPort   = 30001
 	defaultListenerSocketPort = 30002
 
-	defaultAPIPort            = 8081
-	defaultHostPort           = 9091
-	latencyCountCh            chan report.Latency
-	routes                    *routes3.CnfRoutes
+	defaultAPIPort  = 8081
+	defaultHostPort = 9091
+	latencyCountCh  chan report.Latency
+	routes          *routes3.CnfRoutes
 )
 
 // init sets initial values for variables used in the function.
@@ -49,17 +48,17 @@ func main() {
 	if err != nil {
 		log.Printf("Could not load configuration file --config, loading default queue\n")
 		cfg = eventconfig.DefaultConfig(defaultHostPort, defaultAPIPort, defaultSenderSocketPort, defaultListenerSocketPort,
-			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"), false)
-		cfg.EventHandler = types.SOCKET
+			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"))
 		cfg.HostPathPrefix = "/api/vdu/v1"
 		cfg.APIPathPrefix = "/api/ocloudnotifications/v1"
+		cfg.StatusResource.Status.EnableStatusCheck = true
 	}
 	// can override externally
-	envEventHandler:=os.Getenv("EVENT_HANDLER")
-	if envEventHandler!=""{
-		cfg.EventHandler =types.EventHandler(envEventHandler)
+	envEventHandler := os.Getenv("EVENT_HANDLER")
+	if envEventHandler != "" {
+		cfg.EventHandler = types.EventHandler(envEventHandler)
 	}
-	log.Printf("Framework type :%s\n",cfg.EventHandler)
+	log.Printf("Framework type :%s\n", cfg.EventHandler)
 	SubStore = map[string]types.Subscription{}
 	// if the event handler is socket then do this
 
@@ -81,22 +80,19 @@ func main() {
 	healthCheckAPIEndpoints()
 	// create various subscriptions that you are interested to subscribe to
 	_, _ = createSubscription()
-
 	//check once of often, your choice
-
-		tck := time.NewTicker(time.Duration(10) * time.Second)
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for range tck.C {
-				event, err := checkPTPStatus()
-				if err != nil {
-					log.Printf("error check ptp status %v\n", err)
-				}
-				log.Printf("PTP status %v\n", string(event.Data()))
+	tck := time.NewTicker(time.Duration(10) * time.Second)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for range tck.C {
+			event, err := checkAllStatus()
+			if err != nil {
+				log.Printf("error check ptp status %v\n", err)
 			}
-		}()
-
+			log.Printf("PTP status %v\n", string(event.Data()))
+		}
+	}()
 
 	if cfg.EventHandler == types.SOCKET {
 		socketListener(&wg, cfg.Socket.Listener.HostName, cfg.Socket.Listener.Port, latencyCountCh)
@@ -117,7 +113,7 @@ func startServer(wg *sync.WaitGroup, cnfRoutes *routes3.CnfRoutes) {
 	api.HandleFunc("/publisher/ack", cnfRoutes.PublisherAck).Methods(http.MethodPost)
 	api.HandleFunc("/event/alert", cnfRoutes.EventSubmit).Methods(http.MethodPost)
 	api.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, "OK")
+		io.WriteString(w, "OK") //nolint:errcheck
 	}).Methods(http.MethodGet)
 	err := r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		pathTemplate, err := route.GetPathTemplate()
@@ -222,7 +218,7 @@ func createSubscription() (string, error) {
 		var sub types.Subscription
 		err = json.Unmarshal(data, &sub)
 		if err != nil {
-			log.Printf("failed to successfully marshal json data from the response %v\n",err)
+			log.Printf("failed to successfully marshal json data from the response %v\n", err)
 		} else {
 			SubStore[sub.SubscriptionID] = sub
 			return sub.SubscriptionID, nil
@@ -270,29 +266,30 @@ func socketListener(wg *sync.WaitGroup, hostname string, listenerPort int, laten
 
 }
 
-func checkPTPStatus() (event cloudevents.Event, err error) {
+func checkAllStatus() (event cloudevents.Event, err error) {
 
 	//log.Printf("Posting to PTP status %s\n", fmt.Sprintf("http://%s:%d%s/status", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix))
 	/*client := http.Client{
 		Timeout: 10 * time.Second,
 	}*/
-	response, err := http.Post(fmt.Sprintf("http://%s:%d%s/status", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix),
-		"application/json; charset=utf-8", nil)
-	if err != nil {
-		log.Printf("The HTTP request for PTP status failed with error %s\n", err)
-		return
-	}
-	defer response.Body.Close() // Close body only if response non-nil
-	if response.StatusCode == http.StatusOK {
-		defer response.Body.Close() // Close body only if response non-nil
-		data, _ := ioutil.ReadAll(response.Body)
-		err = json.Unmarshal(data, &event)
+	for index := range cfg.StatusResource.Name {
+		response, err := http.Post(fmt.Sprintf("http://%s:%d%s/status/%d", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix, index),
+			"application/json; charset=utf-8", nil)
 		if err != nil {
-			log.Println("failed to successfully marshal ptp status json data from the response")
+			log.Printf("The HTTP request for PTP status failed with error %s\n", err)
+			continue
 		}
-	} else {
-		log.Printf("failed to create PTP status %d", response.StatusCode)
-		err = fmt.Errorf("error returning from http post %d", response.StatusCode)
+		defer response.Body.Close() // Close body only if response non-nil
+		if response.StatusCode == http.StatusOK {
+			defer response.Body.Close() // Close body only if response non-nil
+			data, _ := ioutil.ReadAll(response.Body)
+			err = json.Unmarshal(data, &event)
+			if err != nil {
+				log.Println("failed to successfully marshal ptp status json data from the response")
+			}
+		} else {
+			log.Printf("failed to create PTP status %d", response.StatusCode)
+		}
 	}
 	return
 }
