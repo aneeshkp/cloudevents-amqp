@@ -39,7 +39,7 @@ func (c *CnfRoutes) EventSubmit(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&sub)
 	switch {
 	case err == io.EOF:
-		log.Printf("error here %v", err)
+		log.Printf("No Contect check")
 		c.respondWithMessage(w, http.StatusNoContent, "No Content")
 		return
 	case err != nil:

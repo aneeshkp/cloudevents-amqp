@@ -26,6 +26,8 @@ spec:
       containers:
         - name: vdu
           image: vdu
+          command: [ "./vdu" ]
+          args: [ "-config", "/opt/config.yml" ]
           env:
             - name: MY_NODE_NAME
               valueFrom:
@@ -43,12 +45,32 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+          volumeMounts:
+            - name: config-volume
+              mountPath: /opt/
+            - name: pubsubs
+              mountPath: /store
         - name: vdu-sidecar
           image: sidecar
-          lifecycle:
-            type: Sidecar
           command: [ "./sidecar" ]
           args: [ "-config", "/opt/config.yml" ]
+          env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
           volumeMounts:
             - name: config-volume
               mountPath: /opt/
@@ -62,7 +84,7 @@ spec:
               - key: config.yml
                 path: config.yml
         - name: pubsubs
-          emptyDir: { }
+          emptyDir: {}
 
 
 

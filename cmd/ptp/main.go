@@ -33,7 +33,7 @@ and send events between 1 to 100K
 
 var (
 	//PubStore for storing publisher info that is returned by restapi
-	PubStore map[string]types.Subscription
+	PubStore map[string]*types.Subscription
 
 	statusListenerSocketPort = 40001 //nolint:deadcode,unused,varcheck
 	avgMessagesPerSec        = 100
@@ -58,7 +58,7 @@ func init() {
 
 func main() {
 	var err error
-	PubStore = map[string]types.Subscription{}
+	PubStore = map[string]*types.Subscription{}
 	envMsgPerSec := os.Getenv("MSG_PER_SEC")
 
 	if envMsgPerSec != "" {
@@ -92,7 +92,7 @@ func main() {
 	publisherID, _ = createPublisher()
 
 	//Start sending events
-	event := events.New(avgMessagesPerSec, PubStore, PubStore[publisherID], *cfg)
+	event := events.New(avgMessagesPerSec, PubStore, *PubStore[publisherID], *cfg)
 	time.Sleep(5 * time.Second)
 	wg.Add(1)
 	go func() {
@@ -236,7 +236,7 @@ func createPublisher() (string, error) {
 			log.Println("failed to successfully marshal json data from the response")
 		} else {
 			fmt.Printf("The publisher return is %s\n", string(data))
-			PubStore[pub.SubscriptionID] = pub
+			PubStore[pub.SubscriptionID] = &pub
 			return pub.SubscriptionID, nil
 		}
 	} else {

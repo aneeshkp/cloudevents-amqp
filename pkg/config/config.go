@@ -179,7 +179,7 @@ func DefaultConfig(defaultHosPort, defaultAPIPort, senderSocketPort, listenerSoc
 			NameSpace: namespace,
 		},
 		StatusResource: StatusResource{
-			Name: []string{"/status/PTP"},
+			Name: []string{"status/PTP"},
 			Status: Status{
 				PublishStatus:     false,
 				EnableStatusCheck: false,

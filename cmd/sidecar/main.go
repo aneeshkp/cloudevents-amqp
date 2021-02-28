@@ -195,7 +195,7 @@ func processConsumer(event protocol.DataEvent) {
 		if v, err := server.GetFromSubStore(event.Address); err == nil {
 			eventConsumeURL = v.EndpointURI
 		} else {
-			log.Printf("Error processConsumer %v\n", err)
+			log.Printf("Error processing consumer: %v\n", err)
 		}
 		//eventConsumeURL = fmt.Sprintf("http://%s:%d%s/%s", cfg.Host.HostName, cfg.Host.Port, cfg.HostPathPrefix, "event/alert")
 		if eventConsumeURL == "" {

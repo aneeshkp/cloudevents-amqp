@@ -3,19 +3,19 @@ kind: Kustomization
 resources:
 - 000-config.yml
 - 03-vdu.yaml
-- 004-ptp.yaml
+- 04-ptp.yaml
 replicas:
 - count: 1
   name: vdu-deployment
 - count: 1
   name: ptp-deployment
 images:
-- name: vdu
-  newName: quay.io/aneeshkp/vdu
-  newTag: latest
 - name: ptp
   newName: quay.io/aneeshkp/ptp
   newTag: latest
 - name: sidecar
   newName: quay.io/aneeshkp/sidecar
+  newTag: latest
+- name: vdu
+  newName: quay.io/aneeshkp/vdu
   newTag: latest

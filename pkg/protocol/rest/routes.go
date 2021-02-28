@@ -74,12 +74,14 @@ func (s *Server) createPubSub(w http.ResponseWriter, r *http.Request, resourcePa
 	//prevent duplicate creation
 	if psType == protocol.CONSUMER {
 		if exists, err := s.GetFromSubStore(sub.ResourceQualifier.GetAddress()); err == nil {
+			log.Printf("There was already subscription,skipping creation %v", exists)
 			s.sendOut(psType, &sub)
 			s.respondWithJSON(w, http.StatusCreated, exists)
 			return
 		}
-	} else {
+	} else if psType == protocol.PRODUCER {
 		if exists, err := s.GetFromPubStore(sub.ResourceQualifier.GetAddress()); err == nil {
+			log.Printf("There was already publisher,skipping creation %v", exists)
 			s.sendOut(psType, &sub)
 			s.respondWithJSON(w, http.StatusCreated, exists)
 			return
@@ -89,12 +91,13 @@ func (s *Server) createPubSub(w http.ResponseWriter, r *http.Request, resourcePa
 	if sub.EndpointURI != "" {
 		response, err := http.Post(sub.EndpointURI, "application/json", nil)
 		if err != nil {
-
+			log.Printf("There was error validating endpointurl %v", err)
 			s.respondWithError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 		defer response.Body.Close()
 		if response.StatusCode != http.StatusNoContent {
+			log.Printf("There was error validating endpointurl returned status code %d", response.StatusCode)
 			s.respondWithError(w, http.StatusBadRequest, "Return url validation check failed for create subscription.check endpointURI")
 			return
 		}
@@ -108,15 +111,16 @@ func (s *Server) createPubSub(w http.ResponseWriter, r *http.Request, resourcePa
 	//TODO:might want to use PVC to live beyond pod crash
 	err = s.writeToFile(sub, filePath)
 	if err != nil {
+		log.Printf("Error writing to store %v\n", err)
 		s.respondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	log.Println("Stored in a file")
 	//store the subscription
 	if psType == protocol.CONSUMER {
-		s.publisherStore[sub.SubscriptionID] = &sub
+		s.subscription.Set(sub.SubscriptionID, &sub)
 	} else {
-		s.subscriptionStore[sub.SubscriptionID] = &sub
+		s.publisher.Set(sub.SubscriptionID, &sub)
 	}
 	// go ahead and create QDR to this address
 	s.sendOut(psType, &sub)
@@ -138,7 +142,7 @@ func (s *Server) getSubscriptionByID(w http.ResponseWriter, r *http.Request) {
 	subscriptionID, ok := queries["subscriptionid"]
 	if ok {
 		log.Printf("getting subscription by id %s", subscriptionID)
-		if sub, ok := s.subscriptionStore[subscriptionID]; ok {
+		if sub, ok := s.subscription.Store[subscriptionID]; ok {
 			s.respondWithJSON(w, http.StatusOK, sub)
 			return
 		}
@@ -151,7 +155,7 @@ func (s *Server) getPublisherByID(w http.ResponseWriter, r *http.Request) {
 	PublisherID, ok := queries["publisherid"]
 	if ok {
 		log.Printf("Getting subscription by id %s", PublisherID)
-		if pub, ok := s.publisherStore[PublisherID]; ok {
+		if pub, ok := s.publisher.Store[PublisherID]; ok {
 			s.respondWithJSON(w, http.StatusOK, pub)
 			return
 		}
@@ -181,12 +185,12 @@ func (s *Server) deletePublisher(w http.ResponseWriter, r *http.Request) {
 	PublisherID, ok := queries["publisherid"]
 	if ok {
 
-		if pub, ok := s.publisherStore[PublisherID]; ok {
+		if pub, ok := s.publisher.Store[PublisherID]; ok {
 			if err := s.deleteFromFile(*pub, s.cfg.Store.PubFilePath); err != nil {
 				s.respondWithError(w, http.StatusBadRequest, err.Error())
 				return
 			}
-			delete(s.publisherStore, PublisherID)
+			s.publisher.Delete(PublisherID)
 			s.respondWithMessage(w, http.StatusOK, "OK")
 			return
 		}
@@ -200,13 +204,13 @@ func (s *Server) deleteSubscription(w http.ResponseWriter, r *http.Request) {
 	subscriptionID, ok := queries["subscriotionid"]
 	if ok {
 
-		if sub, ok := s.subscriptionStore[subscriptionID]; ok {
+		if sub, ok := s.subscription.Store[subscriptionID]; ok {
 			if err := s.deleteFromFile(*sub, s.cfg.Store.SubFilePath); err != nil {
 				s.respondWithError(w, http.StatusBadRequest, err.Error())
 				return
 			}
 
-			delete(s.publisherStore, subscriptionID)
+			s.publisher.Delete(subscriptionID)
 			s.respondWithMessage(w, http.StatusOK, "Deleted")
 			return
 		}
@@ -221,7 +225,7 @@ func (s *Server) deleteAllSubscriptions(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	//empty the store
-	s.subscriptionStore = make(map[string]*types.Subscription)
+	s.subscription.Store = make(map[string]*types.Subscription)
 	//TODO: close QDR connection for this --> use same method as create
 	s.respondWithMessage(w, http.StatusOK, "deleted all subscriptions")
 }
@@ -233,7 +237,7 @@ func (s *Server) deleteAllPublishers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//empty the store
-	s.publisherStore = make(map[string]*types.Subscription)
+	s.publisher.Store = make(map[string]*types.Subscription)
 	//TODO: close QDR connection for this --> use same method as create
 	s.respondWithMessage(w, http.StatusOK, "deleted all publishers")
 }

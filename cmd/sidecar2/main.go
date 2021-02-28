@@ -190,16 +190,16 @@ func processConsumer(event protocol.DataEvent) {
 	if event.EventStatus == protocol.NEW { // switch you endpoint url
 		//fmt.Sprintf("http://%s:%d%s/event/alert", cnfAPIHostName, cnfAPIPort, "/api/vdu/v1")
 		// check for subscription to fetch  the end url
-		//TODO: This is required but takes lots of time , adds latency
+		//TODO: This is required but  adds latency concurrency map
 		var eventConsumeURL string
 		if v, err := server.GetFromSubStore(event.Address); err == nil {
 			eventConsumeURL = v.EndpointURI
 		} else {
-			log.Printf("Error processConsumer %v\n", err)
+			log.Printf("Error processing : %v\n", err)
 		}
 		//eventConsumeURL = fmt.Sprintf("http://%s:%d%s/%s", cfg.Host.HostName, cfg.Host.Port, cfg.HostPathPrefix, "event/alert")
 		if eventConsumeURL == "" {
-			log.Printf("Could not find publisher/subscription for address %s", event.Address)
+			log.Printf("Could not find publisher/subscription for address %s :", event.Address)
 		} else {
 			response, err := http.Post(eventConsumeURL, "application/json", bytes.NewBuffer(event.Data.Data()))
 			if err != nil {

@@ -17,7 +17,7 @@ import (
 type Event struct {
 	avgMsgPerSec int
 	totalMsgSent int64
-	pubStore     map[string]types.Subscription
+	pubStore     map[string]*types.Subscription
 	cfg          eventconfig.Config
 	subscription types.Subscription
 }
@@ -33,7 +33,7 @@ func (e *Event) ResetTotalMsgSent() {
 }
 
 // New create new event object
-func New(avgMsgPerSec int, pubStore map[string]types.Subscription, subscription types.Subscription, cfg eventconfig.Config) *Event {
+func New(avgMsgPerSec int, pubStore map[string]*types.Subscription, subscription types.Subscription, cfg eventconfig.Config) *Event {
 	return &Event{
 		avgMsgPerSec: avgMsgPerSec,
 		totalMsgSent: 0,

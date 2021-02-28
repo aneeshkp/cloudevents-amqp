@@ -1,7 +1,7 @@
 [
  {
-  "subscriptionid": "\"d95a13ee-838b-482b-b8b6-97c71699d11d\"",
-  "urilocation": "\"http://localhost:9091/api/ocloudnotifications/v1/subscriptions/d95a13ee-838b-482b-b8b6-97c71699d11d\"",
+  "subscriptionid": "\"55ec3c12-3281-4180-99b9-94d5f1ed3723\"",
+  "urilocation": "\"http://localhost:9091/api/ocloudnotifications/v1/subscriptions/55ec3c12-3281-4180-99b9-94d5f1ed3723\"",
   "resourcetype": "\"PTP\"",
   "endpointuri": "\"http://localhost:8081/api/vdu/v1/event/alert\"",
   "resourcequalifier": {

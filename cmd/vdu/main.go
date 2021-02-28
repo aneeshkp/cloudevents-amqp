@@ -25,7 +25,7 @@ import (
 
 var (
 	//SubStore for storing Subscription info that is returned by restapi
-	SubStore                  map[string]types.Subscription
+	SubStore                  map[string]*types.Subscription
 	wg                        sync.WaitGroup
 	cfg                       *eventconfig.Config
 	defaultSenderSocketPort   = 30001
@@ -59,7 +59,7 @@ func main() {
 		cfg.EventHandler = types.EventHandler(envEventHandler)
 	}
 	log.Printf("Framework type :%s\n", cfg.EventHandler)
-	SubStore = map[string]types.Subscription{}
+	SubStore = map[string]*types.Subscription{}
 	// if the event handler is socket then do this
 
 	//Prepare for collecting latency
@@ -86,11 +86,13 @@ func main() {
 	go func() {
 		defer wg.Done()
 		for range tck.C {
-			event, err := checkAllStatus()
-			if err != nil {
-				log.Printf("error check ptp status %v\n", err)
+			for index := range cfg.StatusResource.Name {
+				event, err := checkAllStatus(index)
+				if err != nil {
+					log.Printf("error check ptp status %v\n", err)
+				}
+				log.Printf("PTP status %v\n", string(event.Data()))
 			}
-			log.Printf("PTP status %v\n", string(event.Data()))
 		}
 	}()
 
@@ -220,7 +222,8 @@ func createSubscription() (string, error) {
 		if err != nil {
 			log.Printf("failed to successfully marshal json data from the response %v\n", err)
 		} else {
-			SubStore[sub.SubscriptionID] = sub
+			SubStore[sub.SubscriptionID] = &sub
+			log.Printf("created subscription %v", SubStore)
 			return sub.SubscriptionID, nil
 		}
 	} else {
@@ -266,30 +269,25 @@ func socketListener(wg *sync.WaitGroup, hostname string, listenerPort int, laten
 
 }
 
-func checkAllStatus() (event cloudevents.Event, err error) {
-
-	//log.Printf("Posting to PTP status %s\n", fmt.Sprintf("http://%s:%d%s/status", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix))
-	/*client := http.Client{
-		Timeout: 10 * time.Second,
-	}*/
-	for index := range cfg.StatusResource.Name {
-		response, err := http.Post(fmt.Sprintf("http://%s:%d%s/status/%d", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix, index),
-			"application/json; charset=utf-8", nil)
-		if err != nil {
-			log.Printf("The HTTP request for PTP status failed with error %s\n", err)
-			continue
-		}
-		defer response.Body.Close() // Close body only if response non-nil
-		if response.StatusCode == http.StatusOK {
-			defer response.Body.Close() // Close body only if response non-nil
-			data, _ := ioutil.ReadAll(response.Body)
-			err = json.Unmarshal(data, &event)
-			if err != nil {
-				log.Println("failed to successfully marshal ptp status json data from the response")
-			}
-		} else {
-			log.Printf("failed to create PTP status %d", response.StatusCode)
-		}
+func checkAllStatus(index int) (event cloudevents.Event, err error) {
+	url := fmt.Sprintf("http://%s:%d%s/status/%d", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix, index)
+	response, err := http.Post(url,
+		"application/json; charset=utf-8", nil)
+	if err != nil {
+		log.Printf("The HTTP request for PTP status failed with error %s\n", err)
+		return
 	}
+	defer response.Body.Close() // Close body only if response non-nil
+	if response.StatusCode == http.StatusOK {
+		defer response.Body.Close() // Close body only if response non-nil
+		data, _ := ioutil.ReadAll(response.Body)
+		err = json.Unmarshal(data, &event)
+		if err != nil {
+			log.Println("failed to successfully marshal ptp status json data from the response")
+		}
+	} else {
+		log.Printf("failed to create PTP status %d url %s", response.StatusCode,url)
+	}
+
 	return
 }

@@ -1,7 +1,7 @@
 [
  {
-  "subscriptionid": "\"17bb5b96-1a8e-4cae-b2ca-e44b21e09252\"",
-  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/17bb5b96-1a8e-4cae-b2ca-e44b21e09252\"",
+  "subscriptionid": "\"2bdf61ac-ba45-4e37-ba57-661bcc8944c9\"",
+  "urilocation": "\"http://localhost:9090/api/ocloudnotifications/v1/publishers/2bdf61ac-ba45-4e37-ba57-661bcc8944c9\"",
   "resourcetype": "\"PTP\"",
   "endpointuri": "\"http://localhost:8080/api/ptp/v1/publisher/ack\"",
   "resourcequalifier": {

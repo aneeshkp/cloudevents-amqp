@@ -280,7 +280,7 @@ func TestServer_New(t *testing.T) {
 	}
 	*/
 	// Delete All Subscriptions
-	req, err = http.NewRequest("DELETE", "http://localhost:8080/api/ocloudnotifications/v1/subsriptions", nil)
+	req, err = http.NewRequest("DELETE", "http://localhost:8080/api/ocloudnotifications/v1/subscriptions", nil)
 	if err != nil {
 		panic(err)
 	}

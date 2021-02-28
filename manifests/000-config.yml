@@ -7,7 +7,7 @@ metadata:
 data:
   config.yml: |-
     amqp:
-      hostname: amqp://localhost
+      hostname: amqp://amqp-dispatch-service-a
       port: 5672
     api:
       hostname: localhost
@@ -27,7 +27,7 @@ data:
       node: "NODE1"
       namespace: "Default"
     statusResource:
-      name: []
+      name: ["status/PTP"]
       status:
         publishStatus: true
         enableStatusCheck: false
@@ -46,7 +46,7 @@ metadata:
 data:
   config.yml: |-
     amqp:
-      hostname: amqp://localhost
+      hostname: amqp://amqp-dispatch-service-a
       port: 5672
     api:
       hostname: localhost
@@ -66,7 +66,7 @@ data:
       node: "NODE1"
       namespace: "Default"
     statusResource:
-      name: ["/status/PTP"]
+      name: ["status/PTP"]
       status:
         publishStatus: false
         enableStatusCheck: true

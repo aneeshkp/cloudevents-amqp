@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/config"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/store"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	"github.com/gorilla/mux"
 	"io"
@@ -13,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -28,9 +30,9 @@ type Server struct {
 	dataOut    chan<- protocol.DataEvent
 	HTTPClient *http.Client
 	// PublisherStore stores publishers in a map
-	publisherStore map[string]*types.Subscription
+	publisher *store.PubStore
 	// SubscriptionStore stores subscription in a map
-	subscriptionStore map[string]*types.Subscription
+	subscription *store.SubStore
 }
 
 // InitServer is used to supply configurations for rest api server
@@ -42,8 +44,14 @@ func InitServer(cfg *config.Config, dataOut chan<- protocol.DataEvent) *Server {
 		HTTPClient: &http.Client{
 			Timeout: 1 * time.Second,
 		},
-		publisherStore:    make(map[string]*types.Subscription),
-		subscriptionStore: make(map[string]*types.Subscription),
+		publisher: &store.PubStore{
+			RWMutex: sync.RWMutex{},
+			Store:   map[string]*types.Subscription{},
+		},
+		subscription: &store.SubStore{
+			RWMutex: sync.RWMutex{},
+			Store:   map[string]*types.Subscription{},
+		},
 	}
 
 	return &server
@@ -51,7 +59,7 @@ func InitServer(cfg *config.Config, dataOut chan<- protocol.DataEvent) *Server {
 
 //GetFromPubStore get data from pub store
 func (s *Server) GetFromPubStore(address string) (types.Subscription, error) {
-	for _, pub := range s.publisherStore {
+	for _, pub := range s.publisher.Store {
 		if pub.ResourceQualifier.GetAddress() == address {
 			return *pub, nil
 		}
@@ -61,12 +69,12 @@ func (s *Server) GetFromPubStore(address string) (types.Subscription, error) {
 
 //GetFromSubStore get data from sub store
 func (s *Server) GetFromSubStore(address string) (types.Subscription, error) {
-	for _, pub := range s.subscriptionStore {
-		if pub.ResourceQualifier.GetAddress() == address {
-			return *pub, nil
+	for _, sub := range s.subscription.Store {
+		if sub.ResourceQualifier.GetAddress() == address {
+			return *sub, nil
 		}
 	}
-	return types.Subscription{}, fmt.Errorf("subscription not found for address %s", address)
+	return types.Subscription{}, fmt.Errorf("subscription not found for address %s and %v", address, s.subscription.Store)
 }
 
 //WriteToFile writes subscription data to a file
@@ -165,7 +173,7 @@ func (s *Server) Start() {
 		}
 	}
 	for _, pub := range pubs {
-		s.publisherStore[pub.SubscriptionID] = &pub
+		s.publisher.Set(pub.SubscriptionID, &pub)
 	}
 
 	//load subscription store
@@ -181,7 +189,7 @@ func (s *Server) Start() {
 		}
 	}
 	for _, sub := range subs {
-		s.subscriptionStore[sub.SubscriptionID] = &sub
+		s.subscription.Set(sub.SubscriptionID, &sub)
 	}
 
 	r := mux.NewRouter()
