@@ -7,8 +7,8 @@ resources:
 replicas:
 - count: 1
   name: vdu-deployment
-- count: 1
-  name: ptp-deployment
+#- count: 1
+#  name: ptp-deployment
 images:
 - name: ptp
   newName: quay.io/aneeshkp/ptp

@@ -286,7 +286,7 @@ func checkAllStatus(index int) (event cloudevents.Event, err error) {
 			log.Println("failed to successfully marshal ptp status json data from the response")
 		}
 	} else {
-		log.Printf("failed to create PTP status %d url %s", response.StatusCode,url)
+		log.Printf("failed to create PTP status %d url %s", response.StatusCode, url)
 	}
 
 	return
