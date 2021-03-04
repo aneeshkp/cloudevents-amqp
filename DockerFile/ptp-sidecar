@@ -10,6 +10,6 @@ FROM fedora:30
 RUN yum install -y linuxptp ethtool make hwdata
 # Set the Current Working Directory inside the container
 WORKDIR /app
-ADD ./bin/sidecar ./
+ADD ./bin/ptpsidecar ./
 # ADD ./bin/config.yml ./
-CMD ["./sidecar"]
+CMD ["./ptpsidecar"]
