@@ -12,13 +12,13 @@ replicas:
 images:
 - name: ptp
   newName: quay.io/aneeshkp/ptp
-  newTag: latest
-- name: sidecar
-  newName: quay.io/aneeshkp/sidecar
-  newTag: latest
+  newTag: "4.8"
 - name: ptpsidecar
   newName: quay.io/aneeshkp/ptpsidecar
-  newTag: latest
+  newTag: "4.8"
+- name: sidecar
+  newName: quay.io/aneeshkp/sidecar
+  newTag: "4.8"
 - name: vdu
   newName: quay.io/aneeshkp/vdu
-  newTag: latest
+  newTag: "4.8"

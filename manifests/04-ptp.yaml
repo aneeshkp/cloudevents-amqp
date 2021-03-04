@@ -50,7 +50,7 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             - name: ENABLE_EVENT
-              value: False
+              value: "False"
           volumeMounts:
             - name: config-volume
               mountPath: /opt/
