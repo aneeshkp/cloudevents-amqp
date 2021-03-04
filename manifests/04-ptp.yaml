@@ -100,7 +100,7 @@ spec:
         - hostPath:
             path: /var/run/ptp
             type: DirectoryOrCreate
-            name: socket-dir
+          name: socket-dir
 
 
 
