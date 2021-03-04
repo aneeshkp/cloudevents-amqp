@@ -74,6 +74,7 @@ build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/ptp ./cmd/ptp/main.go
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/vdu ./cmd/vdu/main.go
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/sidecar ./cmd/sidecar/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/ptpsidecar ./cmd/sidecar/main.go
 
 
 # Deploy all in the configured Kubernetes cluster in ~/.kube/config
