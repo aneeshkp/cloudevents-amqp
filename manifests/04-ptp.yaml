@@ -61,7 +61,7 @@ spec:
         - name: ptp-sidecar
           securityContext:
             privileged: true
-          image: sidecar
+          image: ptpsidecar
           command: [ "./ptpsidecar" ]
           args: [ "-config", "/opt/config.yml" ]
           env:
