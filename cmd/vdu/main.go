@@ -41,6 +41,16 @@ var (
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
+func httpClient() *http.Client {
+	client := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConnsPerHost: 20,
+		},
+		Timeout: 10 * time.Second,
+	}
+
+	return client
+}
 
 func main() {
 	var err error
@@ -52,11 +62,6 @@ func main() {
 		cfg.HostPathPrefix = "/api/vdu/v1"
 		cfg.APIPathPrefix = "/api/ocloudnotifications/v1"
 		cfg.StatusResource.Status.EnableStatusCheck = true
-	}
-	// can override externally
-	envEventHandler := os.Getenv("EVENT_HANDLER")
-	if envEventHandler != "" {
-		cfg.EventHandler = types.EventHandler(envEventHandler)
 	}
 	log.Printf("Framework type :%s\n", cfg.EventHandler)
 	SubStore = map[string]*types.Subscription{}
@@ -81,18 +86,19 @@ func main() {
 	// create various subscriptions that you are interested to subscribe to
 	_, _ = createSubscription()
 	//check once of often, your choice
-	tck := time.NewTicker(time.Duration(10) * time.Second)
+
+	tck := time.NewTicker(time.Second)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		var sequenceID = 1
 		for range tck.C {
-			for index := range cfg.StatusResource.Name {
-				event, err := checkAllStatus(index)
-				if err != nil {
-					log.Printf("error check ptp status %v\n", err)
-				}
-				log.Printf("PTP status %v\n", string(event.Data()))
+			event, err := checkAllStatus(sequenceID)
+			if err != nil {
+				log.Printf("error check ptp status %v\n", err)
 			}
+			log.Printf("PTP status %#v\n", event)
+			sequenceID++
 		}
 	}()
 
@@ -207,7 +213,7 @@ func createSubscription() (string, error) {
 	}
 	jsonValue, _ := json.Marshal(ptpSubscription)
 	response, err := http.Post(fmt.Sprintf("http://%s:%d%s/subscriptions", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix),
-		"application/json; charset=utf-8", bytes.NewBuffer(jsonValue))
+		cloudevents.ApplicationJSON, bytes.NewBuffer(jsonValue))
 
 	if err != nil {
 		log.Printf("The HTTP request failed with error %s\n", err)
@@ -220,7 +226,7 @@ func createSubscription() (string, error) {
 		var sub types.Subscription
 		err = json.Unmarshal(data, &sub)
 		if err != nil {
-			log.Printf("failed to successfully marshal json data from the response %v\n", err)
+			log.Printf("2.failed to successfully marshal json data from the response %v\n", err)
 		} else {
 			SubStore[sub.SubscriptionID] = &sub
 			log.Printf("created subscription %v", SubStore)
@@ -269,25 +275,38 @@ func socketListener(wg *sync.WaitGroup, hostname string, listenerPort int, laten
 
 }
 
-func checkAllStatus(index int) (event cloudevents.Event, err error) {
+func checkAllStatus(index int) (event types.EventDataType, err error) {
+	httpC := httpClient()
 	url := fmt.Sprintf("http://%s:%d%s/status/%d", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix, index)
-	response, err := http.Post(url,
-		"application/json; charset=utf-8", nil)
+
+	var response *http.Response
+	response, err = httpC.Get(url)
 	if err != nil {
 		log.Printf("The HTTP request for PTP status failed with error %s\n", err)
 		return
 	}
-	defer response.Body.Close() // Close body only if response non-nil
-	if response.StatusCode == http.StatusOK {
-		defer response.Body.Close() // Close body only if response non-nil
-		data, _ := ioutil.ReadAll(response.Body)
-		err = json.Unmarshal(data, &event)
+	// Close body only if response non-nil
+	if err != nil {
+		log.Printf("3.1failed to successfully marshal ptp status json data from the response  %v ", err)
+		return
+	} else if response.StatusCode == http.StatusOK {
+		var bytes []byte
+		bytes, err = ioutil.ReadAll(response.Body)
 		if err != nil {
-			log.Println("failed to successfully marshal ptp status json data from the response")
+			log.Printf("error %v", err)
+			return
 		}
+		defer response.Body.Close()
+		e := types.Subscription{}
+		err = json.Unmarshal(bytes, &e)
+		if err != nil {
+			log.Printf("Failed to parse event data %v, for %s", err, string(bytes))
+		} else {
+			event = e.EventData
+		}
+
 	} else {
 		log.Printf("failed to create PTP status %d url %s", response.StatusCode, url)
 	}
-
 	return
 }

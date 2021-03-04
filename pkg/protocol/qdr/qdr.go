@@ -42,7 +42,7 @@ func InitServer(cfg *config.Config, DataIn <-chan protocol.DataEvent, DataOut ch
 //NewSender creates new QDR ptp
 func (q *Router) NewSender(address string) error {
 	var opts []amqp1.Option
-	p, err := amqp1.NewProtocol2(fmt.Sprintf("%s:%d", q.cfg.AMQP.HostName, q.cfg.AMQP.Port), address, "", []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
+	p, err := amqp1.NewSenderProtocol(fmt.Sprintf("%s:%d", q.cfg.AMQP.HostName, q.cfg.AMQP.Port), address, []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
 	if err != nil {
 		log.Printf("Failed to create amqp protocol: %v", err)
 		return err
@@ -65,7 +65,7 @@ func (q *Router) NewSender(address string) error {
 func (q *Router) NewReceiver(address string) error {
 	var opts []amqp1.Option
 	opts = append(opts, amqp1.WithReceiverLinkOption(amqp.LinkCredit(50)))
-	p, err := amqp1.NewProtocol2(fmt.Sprintf("%s:%d", q.cfg.AMQP.HostName, q.cfg.AMQP.Port), "", address, []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
+	p, err := amqp1.NewReceiverProtocol(fmt.Sprintf("%s:%d", q.cfg.AMQP.HostName, q.cfg.AMQP.Port), address, []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
 	if err != nil {
 		log.Printf("Failed to create amqp protocol for a Receiver: %v", err)
 		return err
@@ -138,16 +138,18 @@ func (q *Router) QDRRouter(wg *sync.WaitGroup) {
 							} else {
 								wg.Add(1)
 								go q.Receive(wg, d.Address, func(e cloudevents.Event) { // just spawn and forget
-									// Not the clean way of doing , revisit
 									q.DataOut <- protocol.DataEvent{
 										Address:     d.Address,
 										Data:        e,
-										EventStatus: protocol.NEW,
+										EventStatus: d.EventStatus,
 										PubSubType:  protocol.STATUS,
+										StatusCh:    d.StatusCh,
 									}
 								})
 							}
 						}
+					} else {
+						log.Printf("Got empty %s", string(d.Data.Data()))
 					}
 				} else if d.PubSubType == protocol.CONSUMER {
 					// create receiver and let it run
@@ -202,7 +204,7 @@ func (q *Router) QDRRouter(wg *sync.WaitGroup) {
 							log.Printf("(1)error creating sender %v for address %s", err, d.Address)
 						}
 					} else {
-						log.Printf("(1)Seender already found so not creating again %s\n", d.Address)
+						log.Printf("(1)Sender already found so not creating again %s\n", d.Address)
 					}
 				} else if d.PubSubType == protocol.EVENT {
 					if _, ok := q.Senders[d.Address]; ok {
@@ -286,7 +288,7 @@ func NewReceiver(hostName string, port int, receiverAddress string) (receiver *t
 	receiver = &types.AMQPProtocol{}
 	var opts []amqp1.Option
 	opts = append(opts, amqp1.WithReceiverLinkOption(amqp.LinkCredit(50)))
-	p, err := amqp1.NewProtocol2(fmt.Sprintf("%s:%d", hostName, port), "", receiverAddress, []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
+	p, err := amqp1.NewReceiverProtocol(fmt.Sprintf("%s:%d", hostName, port), receiverAddress, []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
 	if err != nil {
 		log.Printf("Failed to create amqp protocol for a Receiver: %v", err)
 		return
@@ -309,7 +311,7 @@ func NewReceiver(hostName string, port int, receiverAddress string) (receiver *t
 func NewSender(hostName string, port int, address string) (sender *types.AMQPProtocol, err error) {
 	sender = &types.AMQPProtocol{}
 	var opts []amqp1.Option
-	p, err := amqp1.NewProtocol2(fmt.Sprintf("%s:%d", hostName, port), address, "", []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
+	p, err := amqp1.NewSenderProtocol(fmt.Sprintf("%s:%d", hostName, port), address, []amqp.ConnOption{}, []amqp.SessionOption{}, opts...)
 	if err != nil {
 		log.Printf("Failed to create amqp protocol: %v", err)
 		return

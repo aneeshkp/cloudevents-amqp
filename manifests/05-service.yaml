@@ -1,13 +1,24 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ptp-service
+  name: ptp-daemon-service1
   labels:
     app: ptp-daemon
 spec:
   ports:
     - port: 20001
       name: udp
+  selector:
+    app: ptp-daemon
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ptp-daemon-service2
+  labels:
+    app: ptp-daemon
+spec:
+  ports:
     - port: 20002
       name: udp
   selector:
@@ -16,14 +27,25 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: vdu-service
+  name: vdu-service1
   labels:
     app: vdu
 spec:
   ports:
-    - port: 30001
+    - port: 20001
       name: udp
-    - port: 30002
+  selector:
+    app: vdu
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vdu-service2
+  labels:
+    app: vdu
+spec:
+  ports:
+    - port: 20002
       name: udp
   selector:
     app: vdu

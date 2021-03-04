@@ -16,6 +16,9 @@ images:
 - name: sidecar
   newName: quay.io/aneeshkp/sidecar
   newTag: latest
+- name: ptpsidecar
+  newName: quay.io/aneeshkp/ptpsidecar
+  newTag: latest
 - name: vdu
   newName: quay.io/aneeshkp/vdu
   newTag: latest

@@ -153,10 +153,7 @@ func (e *Event) intiState(eventPublisherURL string) []chain.State {
 		{
 			ID: 3,
 			Payload: types.Subscription{
-				SubscriptionID: "",
-				URILocation:    "",
-				ResourceType:   "",
-				EndpointURI:    eventPublisherURL,
+
 				ResourceQualifier: types.ResourceQualifier{
 					NodeName:    e.cfg.Cluster.Node,
 					NameSpace:   e.cfg.Cluster.NameSpace,

@@ -1,10 +1,11 @@
 .PHONY: build-docker
 
 # Current  version
-VERSION ?= latest
+VERSION ?= 4.8 #latest
 # Default image tag
 
 SIDECAR_IMG ?= quay.io/aneeshkp/sidecar:$(VERSION)
+PTP_SIDECAR_IMG ?= quay.io/aneeshkp/ptpsidecar:$(VERSION)
 PTP_IMG ?= quay.io/aneeshkp/ptp:$(VERSION)
 VDU_IMG ?= quay.io/aneeshkp/vdu:$(VERSION)
 
@@ -53,6 +54,7 @@ clean:
 docker-build: build
 	docker build -f DockerFile/vdu -t $(VDU_IMG) .
 	docker build -f DockerFile/sidecar -t $(SIDECAR_IMG) .
+	docker build -f DockerFile/ptp-sidecar -t $(PTP_SIDECAR_IMG) .
 	docker build -f DockerFile/ptp -t $(PTP_IMG) .
 
 # Push the docker image
@@ -60,6 +62,7 @@ docker-push:
 	docker push ${PTP_IMG}
 	docker push ${VDU_IMG}
 	docker push ${SIDECAR_IMG}
+	docker push ${PTP_SIDECAR_IMG}
 
 build:
 	go fmt ./...
@@ -76,7 +79,7 @@ build:
 # Deploy all in the configured Kubernetes cluster in ~/.kube/config
 deploy: kustomize
     # && $(KUSTOMIZE) edit set image producer=${SENDER_IMG}
-	cd ./manifests && $(KUSTOMIZE) edit set image ptp=${PTP_IMG} && $(KUSTOMIZE) edit set image sidecar=${SIDECAR_IMG} && $(KUSTOMIZE) edit set image vdu=${VDU_IMG}
+	cd ./manifests && $(KUSTOMIZE) edit set image ptp=${PTP_IMG} && $(KUSTOMIZE) edit set image sidecar=${SIDECAR_IMG} && $(KUSTOMIZE) edit set image ptpsidecar=${PTP_SIDECAR_IMG} && $(KUSTOMIZE) edit set image vdu=${VDU_IMG}
 	$(KUSTOMIZE) build ./manifests | kubectl apply -f -
 
 deploy-qdr: kustomize

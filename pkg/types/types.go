@@ -60,6 +60,9 @@ const (
 	LOCKED PTPState = "Locked"
 	// HOLDOVER Clock is in holdover state
 	HOLDOVER PTPState = "Holdover"
+
+	//ERROR Clock is in holdover state
+	ERROR PTPState = "Error reading PTP state"
 )
 
 //The resource to subscribe to, currently only PTP is supported.
@@ -92,7 +95,9 @@ type Subscription struct {
 //For example, "EventData": {
 //”State”:”Freerun”}
 type EventDataType struct {
-	State PTPState `json:"state,omitempty,string"`
+	SequenceID int      `json:"sequenceid,omitempty,int"` //nolint:staticcheck
+	State      PTPState `json:"state,omitempty,string"`
+	PTPStatus  string   `json:"ptpstatus,omitempty,string"`
 }
 
 // ResourceQualifier ...The node name where PTP resides.
@@ -112,6 +117,24 @@ func (r *ResourceQualifier) GetAddress() string {
 	return fmt.Sprintf("/%s/%s/%s", r.ClusterName, r.NodeName, strings.Join(r.Suffix, "/"))
 }
 
+// SetAddress sets address from string
+func (r *ResourceQualifier) SetAddress(address string) {
+	splitFn := func(c rune) bool {
+		return c == '/'
+	}
+	s := strings.FieldsFunc(address, splitFn)
+	r.Suffix = []string{}
+	for i, v := range s {
+		if i == 0 {
+			r.ClusterName = s[i]
+		} else if i == 1 {
+			r.NodeName = s[i]
+		} else {
+			r.Suffix = append(r.Suffix, v)
+		}
+	}
+}
+
 // ReadFromFile is used to read subscription from the file system
 func (s *Subscription) ReadFromFile(filePath string) (b []byte, err error) {
 	//open file
@@ -120,14 +143,12 @@ func (s *Subscription) ReadFromFile(filePath string) (b []byte, err error) {
 		return nil, err
 	}
 	defer file.Close()
-
 	//read file and unmarshall json file to slice of users
 	b, err = ioutil.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
 	return b, nil
-
 }
 
 //Message ...

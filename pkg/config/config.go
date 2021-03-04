@@ -193,5 +193,6 @@ func DefaultConfig(defaultHosPort, defaultAPIPort, senderSocketPort, listenerSoc
 		APIPathPrefix:  "/api/v1",
 		HostPathPrefix: "/api/ocloudnotifications/v1",
 	}
+	cfg.EventHandler = types.HTTP
 	return cfg
 }

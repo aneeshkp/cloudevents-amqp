@@ -5,18 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol"
-	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol/qdr"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/types/status"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"net/http"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -89,7 +87,7 @@ func (s *Server) createPubSub(w http.ResponseWriter, r *http.Request, resourcePa
 	}
 	//TODO: Do a get to call back address to make sure it works
 	if sub.EndpointURI != "" {
-		response, err := http.Post(sub.EndpointURI, "application/json", nil)
+		response, err := s.HTTPClient.Post(sub.EndpointURI, cloudevents.ApplicationJSON, nil)
 		if err != nil {
 			log.Printf("There was error validating endpointurl %v", err)
 			s.respondWithError(w, http.StatusBadRequest, err.Error())
@@ -202,6 +200,7 @@ func (s *Server) deletePublisher(w http.ResponseWriter, r *http.Request) {
 func (s *Server) deleteSubscription(w http.ResponseWriter, r *http.Request) {
 	queries := mux.Vars(r)
 	subscriptionID, ok := queries["subscriotionid"]
+
 	if ok {
 
 		if sub, ok := s.subscription.Store[subscriptionID]; ok {
@@ -244,87 +243,88 @@ func (s *Server) deleteAllPublishers(w http.ResponseWriter, r *http.Request) {
 
 // getResourceStatus send cloud events object requesting for status
 func (s *Server) getResourceStatus(w http.ResponseWriter, r *http.Request) {
-	msgRequest := getStatusMessage()
 
-	//build address
 	queries := mux.Vars(r)
-	index, ok := queries["index"]
-	var i int
-	var err error
-	if ok {
-		i, err = strconv.Atoi(index)
-		if err != nil {
-			s.respondWithError(w, http.StatusBadRequest, err.Error())
-			return
+	sequenceID, ok := queries["sequenceid"]
+
+	if !ok {
+		s.respondWithError(w, http.StatusBadRequest, "SequenceId was not sent")
+		return
+	}
+	seqID, _ := strconv.Atoi(sequenceID)
+
+	statusData := types.Subscription{
+		ResourceType: "PTP",
+		ResourceQualifier: types.ResourceQualifier{
+			NodeName:    s.cfg.Cluster.Node,
+			ClusterName: s.cfg.Cluster.Name,
+			Suffix:      []string{s.cfg.StatusResource.Name[0]},
+		},
+		EventData: types.EventDataType{
+			SequenceID: seqID,
+		},
+	}
+	//receiveAddress := fmt.Sprintf("%s/%s/", statusData.ResourceQualifier.GetAddress(), "CurrentStatus",uuid.New().String())
+	receiveAddress := fmt.Sprintf("%s/%s", statusData.ResourceQualifier.GetAddress(), "CurrentStatus")
+	statusData.EndpointURI = receiveAddress // this is not URL at this point it is  QDR address and expecting to send it as it is
+
+	event := cloudevents.NewEvent()
+	event = cloudevents.NewEvent()
+	event.SetID(uuid.New().String())
+	event.SetSource("https://github.com/aneeshkp/cloud-events/vdu")
+	event.SetTime(time.Now())
+	event.SetType("com.cloudevents.poc.ptp.status")
+	event.SetSubject("PTPCurrentStatus")
+	event.SetSpecVersion(cloudevents.VersionV1)
+	_ = event.SetData(cloudevents.ApplicationJSON, statusData)
+	senderCtx, senderCancel := context.WithTimeout(context.Background(), 2*time.Second)
+
+	/// send it to the channel to receiever
+	defer func() {
+		senderCancel()
+	}()
+	dataCh := make(chan cloudevents.Event, 1)
+	queueCh := status.NewStatusRestAPIChannel(seqID, dataCh)
+	s.StatusListenerQueue.SendToListener(queueCh)
+
+	if result := s.StatusSenders[statusData.ResourceQualifier.GetAddress()].Client.Send(senderCtx, event); cloudevents.IsUndelivered(result) {
+		log.Printf("method:getResourceStatus, error:failed to send status: %v", result)
+		//w.WriteHeader(http.StatusBadRequest)
+		s.respondWithJSON(w, http.StatusBadRequest, result)
+		return
+	} else if cloudevents.IsNACK(result) {
+		log.Printf("Event not accepted: %v", result)
+		//w.WriteHeader(http.StatusBadRequest)
+		s.respondWithJSON(w, http.StatusBadRequest, result)
+		return
+	} else {
+		log.Printf("Event sent  and ac successfully %s", receiveAddress)
+	}
+	var data cloudevents.Event
+	defer func() {
+		if recover() != nil {
+			log.Printf("Avoid panic on channel close")
+		}
+	}()
+readChannel:
+	for timeout := time.After(2 * time.Second); ; {
+		select {
+		case <-timeout:
+			log.Printf("timeout closing channel")
+			close(dataCh)
+			break readChannel
+		case data = <-dataCh:
+			if data.Data() != nil {
+				log.Printf("Channel data %v", string(data.Data()))
+			}
+			break readChannel
 		}
 	}
-	if ok && len(s.cfg.StatusResource.Name) > i {
-
-		senderAddress := fmt.Sprintf("/%s/%s/%s", s.cfg.Cluster.Name, s.cfg.Cluster.Node, s.cfg.StatusResource.Name[i])
-		receiveAddress := fmt.Sprintf("/%s/%s/%s", s.cfg.Cluster.Name, s.cfg.Cluster.Node, "CurrentStatus")
-
-		event := cloudevents.NewEvent()
-		event = cloudevents.NewEvent()
-		event.SetID(uuid.New().String())
-		event.SetSource("https://github.com/aneeshkp/cloud-events/vdu")
-		event.SetTime(time.Now())
-		event.SetType("com.cloudevents.poc.ptp.status")
-		event.SetSubject("PTPCurrentStatus")
-		event.SetSpecVersion(cloudevents.VersionV1)
-		status := types.ResourceStatus{
-			ReturnAddress: receiveAddress,
-			Status:        "",
-			Message:       msgRequest[rand.Intn(len(msgRequest))],
-		}
-		_ = event.SetData(cloudevents.ApplicationJSON, status)
-
-		log.Printf("starting a listener at webserver %s\n", receiveAddress)
-		listener, err := qdr.NewReceiver(s.cfg.AMQP.HostName, s.cfg.AMQP.Port, receiveAddress)
-		if err != nil {
-			log.Printf("Error Dialing AMQP server::%v", err)
-			s.respondWithError(w, http.StatusBadRequest, err.Error())
-			return
-		}
-		sender, _ := qdr.NewSender(s.cfg.AMQP.HostName, s.cfg.AMQP.Port, senderAddress)
-
-		listenerCtx, listenerCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		senderCtx, senderCancel := context.WithTimeout(context.Background(), 5*time.Second)
-
-		defer func() {
-			listenerCancel()
-			senderCancel()
-			listener.Protocol.Close(listenerCtx)
-			sender.Protocol.Close(senderCtx)
-		}()
-
-		var wg sync.WaitGroup
-		wg.Add(1)
-		go func(wg *sync.WaitGroup) {
-			defer wg.Done()
-			err = listener.Client.StartReceiver(listenerCtx, func(e cloudevents.Event) {
-				w.Header().Set("Content-Type", "application/json")
-				_ = json.NewEncoder(w).Encode(e)
-			})
-			if err != nil {
-				s.respondWithError(w, http.StatusBadRequest, err.Error())
-				return
-			}
-
-		}(&wg)
-
-		if result := sender.Client.Send(senderCtx, event); cloudevents.IsUndelivered(result) {
-			log.Printf("method:getResourceStatus, error:failed to send status: %v", result)
-			s.respondWithJSON(w, http.StatusBadRequest, result)
-			return
-		} else if cloudevents.IsNACK(result) {
-			log.Printf("Event not accepted: %v", result)
-			s.respondWithJSON(w, http.StatusBadRequest, result)
-			return
-		}
-		wg.Wait()
+	if data.Data() != nil {
+		data.SetSpecVersion(cloudevents.VersionV1)
+		s.respondWithByte(w, http.StatusOK, data.Data())
 	} else {
-		s.respondWithError(w, http.StatusBadRequest, "Resource not found")
-		return
+		s.respondWithMessage(w, http.StatusBadRequest, "Channel was closed")
 	}
 
 }
@@ -361,27 +361,23 @@ func (s *Server) publishEvent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) respondWithError(w http.ResponseWriter, code int, message string) {
+	w.Header().Set("Content-Type", cloudevents.ApplicationJSON)
 	s.respondWithJSON(w, code, map[string]string{"error": message})
 }
 
 func (s *Server) respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", cloudevents.ApplicationJSON)
 	w.WriteHeader(code)
 	w.Write(response) //nolint:errcheck
 }
 func (s *Server) respondWithMessage(w http.ResponseWriter, code int, message string) {
+	w.Header().Set("Content-Type", cloudevents.ApplicationJSON)
 	s.respondWithJSON(w, code, map[string]string{"status": message})
 }
 
 func (s *Server) respondWithByte(w http.ResponseWriter, code int, message []byte) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", cloudevents.ApplicationJSON)
 	w.WriteHeader(code)
 	w.Write(message) //nolint:errcheck
-}
-
-func getStatusMessage() []string {
-	return []string{"This is Houston. Say again, please.", "Roger. MAIN B UNDERVOLT.", "Okay, stand by, 13. We're looking at it.",
-		"Roger", "Roger. RESTART and a PGNCS light. RESET on a PGNCS, RESET —", "MAIN A UNDERVOLT.", "Roger",
-	}
 }

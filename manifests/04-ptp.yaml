@@ -25,6 +25,8 @@ spec:
                       - local
       containers:
         - name: ptp-daemon
+          securityContext:
+            privileged: true
           image: ptp
           command: [ "./ptp" ]
           args: [ "-config", "/opt/config.yml" ]
@@ -47,16 +49,20 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            - name: ENABLE_EVENT
+              value: False
           volumeMounts:
             - name: config-volume
               mountPath: /opt/
             - name: pubsubs
               mountPath: /store
             - name: socket-dir
-              mountPath: /tmp
+              mountPath: /var/run
         - name: ptp-sidecar
+          securityContext:
+            privileged: true
           image: sidecar
-          command: [ "./sidecar" ]
+          command: [ "./ptpsidecar" ]
           args: [ "-config", "/opt/config.yml" ]
           env:
             - name: MY_NODE_NAME
@@ -81,7 +87,7 @@ spec:
             - name: pubsubs
               mountPath: /store
             - name: socket-dir
-              mountPath: /tmp
+              mountPath: /var/run
       volumes:
         - name: config-volume
           configMap:
@@ -91,8 +97,11 @@ spec:
                 path: config.yml
         - name: pubsubs
           emptyDir: {}
-        - name: socket-dir
-          emptyDir: {}
+        - hostPath:
+            path: /var/run/ptp
+            type: DirectoryOrCreate
+            name: socket-dir
+
 
 
 

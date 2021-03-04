@@ -9,6 +9,7 @@ import (
 	"github.com/aneeshkp/cloudevents-amqp/pkg/events"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/socket"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/gorilla/mux"
 	"io"
 	"io/ioutil"
@@ -33,8 +34,7 @@ and send events between 1 to 100K
 
 var (
 	//PubStore for storing publisher info that is returned by restapi
-	PubStore map[string]*types.Subscription
-
+	PubStore                 map[string]*types.Subscription
 	statusListenerSocketPort = 40001 //nolint:deadcode,unused,varcheck
 	avgMessagesPerSec        = 100
 	wg                       sync.WaitGroup
@@ -45,6 +45,7 @@ var (
 	defaultAPIPort  = 8080
 	defaultHostPort = 9090
 	cfg             *eventconfig.Config
+	enableEvent     = true
 )
 
 var (
@@ -60,9 +61,12 @@ func main() {
 	var err error
 	PubStore = map[string]*types.Subscription{}
 	envMsgPerSec := os.Getenv("MSG_PER_SEC")
-
 	if envMsgPerSec != "" {
 		avgMessagesPerSec, _ = strconv.Atoi(envMsgPerSec)
+	}
+	envEnableEvent := os.Getenv("ENABLE_EVENT")
+	if envEnableEvent != "" {
+		enableEvent, _ = strconv.ParseBool(envEnableEvent)
 	}
 	cfg, err = eventconfig.GetConfig()
 	if err != nil {
@@ -74,11 +78,6 @@ func main() {
 		cfg.StatusResource.Status.PublishStatus = true
 	}
 	log.Printf("Framework type :%s\n", cfg.EventHandler)
-	// can override externally
-	envEventHandler := os.Getenv("EVENT_HANDLER")
-	if envEventHandler != "" {
-		cfg.EventHandler = types.EventHandler(envEventHandler)
-	}
 
 	//Start the Rest API server to read ack
 	wg.Add(1)
@@ -104,17 +103,17 @@ func main() {
 		}
 	}()
 	//PTP STATUS HANDLER
-	if cfg.StatusResource.Status.PublishStatus {
-		ptpStatusWriteToSocket(&wg)
-	}
+	/*
+		if cfg.StatusResource.Status.PublishStatus {
+			ptpStatusWriteToSocket(&wg)
+		}*/
 
 	// the PTP has to know where to trigger the events //TODO expose this via ENV
-	if publisherID != "" {
+	if publisherID != "" && enableEvent {
 		time.Sleep(5 * time.Second)
 		event.GenerateEvents(fmt.Sprintf("http://%s:%d%s/create/event", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix), publisherID)
 	} else {
-		log.Printf("Error publisher found to send events")
-
+		log.Printf("Events are not genrated")
 	}
 	wg.Wait()
 }
@@ -219,7 +218,7 @@ func createPublisher() (string, error) {
 	jsonValue, _ := json.Marshal(ptpSubscription)
 	//Create publisher
 	response, err := http.Post(fmt.Sprintf("http://%s:%d%s/publishers", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix),
-		"application/json; charset=utf-8", bytes.NewBuffer(jsonValue))
+		cloudevents.ApplicationJSON, bytes.NewBuffer(jsonValue))
 	if err != nil {
 		log.Printf("create publisher: the http request failed with an error %s\n", err)
 		return "", err
@@ -233,7 +232,7 @@ func createPublisher() (string, error) {
 		var pub types.Subscription
 		err = json.Unmarshal(data, &pub)
 		if err != nil {
-			log.Println("failed to successfully marshal json data from the response")
+			log.Printf("1.failed to successfully marshal json data from the response %s", string(data))
 		} else {
 			fmt.Printf("The publisher return is %s\n", string(data))
 			PubStore[pub.SubscriptionID] = &pub

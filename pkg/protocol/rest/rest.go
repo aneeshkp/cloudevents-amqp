@@ -7,6 +7,7 @@ import (
 	"github.com/aneeshkp/cloudevents-amqp/pkg/protocol"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/store"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
+	"github.com/aneeshkp/cloudevents-amqp/pkg/types/status"
 	"github.com/gorilla/mux"
 	"io"
 	"io/ioutil"
@@ -32,7 +33,9 @@ type Server struct {
 	// PublisherStore stores publishers in a map
 	publisher *store.PubStore
 	// SubscriptionStore stores subscription in a map
-	subscription *store.SubStore
+	subscription        *store.SubStore
+	StatusSenders       map[string]*types.AMQPProtocol
+	StatusListenerQueue *status.ListenerChannel
 }
 
 // InitServer is used to supply configurations for rest api server
@@ -42,7 +45,10 @@ func InitServer(cfg *config.Config, dataOut chan<- protocol.DataEvent) *Server {
 		cfg:     cfg,
 		dataOut: dataOut,
 		HTTPClient: &http.Client{
-			Timeout: 1 * time.Second,
+			Transport: &http.Transport{
+				MaxIdleConnsPerHost: 20,
+			},
+			Timeout: 10 * time.Second,
 		},
 		publisher: &store.PubStore{
 			RWMutex: sync.RWMutex{},
@@ -251,7 +257,7 @@ func (s *Server) Start() {
 	}).Methods(http.MethodGet)
 
 	api.HandleFunc("/create/event", s.publishEvent).Methods(http.MethodPost)
-	api.HandleFunc("/status/{index}", s.getResourceStatus).Methods(http.MethodPost)
+	api.HandleFunc("/status/{sequenceid}", s.getResourceStatus).Methods(http.MethodGet)
 
 	err = r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		pathTemplate, err := route.GetPathTemplate()

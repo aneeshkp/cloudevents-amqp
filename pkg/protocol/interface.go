@@ -1,6 +1,7 @@
 package protocol
 
 import (
+	"github.com/aneeshkp/cloudevents-amqp/pkg/types/status"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
@@ -40,6 +41,7 @@ type DataEvent struct {
 	PubSubType  PubSubType
 	EventStatus EventStatus
 	EndPointURI string
+	StatusCh    *status.ListenerChannel
 	//fn          func(e cloudevents.Event) //nolint:structcheck
 }
 
