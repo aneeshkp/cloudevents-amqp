@@ -28,7 +28,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: amqp-dispatch-service-b
+  name: amqp-dispatch-listener-service-b
   labels:
     app: qpid-dispatcher-b
 spec:
