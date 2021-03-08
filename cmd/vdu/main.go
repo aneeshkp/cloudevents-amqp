@@ -74,7 +74,7 @@ func main() {
 
 	//Consumer vDU URL event are read from QDR by sidecar and posted to vDU
 
-	//SIDECAR URL: PTP events are published via post to its sidecar
+	//SIDECAR URL: ptp events are published via post to its sidecar
 	//eventPublishURL = fmt.Sprintf("http://%s:%d%s/event/create", cfg.API.HostName, cfg.API.Port, rest.SUBROUTINE)
 	//Start the Rest API server to read ack
 	wg.Add(1)
@@ -97,7 +97,7 @@ func main() {
 			if err != nil {
 				log.Printf("error check ptp status %v\n", err)
 			}
-			log.Printf("PTP status %#v\n", event)
+			log.Printf("ptp status %#v\n", event)
 			sequenceID++
 		}
 	}()
@@ -200,12 +200,12 @@ func createSubscription() (string, error) {
 	log.Printf("creating subscription")
 	ptpSubscription := types.Subscription{
 		URILocation:  "",
-		ResourceType: "PTP",
+		ResourceType: "ptp",
 		EndpointURI:  fmt.Sprintf("http://%s:%d%s/event/alert", cfg.Host.HostName, cfg.Host.Port, cfg.HostPathPrefix),
 		ResourceQualifier: types.ResourceQualifier{
 			ClusterName: cfg.Cluster.Name,
 			NodeName:    cfg.Cluster.Node,
-			Suffix:      []string{"SYNC", "PTP"},
+			Suffix:      []string{"SYNC", "ptp"},
 		},
 		EventData:      types.EventDataType{},
 		EventTimestamp: 0,
@@ -282,7 +282,7 @@ func checkAllStatus(index int) (event types.EventDataType, err error) {
 	var response *http.Response
 	response, err = httpC.Get(url)
 	if err != nil {
-		log.Printf("The HTTP request for PTP status failed with error %s\n", err)
+		log.Printf("The HTTP request for ptp status failed with error %s\n", err)
 		return
 	}
 	// Close body only if response non-nil
@@ -306,7 +306,7 @@ func checkAllStatus(index int) (event types.EventDataType, err error) {
 		}
 
 	} else {
-		log.Printf("failed to create PTP status %d url %s", response.StatusCode, url)
+		log.Printf("failed to create ptp status %d url %s", response.StatusCode, url)
 	}
 	return
 }

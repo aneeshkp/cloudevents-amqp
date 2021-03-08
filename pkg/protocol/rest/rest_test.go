@@ -87,7 +87,7 @@ func TestServer_New(t *testing.T) {
 	sub := types.Subscription{
 		SubscriptionID: "",
 		URILocation:    "",
-		ResourceType:   "PTP",
+		ResourceType:   "ptp",
 		EndpointURI:    "http://localhost:8080/api/ocloudnotifications/v1/suback",
 		ResourceQualifier: types.ResourceQualifier{
 			NodeName:    "TestNode",
@@ -175,7 +175,7 @@ func TestServer_New(t *testing.T) {
 	pub := types.Subscription{
 		SubscriptionID: "",
 		URILocation:    "",
-		ResourceType:   "PTP",
+		ResourceType:   "ptp",
 		EndpointURI:    "http://localhost:8080/api/ocloudnotifications/v1/suback",
 		ResourceQualifier: types.ResourceQualifier{
 			NodeName:    "TestNode",

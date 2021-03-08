@@ -1,18 +1,18 @@
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
-  name: ptp-deployment
+  name: vdu-deployment
   labels:
-    app: ptp-daemon
+    app: vdu
 spec:
-  #replicas: 1
+  replicas: 1
   selector:
     matchLabels:
-      app: ptp-daemon
+      app: vdu
   template:
     metadata:
       labels:
-        app: ptp-daemon
+        app: vdu
     spec:
       affinity:
         nodeAffinity:
@@ -22,23 +22,19 @@ spec:
                   - key: local-app
                     operator: In
                     values:
-                      - local
+                      - remote
       containers:
-        - name: ptp-daemon
-          securityContext:
-            privileged: true
-          image: ptp
-          command: [ "./ptp" ]
+        - name: vdu
+          image: vdu
+          command: [ "./vdu" ]
           args: [ "-config", "/opt/config.yml" ]
           livenessProbe:
             httpGet:
-              path: /api/ptp/v1/health
+              path: /api/vdu/v1/health
               port: 9090
             initialDelaySeconds: 3
             periodSeconds: 3
           env:
-            - name: MSG_PER_SEC
-              value: "100"
             - name: MY_NODE_NAME
               valueFrom:
                 fieldRef:
@@ -55,20 +51,14 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-            - name: ENABLE_EVENT
-              value: "True"
           volumeMounts:
             - name: config-volume
               mountPath: /opt/
             - name: pubsubs
               mountPath: /store
-            - name: socket-dir
-              mountPath: /var/run
-        - name: ptp-sidecar
-          securityContext:
-            privileged: true
-          image: ptpsidecar
-          command: [ "./ptpsidecar" ]
+        - name: vdu-sidecar
+          image: sidecar
+          command: [ "./sidecar" ]
           args: [ "-config", "/opt/config.yml" ]
           livenessProbe:
             httpGet:
@@ -98,22 +88,15 @@ spec:
               mountPath: /opt/
             - name: pubsubs
               mountPath: /store
-            - name: socket-dir
-              mountPath: /var/run
       volumes:
         - name: config-volume
           configMap:
-            name: ptp-config
+            name: vdu-config-remote
             items:
               - key: config.yml
                 path: config.yml
         - name: pubsubs
           emptyDir: {}
-        - hostPath:
-            path: /var/run/ptp
-            type: DirectoryOrCreate
-          name: socket-dir
-
 
 
 

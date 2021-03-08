@@ -28,6 +28,12 @@ spec:
           image: vdu
           command: [ "./vdu" ]
           args: [ "-config", "/opt/config.yml" ]
+          livenessProbe:
+            httpGet:
+              path: /api/vdu/v1/health
+              port: 9090
+            initialDelaySeconds: 3
+            periodSeconds: 3
           env:
             - name: MY_NODE_NAME
               valueFrom:
@@ -54,6 +60,12 @@ spec:
           image: sidecar
           command: [ "./sidecar" ]
           args: [ "-config", "/opt/config.yml" ]
+          livenessProbe:
+            httpGet:
+              path: /api/ocloudnotifications/v1/health
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 3
           env:
             - name: MY_NODE_NAME
               valueFrom:

@@ -19,7 +19,7 @@ cluster:
   node: "NODE1"
   namespace: "Default"
 statusResource:
-  name: ["status/PTP","status/bionk]
+  name: ["status/ptp","status/bionk]
   status:
     publishStatus: false
     enableStatusCheck: true

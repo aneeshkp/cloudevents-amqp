@@ -206,11 +206,11 @@ func (s *Server) Start() {
 	// Shall be returned when the subscription resource created successfully.
 	/*Request
 	   {
-		"ResourceType": "PTP",
+		"ResourceType": "ptp",
 	    "EndpointURI ": "http://localhost:9090/resourcestatus/ptp", /// daemon
 		"ResourceQualifier": {
 				"NodeName":"worker-1"
-				"Source":"/cluster-x/worker-1/SYNC/PTP"
+				"Source":"/cluster-x/worker-1/SYNC/ptp"
 			}
 		}
 	Response:
@@ -218,18 +218,18 @@ func (s *Server) Start() {
 			//"SubscriptionID": "789be75d-7ac3-472e-bbbc-6d62878aad4a",
 	        "PublisherId": "789be75d-7ac3-472e-bbbc-6d62878aad4a",
 			"URILocation": "http://localhost:8080/ocloudNotifications/v1/subsciptions/789be75d-7ac3-472e-bbbc-6d62878aad4a",
-			"ResourceType": "PTP",
+			"ResourceType": "ptp",
 	         "EndpointURI ": "http://localhost:9090/resourcestatus/ptp", // address where the event
 				"ResourceQualifier": {
 				"NodeName":"worker-1"
-	              "Source":"/cluster-x/worker-1/SYNC/PTP"
+	              "Source":"/cluster-x/worker-1/SYNC/ptp"
 			}
 		}*/
 
 	/*201 Shall be returned when the subscription resource created successfully.
 		See note below.
 	400 Bad request by the API consumer. For example, the endpoint URI does not include ‘localhost’.
-	404 Subscription resource is not available. For example, PTP is not supported by the node.
+	404 Subscription resource is not available. For example, ptp is not supported by the node.
 	409 The subscription resource already exists.
 	*/
 	api.HandleFunc("/subscriptions", s.createSubscription).Methods(http.MethodPost)

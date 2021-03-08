@@ -38,7 +38,7 @@ type AMQPProtocol struct {
 /*{
 “SubscriptionID”: “789be75d-7ac3-472e-bbbc-6d62878aad4a”,
 “URILocation”: “http://localhost:8080/ocloudNotifications/v1/subsciptions/789be75d-7ac3-472e-bbbc-6d62878aad4a”,
-"ResourceType": "PTP",
+"ResourceType": "ptp",
 "EndpointURI ": "http://localhost:9090/resourcestatus/ptp",
 "ResourceQualifier": {
 "NodeName":"worker-1"
@@ -62,12 +62,12 @@ const (
 	HOLDOVER PTPState = "Holdover"
 
 	//ERROR Clock is in holdover state
-	ERROR PTPState = "Error reading PTP state"
+	ERROR PTPState = "Error reading ptp state"
 )
 
 //The resource to subscribe to, currently only PTP is supported.
 const (
-	PTP ResourceQualifierType = "PTP"
+	PTP ResourceQualifierType = "ptp"
 )
 
 //Subscription ...
@@ -167,10 +167,10 @@ type ResourceStatus struct {
 /*
 {
     "SubscriptionID”: “789be75d-7ac3-472e-bbbc-6d62878aad4a",
-	"ResourceType": "PTP ",
+	"ResourceType": "ptp ",
 	"ResourceQualifier": {
 		"NodeName": "worker-1"
-        "source": "/cluster-x/nodename/SYNC/PTP"
+        "source": "/cluster-x/nodename/SYNC/ptp"
 	},
 	"EventData": {
 		"State": "Freerun"

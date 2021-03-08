@@ -35,7 +35,7 @@ var (
 
 	wg  sync.WaitGroup
 	cfg *config2.Config
-	//FOR PTP only
+	//FOR ptp only
 	statusCheckAddress string
 	server             *rest.Server
 	socketSenderCon    *net.UDPConn
@@ -101,7 +101,7 @@ func main() {
 			}
 		}
 		server.StatusSenders = make(map[string]*types.AMQPProtocol)
-		statusReturnAddress := fmt.Sprintf("/%s/%s/%s", cfg.Cluster.Name, cfg.Cluster.Node, "status/PTP/CurrentStatus")
+		statusReturnAddress := fmt.Sprintf("/%s/%s/%s", cfg.Cluster.Name, cfg.Cluster.Node, "status/ptp/CurrentStatus")
 		sender, _ := qdr.NewSender(cfg.AMQP.HostName, cfg.AMQP.Port, statusReturnAddress)
 		server.StatusSenders[statusCheckAddress] = sender
 	}
@@ -113,7 +113,7 @@ func main() {
 			server.StatusSenders[statusCheckAddress] = sender
 		}
 		//listener to get the status
-		statusReturnAddress := fmt.Sprintf("/%s/%s/%s", cfg.Cluster.Name, cfg.Cluster.Node, "status/PTP/CurrentStatus")
+		statusReturnAddress := fmt.Sprintf("/%s/%s/%s", cfg.Cluster.Name, cfg.Cluster.Node, "status/ptp/CurrentStatus")
 		qdrEventInCh <- protocol.DataEvent{
 			Address:     statusReturnAddress,
 			EventStatus: protocol.SUCCEED,
@@ -141,7 +141,7 @@ func main() {
 		select { //nolint:gosimple
 		case d := <-qdrEventOutCh: // do something that is put out by QDR
 			//Special handle need to redesign
-			// PTP status request ,get teh request data ask for PTP socket for data and send it back in its return address
+			// ptp status request ,get teh request data ask for ptp socket for data and send it back in its return address
 			if d.PubSubType == protocol.STATUS {
 				if d.EventStatus == protocol.NEW {
 					wg.Add(1)
@@ -214,7 +214,7 @@ func processStatus(wg *sync.WaitGroup, d protocol.DataEvent) {
 		_ = d.Data.SetData(cloudevents.ApplicationJSON, resourceStatus)
 		//if it fails then we cant get return address
 	} else {
-		//status := checkResourceStatus(wg, "Check PTP status") // check for PTP status
+		//status := checkResourceStatus(wg, "Check ptp status") // check for ptp status
 		status := checkPTPStatus()
 		if status != "" {
 			resourceStatus.EventData.State = types.FREERUN
@@ -230,7 +230,7 @@ func processStatus(wg *sync.WaitGroup, d protocol.DataEvent) {
 		return
 	}*/
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	//log.Printf("Sending PTP data back %s to %s", status, resourceStatus.ReturnAddress)
+	//log.Printf("Sending ptp data back %s to %s", status, resourceStatus.ReturnAddress)
 	d.Data.SetSpecVersion(cloudevents.VersionV1)
 	if result := server.StatusSenders[statusCheckAddress].Client.Send(ctx, d.Data); cloudevents.IsUndelivered(result) {
 		log.Printf("failed to send status: %v to addess %s", result, resourceStatus.ResourceQualifier.GetAddress())

@@ -102,13 +102,13 @@ func main() {
 			event.ResetTotalMsgSent()
 		}
 	}()
-	//PTP STATUS HANDLER
+	//ptp STATUS HANDLER
 	/*
 		if cfg.StatusResource.Status.PublishStatus {
 			ptpStatusWriteToSocket(&wg)
 		}*/
 
-	// the PTP has to know where to trigger the events //TODO expose this via ENV
+	// the ptp has to know where to trigger the events //TODO expose this via ENV
 	if publisherID != "" && enableEvent {
 		time.Sleep(5 * time.Second)
 		event.GenerateEvents(fmt.Sprintf("http://%s:%d%s/create/event", cfg.API.HostName, cfg.API.Port, cfg.APIPathPrefix), publisherID)
@@ -200,16 +200,16 @@ func healthCheckAPIEndpoints() {
 	log.Printf("Ready...")
 }
 
-//createPublisher  PTP produces publishers
+//createPublisher  ptp produces publishers
 func createPublisher() (string, error) {
 	ptpSubscription := types.Subscription{
 		URILocation:  "", //will be filled by the api
-		ResourceType: "PTP",
+		ResourceType: "ptp",
 		EndpointURI:  fmt.Sprintf("http://%s:%d%s/publisher/ack", cfg.Host.HostName, cfg.Host.Port, cfg.HostPathPrefix), //return url
 		ResourceQualifier: types.ResourceQualifier{
 			ClusterName: cfg.Cluster.Name,
 			NodeName:    cfg.Cluster.Node,
-			Suffix:      []string{"SYNC", "PTP"},
+			Suffix:      []string{"SYNC", "ptp"},
 		},
 		EventData:      types.EventDataType{},
 		EventTimestamp: 0,

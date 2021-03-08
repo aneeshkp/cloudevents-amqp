@@ -23,18 +23,18 @@ func main() {
 
 func runTest(wg *sync.WaitGroup) {
 	//build address
-	senderAddress := "/clusternameunknown/nodenameunknown/SYNC/PTP"
-	//receiveAddress :="/clusternameunknown/nodenameunknown/SYNC/PTP"
+	senderAddress := "/clusternameunknown/nodenameunknown/SYNC/ptp"
+	//receiveAddress :="/clusternameunknown/nodenameunknown/SYNC/ptp"
 	sub := types.Subscription{
 		SubscriptionID: "1231231231",
 		URILocation:    "",
-		ResourceType:   "PTP",
+		ResourceType:   "ptp",
 		EndpointURI:    "",
 		ResourceQualifier: types.ResourceQualifier{
 			NodeName:    "clusternameunknown",
 			NameSpace:   "nodenameunknown",
 			ClusterName: "",
-			Suffix:      []string{"SYNC", "PTP"},
+			Suffix:      []string{"SYNC", "ptp"},
 		},
 		EventData:      types.EventDataType{},
 		EventTimestamp: 0,
