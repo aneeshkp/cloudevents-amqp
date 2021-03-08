@@ -28,14 +28,14 @@ data:
     # See the qdrouterd.conf (5) manual page for information about this
     # file's format and options.
 
-    router {
-        mode: standalone
-    }
-
     #router {
-    #    mode: interior
-    #    id: QPD.A
+    #    mode: standalone
     #}
+
+    router {
+        mode: interior
+        id: QPD.A
+    }
 
     listener {
         host: 0.0.0.0
@@ -58,13 +58,13 @@ data:
     #     saslMechanisms: ANONYMOUS
     #}
 
-    # Connect to B
-    #connector {
-    #    role: inter-router
-    #    host: amqp-dispatch-router-service-b
-    #    port: 20001
-    #    saslMechanisms: ANONYMOUS
-    #}
+    #Connect to B
+    connector {
+        role: inter-router
+        host: amqp-dispatch-router-service-b
+        port: 20001
+        saslMechanisms: ANONYMOUS
+    }
 
     address {
         prefix: closest
@@ -99,7 +99,6 @@ data:
             distribution: multicast
     }
 ---
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -129,14 +128,14 @@ data:
     # See the qdrouterd.conf (5) manual page for information about this
     # file's format and options.
 
-    router {
-        mode: standalone
-    }
-
     #router {
-    #    mode: interior
-    #    id: QPD.A
+    #    mode: standalone
     #}
+
+    router {
+        mode: interior
+        id: QPD.A
+    }
 
     listener {
         host: 0.0.0.0
@@ -151,13 +150,13 @@ data:
         authenticatePeer: no
         http: yes
     }
-    #listener {
-    #     role: inter-router
-    #     host: 0.0.0.0
-    #     port: 20001
-    #     authenticatePeer: no
-    #     saslMechanisms: ANONYMOUS
-    #}
+    listener {
+         role: inter-router
+         host: 0.0.0.0
+         port: 20001
+         authenticatePeer: no
+         saslMechanisms: ANONYMOUS
+    }
 
     # Connect to B
     #connector {
