@@ -6,8 +6,8 @@ metadata:
     app: ptp-daemon
 spec:
   ports:
-    - port: 20001
-      name: udp
+    - port: 9090
+      name: tcp
   selector:
     app: ptp-daemon
 ---

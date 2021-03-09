@@ -1,7 +1,7 @@
 .PHONY: build-docker
 
 # Current  version
-VERSION ?=1.0
+VERSION ?=1.2
 # Default image tag
 
 SIDECAR_IMG ?= quay.io/aneeshkp/sidecar:$(VERSION)

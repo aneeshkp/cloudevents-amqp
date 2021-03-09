@@ -30,11 +30,13 @@ spec:
           image: ptp
           command: [ "./ptp" ]
           args: [ "-config", "/opt/config.yml" ]
+          ports:
+            - containerPort: 9090
           livenessProbe:
             httpGet:
               path: /api/ptp/v1/health
               port: 9090
-            initialDelaySeconds: 3
+            initialDelaySeconds: 5
             periodSeconds: 3
           env:
             - name: MSG_PER_SEC
@@ -70,11 +72,13 @@ spec:
           image: ptpsidecar
           command: [ "./ptpsidecar" ]
           args: [ "-config", "/opt/config.yml" ]
+          ports:
+            - containerPort: 8080
           livenessProbe:
             httpGet:
               path: /api/ocloudnotifications/v1/health
               port: 8080
-            initialDelaySeconds: 3
+            initialDelaySeconds: 5
             periodSeconds: 3
           env:
             - name: MY_NODE_NAME

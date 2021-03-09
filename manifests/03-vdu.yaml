@@ -27,12 +27,13 @@ spec:
         - name: vdu
           image: vdu
           command: [ "./vdu" ]
-          args: [ "-config", "/opt/config.yml" ]
+          ports:
+            - containerPort: 9090
           livenessProbe:
             httpGet:
               path: /api/vdu/v1/health
               port: 9090
-            initialDelaySeconds: 3
+            initialDelaySeconds: 5
             periodSeconds: 3
           env:
             - name: MY_NODE_NAME
@@ -60,11 +61,13 @@ spec:
           image: sidecar
           command: [ "./sidecar" ]
           args: [ "-config", "/opt/config.yml" ]
+          ports:
+            - containerPort: 8080
           livenessProbe:
             httpGet:
               path: /api/ocloudnotifications/v1/health
               port: 8080
-            initialDelaySeconds: 3
+            initialDelaySeconds: 5
             periodSeconds: 3
           env:
             - name: MY_NODE_NAME

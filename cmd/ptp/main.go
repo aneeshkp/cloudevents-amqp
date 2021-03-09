@@ -159,8 +159,8 @@ func startServer(wg *sync.WaitGroup) {
 	}
 	http.Handle("/", r)
 
-	log.Printf("started rest API server at %s", fmt.Sprintf("http://%s/%d%s", cfg.Host.HostName, cfg.Host.Port, cfg.HostPathPrefix))
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", cfg.Host.HostName, cfg.Host.Port), api))
+	log.Printf("started rest API server at %s", fmt.Sprintf("http://%s:%d%s", cfg.Host.HostName, cfg.Host.Port, cfg.HostPathPrefix))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.Host.Port), api))
 }
 
 //Side car publishers

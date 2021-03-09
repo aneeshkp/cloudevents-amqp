@@ -293,6 +293,6 @@ func (s *Server) Start() {
 
 	log.Print("Started Rest API Server")
 	log.Printf("endpoint %s", s.cfg.APIPathPrefix)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", s.cfg.API.HostName, s.cfg.API.Port), api))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", s.cfg.API.Port), api))
 
 }

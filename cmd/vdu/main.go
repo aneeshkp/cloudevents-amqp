@@ -87,21 +87,22 @@ func main() {
 	_, _ = createSubscription()
 	//check once of often, your choice
 
-	tck := time.NewTicker(time.Second)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var sequenceID = 1
-		for range tck.C {
-			event, err := checkAllStatus(sequenceID)
-			if err != nil {
-				log.Printf("error check ptp status %v\n", err)
+	if cfg.StatusResource.Status.EnableStatusCheck {
+		tck := time.NewTicker(time.Second)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var sequenceID = 1
+			for range tck.C {
+				event, err := checkAllStatus(sequenceID)
+				if err != nil {
+					log.Printf("error check ptp status %v\n", err)
+				}
+				log.Printf("ptp status %#v\n", event)
+				sequenceID++
 			}
-			log.Printf("ptp status %#v\n", event)
-			sequenceID++
-		}
-	}()
-
+		}()
+	}
 	if cfg.EventHandler == types.SOCKET {
 		socketListener(&wg, cfg.Socket.Listener.HostName, cfg.Socket.Listener.Port, latencyCountCh)
 	}
@@ -155,7 +156,7 @@ func startServer(wg *sync.WaitGroup, cnfRoutes *routes3.CnfRoutes) {
 
 	log.Print("Started Rest API Server")
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", cfg.Host.HostName, cfg.Host.Port), api))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.Host.Port), api))
 }
 
 //Side car publishers
