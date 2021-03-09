@@ -134,7 +134,7 @@ data:
 
     router {
         mode: interior
-        id: QPD.A
+        id: QPD.B
     }
 
     listener {

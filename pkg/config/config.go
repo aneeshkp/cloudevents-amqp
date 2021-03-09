@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/aneeshkp/cloudevents-amqp/pkg/types"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"gopkg.in/yaml.v2"
@@ -73,6 +74,7 @@ type Config struct {
 
 // NewConfig  returns a new decoded AMQPConfig struct
 func NewConfig(configPath string) (*Config, error) {
+	log.Printf("Loading config from path %s", configPath)
 	var file *os.File
 	var err error
 	// Create config structure
@@ -86,8 +88,10 @@ func NewConfig(configPath string) (*Config, error) {
 	d := yaml.NewDecoder(file)
 	// Start YAML decoding from file
 	if err := d.Decode(&config); err != nil {
+		log.Printf("error loading config content %#v", file)
 		return nil, err
 	}
+	log.Printf("loaded config content %#v", config)
 	return config, nil
 }
 

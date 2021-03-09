@@ -3,8 +3,8 @@ kind: Kustomization
 resources:
 - 000-config.yml
 - 03-vdu.yaml
-- 04-ptp.yaml
 - 006-vdu-remote.yml
+- 04-ptp.yaml
 replicas:
 - count: 1
   name: vdu-deployment

@@ -27,6 +27,7 @@ spec:
         - name: vdu
           image: vdu
           command: [ "./vdu" ]
+          args: [ "-config", "/opt/config.yml" ]
           ports:
             - containerPort: 9090
           livenessProbe:

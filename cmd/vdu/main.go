@@ -56,7 +56,7 @@ func main() {
 	var err error
 	cfg, err = eventconfig.GetConfig()
 	if err != nil {
-		log.Printf("Could not load configuration file --config, loading default queue\n")
+		log.Printf("Could not load configuration file --config, loading default config %v\n", err)
 		cfg = eventconfig.DefaultConfig(defaultHostPort, defaultAPIPort, defaultSenderSocketPort, defaultListenerSocketPort,
 			os.Getenv("MY_CLUSTER_NAME"), os.Getenv("MY_NODE_NAME"), os.Getenv("MY_NAMESPACE"))
 		cfg.HostPathPrefix = "/api/vdu/v1"

@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vdu-config-remote
+  namespace: default
+data:
+  config.yml: |-
+    amqp:
+      hostname: amqp://amqp-dispatch-service-b
+      port: 5672
+    api:
+      hostname: localhost
+      port: 8080
+    host:
+      hostname: localhost
+      port: 9090
+    socket:
+      listener:
+        hostname: localhost
+        port: 20001
+      sender:
+        hostname: localhost
+        port: 20002
+    cluster:
+      name: "CLUSTER1"
+      node: "NODE1"
+      namespace: "Default"
+    statusResource:
+      name: ["status/PTP"]
+      status:
+        publishStatus: false
+        enableStatusCheck: false
+    eventHandler: "HTTP"
+    apiPathPrefix: "/api/ocloudnotifications/v1"
+    hostPathPrefix: "/api/vdu/v1"
+    store:
+      pubFilePath: "/store/pub.json"
+      subFilePath: "/store/sub.json"
